@@ -348,7 +348,7 @@ async def learning(query: types.CallbackQuery, callback_data: dict):
         if s.status == '/test':
             hids = sr.get_items_to_learn((user_id, s.active_lang()), upper_recall_limit=1.0, n=n)
         if s.status == '/learn':
-            hids = sr.get_items_to_learn((user_id, s.active_lang()), upper_recall_limit=0.8, n=n)
+            hids = sr.get_items_to_learn((user_id, s.active_lang()), upper_recall_limit=0.5, n=n)
         if len(hids) == 0:
             if s.status == '/test':
                 await bot.send_message(user_id,

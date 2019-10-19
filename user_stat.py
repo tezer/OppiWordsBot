@@ -10,7 +10,7 @@ conf = dict()
 
 messages = {"no_words_added": "Looks like you haven't added words to learn yet? Try /setlanguage and then /addwords to add a few words.",
             "has_words_to_learn": "You have {} words to learn. Use /learn command to start learning them.",
-            "all": "Hi!\nNow you can add words from *language frequency lists*! Some say, that only 500 most frequent words in a language may help you understand up to 80% of texts. Have a try with command /wordlist"
+            "all": "Hi!\nNow you can add words from *language frequency lists*! Some say, that only 500 most frequent words in a language may help you understand up to 80% of texts. Have a try with command /wordlist \n"
 }
 
 
