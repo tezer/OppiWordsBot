@@ -196,7 +196,7 @@ def check_exists(user_id):
     finally:
         cursor.close()
         conn.close()
-        if len(result) > 0:
+        if result is not None:
             res = True
         if result[0] == 1:
             unblock_user(user_id)
