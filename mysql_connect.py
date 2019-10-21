@@ -1,7 +1,6 @@
 import mysql.connector
 from mysql.connector import Error
 import hashlib
-
 conf = dict()
 
 
@@ -159,7 +158,55 @@ def insert_words(words):
         conn.close()
 
 
+def unblock_user(user_id):
+    query = "UPDATE users SET blocked = 0 WHERE user_id = %s"
+    try:
+        conn = mysql.connector.connect(host=conf['host'],
+                                       database=conf['database'],
+                                       user=conf['user'],
+                                       password=conf['password'])
+        cursor = conn.cursor()
+        cursor.execute(query, (user_id, ))
+        conn.commit()
+    except Error as error:
+        print(error)
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def check_exists(user_id):
+    res = False
+
+    try:
+        conn = mysql.connector.connect(host=conf['host'],
+                                       database=conf['database'],
+                                       user=conf['user'],
+                                       password=conf['password'])
+        cursor = conn.cursor(buffered=True)
+
+        query = "SELECT blocked FROM users WHERE user_id=%s"
+        cursor.execute(query, (user_id, ))
+        result = cursor.fetchone()
+
+    except Error as e:
+        print("check_exists: ", e)
+
+    finally:
+        cursor.close()
+        conn.close()
+        if len(result) > 0:
+            res = True
+        if result[0] == 1:
+            unblock_user(user_id)
+        return res
+
+
 def update_user(user_id, first_name, last_name, language_code):
+    exist = check_exists(user_id)
+    if exist:
+        return
     query = "INSERT INTO users(user_id, first_name, last_name, language_code) " \
             "VALUES(%s,%s,%s,%s)"
     args = (user_id, first_name, last_name, language_code)
@@ -314,6 +361,25 @@ def lists_to_add(user, lang):
         conn.close()
         return result
 
+
+def update_blocked(user_id):
+    query = "UPDATE users SET blocked = 1 WHERE user_id = %s"
+    try:
+        conn = mysql.connector.connect(host=conf['host'],
+                                       database=conf['database'],
+                                       user=conf['user'],
+                                       password=conf['password'])
+        cursor = conn.cursor()
+        cursor.execute(query, (user_id,))
+        conn.commit()
+    except Error as error:
+        print(error)
+
+    finally:
+        cursor.close()
+        conn.close()
+    return None
+
 def test(c):
     global conf
     conf = c
@@ -333,3 +399,4 @@ if __name__ == '__main__':
     # rows = fetchall("SELECT word, definition, mode FROM words WHERE user='test' AND hid='12345'")
     # print(rows)
     # fetchmany("SELECT * FROM words", 5)
+

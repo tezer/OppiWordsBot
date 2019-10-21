@@ -56,7 +56,7 @@ def number_of_words_to_train(user):
     return len(words)
 
 def get_user_message(period):
-    query = "SELECT user_id from users"
+    query = "SELECT user_id from users where blocked = 0"
 
     try:
         conn = mysql.connector.connect(host=conf['host'],

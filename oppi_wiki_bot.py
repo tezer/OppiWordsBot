@@ -102,7 +102,7 @@ async def send_notifications_to_users(message: types.Message):
             print(e)
             logger.warning("User {} blocked the bot".format(user_id))
             blocked += 1
-            # TODO update the database
+            mysql_connect.update_blocked(user_id)
         except Exception as e:
             logger.error("Error sending notification: " + str(e))
     await bot.send_message(admin, str(blocked) + " users blocked the bot")
