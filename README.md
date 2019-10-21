@@ -26,8 +26,8 @@ mysql> describe users;
 | last_name     | varchar(255) | YES  |     | NULL              |       |
 | language_code | varchar(255) | YES  |     | NULL              |       |
 | created_at    | timestamp    | NO   |     | CURRENT_TIMESTAMP |       |
-
-
+| blocked       | tinyint(1)   | YES  |     | 0                 |                             |
+| lastUpdated   | timestamp    | NO   |     | CURRENT_TIMESTAMP | on update CURRENT_TIMESTAMP |
 
 mysql> describe word_lists;
 
