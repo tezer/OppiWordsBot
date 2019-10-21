@@ -53,8 +53,8 @@ def get_top_n(lang, start=0, end=100):
         return top_n
 
 
-def tokinzation(text, lang):
-    return (tokenize(text, lang))
+def tokenize_text(text, lang):
+    return tokenize(text, CODES[lang])
 
 
 # print(get_top_n('finnish', start=10, end=20))

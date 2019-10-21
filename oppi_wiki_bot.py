@@ -141,6 +141,38 @@ async def help_message(message: types.Message):
     await bot.send_photo(message.from_user.id, types.InputFile('menu1.1.png'))
     await bot.send_message(message.from_user.id, "*If you have questions, you can ask them at https://t.me/OppiWords*")
 
+# ADDING TEXT========================================================
+@dp.message_handler(commands=['addtext'])
+async def start_message(message: types.Message):
+    user_id = message.from_user.id
+    logger.info(str(user_id) + ' /addtext')
+    s = await get_session(user_id)
+    if s is None:
+        return
+    if s.active_lang() is None:
+        await bot.send_message(user_id, "You need to /setlanguage first")
+        return
+    m = await bot.send_message(user_id, "Paste in a short text here.")
+    print(m.message_id)
+    s.status = m.message_id + 1
+
+
+@dp.message_handler(lambda message: user_state(message.from_user.id, message.message_id))
+async def start_message(message: types.Message):
+    user_id = message.from_user.id
+    logger.info(str(user_id) + ' /addtext received')
+    s = await get_session(user_id)
+    if s is None:
+        return
+    text_words = set(word_lists.tokenize_text(message.text, s.active_lang()))
+    list_name = message.text[:30]
+    await bot.send_message(user_id, (
+        "The list name is _{}_.The words are ready to be added to your dictionary. /addwords to do so.".format(
+            list_name)))
+    mysql_connect.add_list(user=str(user_id), word_list=text_words, lang=s.active_lang(), list_name=list_name)
+    s.status = None
+    await adding_list_words(message, None, list_name)
+
 
 # ADDING LIST ======================================================
 @dp.message_handler(commands=['wordlist'])
