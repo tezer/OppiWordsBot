@@ -154,12 +154,20 @@ async def start_message(message: types.Message):
         return
     cmd = message.text
     if ' ' in cmd:
-        cmd2 = str(cmd).split(' ')[1]
-        if cmd2 == 'list':
+        cmd2 = str(cmd).split(' ')
+        if cmd2[1] == 'list':
             #TODO ask for list name and show words from the list
             pass
-        elif cmd2 == 'date':
+        elif cmd2[1] == 'date':
             words = mysql_connect.fetchall("SELECT w.word, s.created_at FROM words w INNER JOIN spaced_repetition s ON w.hid = s.hid WHERE w.user =%s AND w.language=%s AND w.mode = 0 ORDER BY s.created_at",
+                                           (user_id, s.active_lang()))
+        elif cmd2[1] == 'last':
+            LIMIT = ""
+            if len(cmd2) == 3:
+                n = cmd2[2]
+                LIMIT = ' LIMIT ' + str(n)
+
+            words = mysql_connect.fetchall("SELECT w.word, s.created_at FROM words w INNER JOIN spaced_repetition s ON w.hid = s.hid WHERE w.user =%s AND w.language=%s AND w.mode = 0 ORDER BY s.created_at DESC" + LIMIT,
                                            (user_id, s.active_lang()))
         else:
             letter = str(cmd2) + '%'
