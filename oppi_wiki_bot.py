@@ -97,7 +97,7 @@ async def send_notifications_to_users(message: types.Message):
         # user_id = admin #USE FOR TESTING
         try:
             logger.debug("Sending notification to " + str(user_id))
-            await bot.send_message(user_id, notification_text)
+            await bot.send_message(user_id, notification_text, parse_mode=types.ParseMode.HTML)
         except Blocked as e:
             print(e)
             logger.warning("User {} blocked the bot".format(user_id))
@@ -232,8 +232,12 @@ async def adding_word_to_list(message):
                                         "For example _0:50_ to get top 50 most frequent words")
         return
     topn = word_lists.get_top_n(lang=s.active_lang(), start=start, end=end)
-    print(topn)
     list_name = str(s.active_lang()) + " top" + str(n)
+    logger.debug("{} is adding list {}, list length {}".format(user_id, list_name, len(topn)))
+    if topn is None:
+        logger.error("{} is adding list {}, which is None".format(user_id, list_name))
+        await bot.send_message(user_id, "Sorry cannot add your list. Try again")
+        return
     await bot.send_message(user_id, (
         "The list name is {}.The words are ready to be added to your dictionary. /addwords to do so.".format(
             list_name)))
