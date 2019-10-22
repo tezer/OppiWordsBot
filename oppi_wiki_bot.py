@@ -217,10 +217,6 @@ async def adding_word_to_list(message):
         return
     s.status = 'topn'
     n = message.text
-    # try:
-    #     n = int(n)
-    # except ValueError:
-    #     await types.Message(message).edit_text('Integers only, please')
     if not re.match("\d+:\d+", n):
         await bot.send_message(user_id, "Please use format: _start:end_. "
                                         "For example _0:50_ to get top 50 most frequent words")
