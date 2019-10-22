@@ -141,6 +141,42 @@ async def help_message(message: types.Message):
     await bot.send_photo(message.from_user.id, types.InputFile('menu1.1.png'))
     await bot.send_message(message.from_user.id, "*If you have questions, you can ask them at https://t.me/OppiWords*")
 
+# SHOW WORDS ========================================================
+@dp.message_handler(commands=['show'])
+async def start_message(message: types.Message):
+    user_id = message.from_user.id
+    logger.info(str(user_id) + ' ' + str(message.text))
+    s = await get_session(user_id)
+    if s is None:
+        return
+    if s.active_lang() is None:
+        await bot.send_message(user_id, "You need to /setlanguage first")
+        return
+    cmd = message.text
+    if ' ' in cmd:
+        cmd2 = str(cmd).split(' ')[1]
+        if cmd2 == 'list':
+            #TODO ask for list name and show words from the list
+            pass
+        elif cmd2 == 'date':
+            words = mysql_connect.fetchall("SELECT w.word, s.created_at FROM words w INNER JOIN spaced_repetition s ON w.hid = s.hid WHERE w.user =%s AND w.language=%s ORDER BY s.created_at",
+                                           (user_id, s.active_lang()))
+        else:
+            letter = str(cmd2) + '%'
+            words = mysql_connect.fetchall(
+                "SELECT word, definition FROM words WHERE user =%s AND language=%s AND word LIKE %s ORDER BY word",
+                (user_id, s.active_lang(), letter))
+
+    else:
+        words = mysql_connect.fetchall("SELECT word, definition FROM words WHERE user=%s AND language=%s ORDER BY word",
+                                       (user_id, s.active_lang()))
+    for w in words:
+        await bot.send_message(user_id, "<b>{}</b> : {}".format(w[0], w[1]),
+                               parse_mode=types.ParseMode.HTML, disable_notification=True)
+        time.sleep(.5)
+
+
+
 # ADDING TEXT========================================================
 @dp.message_handler(commands=['addtext'])
 async def start_message(message: types.Message):
