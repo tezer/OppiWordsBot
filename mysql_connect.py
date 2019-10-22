@@ -198,8 +198,8 @@ def check_exists(user_id):
         conn.close()
         if result is not None:
             res = True
-        if result[0] == 1:
-            unblock_user(user_id)
+            if result[0] == 1:
+                unblock_user(user_id)
         return res
 
 
