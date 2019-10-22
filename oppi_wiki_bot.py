@@ -97,7 +97,7 @@ async def send_notifications_to_users(message: types.Message):
         # user_id = admin #USE FOR TESTING
         try:
             logger.debug("Sending notification to " + str(user_id))
-            await bot.send_message(user_id, notification_text)
+            await bot.send_message(user_id, notification_text, parse_mode=types.ParseMode.HTML)
         except Blocked as e:
             print(e)
             logger.warning("User {} blocked the bot".format(user_id))
@@ -140,6 +140,44 @@ async def help_message(message: types.Message):
     await message.reply(help_text)
     await bot.send_photo(message.from_user.id, types.InputFile('menu1.1.png'))
     await bot.send_message(message.from_user.id, "*If you have questions, you can ask them at https://t.me/OppiWords*")
+
+# SHOW WORDS ========================================================
+@dp.message_handler(commands=['show'])
+async def start_message(message: types.Message):
+    user_id = message.from_user.id
+    logger.info(str(user_id) + ' ' + str(message.text))
+    s = await get_session(user_id)
+    if s is None:
+        return
+    if s.active_lang() is None:
+        await bot.send_message(user_id, "You need to /setlanguage first")
+        return
+    cmd = message.text
+    if ' ' in cmd:
+        cmd2 = str(cmd).split(' ')[1]
+        if cmd2 == 'list':
+            #TODO ask for list name and show words from the list
+            pass
+        elif cmd2 == 'date':
+            words = mysql_connect.fetchall("SELECT w.word, s.created_at FROM words w INNER JOIN spaced_repetition s ON w.hid = s.hid WHERE w.user =%s AND w.language=%s AND w.mode = 0 ORDER BY s.created_at",
+                                           (user_id, s.active_lang()))
+        else:
+            letter = str(cmd2) + '%'
+            words = mysql_connect.fetchall(
+                "SELECT word, definition FROM words WHERE user =%s AND language=%s AND mode = 0 AND word LIKE %s ORDER BY word",
+                (user_id, s.active_lang(), letter))
+
+    else:
+        words = mysql_connect.fetchall("SELECT word, definition FROM words WHERE user=%s AND language=%s AND mode = 0 ORDER BY word",
+                                       (user_id, s.active_lang()))
+
+    for w in words:
+        await bot.send_message(user_id, "<b>{}</b> : {}".format(w[0], w[1]),
+                               parse_mode=types.ParseMode.HTML, disable_notification=True)
+        time.sleep(.5)
+    await bot.send_message(user_id, "Total: {} words".format(len(words)))
+
+
 
 # ADDING TEXT========================================================
 @dp.message_handler(commands=['addtext'])
@@ -217,10 +255,6 @@ async def adding_word_to_list(message):
         return
     s.status = 'topn'
     n = message.text
-    # try:
-    #     n = int(n)
-    # except ValueError:
-    #     await types.Message(message).edit_text('Integers only, please')
     if not re.match("\d+:\d+", n):
         await bot.send_message(user_id, "Please use format: _start:end_. "
                                         "For example _0:50_ to get top 50 most frequent words")
@@ -232,8 +266,12 @@ async def adding_word_to_list(message):
                                         "For example _0:50_ to get top 50 most frequent words")
         return
     topn = word_lists.get_top_n(lang=s.active_lang(), start=start, end=end)
-    print(topn)
     list_name = str(s.active_lang()) + " top" + str(n)
+    logger.debug("{} is adding list {}, list length {}".format(user_id, list_name, len(topn)))
+    if topn is None:
+        logger.error("{} is adding list {}, which is None".format(user_id, list_name))
+        await bot.send_message(user_id, "Sorry cannot add your list. Try again")
+        return
     await bot.send_message(user_id, (
         "The list name is {}.The words are ready to be added to your dictionary. /addwords to do so.".format(
             list_name)))

@@ -39,10 +39,9 @@ def get_items_to_learn(user_language, upper_recall_limit = 0.5, n = 10):
     now = datetime.now()
     tmp = dict()
     if (user_language[1] is not None):
-        query = "SELECT hid, model, last_date FROM spaced_repetition WHERE user='{}' and language='{}'".format(user_language[0], user_language[1])
+         words =  db.fetchall("SELECT hid, model, last_date FROM spaced_repetition WHERE user=%s and language=%s", (user_language[0], user_language[1]))
     else:
-        query = "SELECT hid, model, last_date FROM spaced_repetition WHERE user='{}'".format(user_language[0])
-    words = db.fetchall(query)
+        words = db.fetchall("SELECT hid, model, last_date FROM spaced_repetition WHERE user=%s", (user_language[0],))
     for word in words:
         hid = word[0]
         model = tuple(json.loads(word[1]))

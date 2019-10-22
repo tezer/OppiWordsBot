@@ -70,14 +70,14 @@ def delete_by_hid(hid):
         return res
 
 
-def fetchall(query):
+def fetchall(query, args):
     try:
         conn = mysql.connector.connect(host=conf['host'],
                                        database=conf['database'],
                                        user=conf['user'],
                                        password=conf['password'])
         cursor = conn.cursor(buffered=True)
-        cursor.execute(query)
+        cursor.execute(query, args)
         rows = cursor.fetchall()
     except Error as e:
         print(e)
@@ -198,8 +198,8 @@ def check_exists(user_id):
         conn.close()
         if result is not None:
             res = True
-        if result[0] == 1:
-            unblock_user(user_id)
+            if result[0] == 1:
+                unblock_user(user_id)
         return res
 
 
@@ -385,7 +385,7 @@ def test(c):
     conf = c
 
 
-if __name__ == '__main__':
+# if __name__ == '__main__':
     # insert_word("test", "lang", "word", "definition", 0, "12345")
     # words=[
     #     ("test", "lang", "word0", "definition", 0, "012345"),
@@ -395,7 +395,7 @@ if __name__ == '__main__':
     #     ("test", "lang1", "word0", "definition", 0, "0123454")
     # ]
     # insert_words(words)
-    print(fetchall("SELECT word, language FROM words WHERE user='76673167' AND mode=0 AND language='finnish'"))
+    # print(fetchall("SELECT word, language FROM words WHERE user='76673167' AND mode=0 AND language='finnish'"))
     # rows = fetchall("SELECT word, definition, mode FROM words WHERE user='test' AND hid='12345'")
     # print(rows)
     # fetchmany("SELECT * FROM words", 5)
