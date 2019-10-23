@@ -173,7 +173,7 @@ async def start_message(message: types.Message):
             #TODO ask for list name and show words from the list
             pass
         elif cmd2[1] == 'date':
-            words = mysql_connect.fetchall("SELECT w.word, s.created_at FROM words w INNER JOIN spaced_repetition s ON w.hid = s.hid WHERE w.user =%s AND w.language=%s AND w.mode = 0 ORDER BY s.created_at",
+            words = mysql_connect.fetchall("SELECT w.word, w.definition, DATE_FORMAT(s.created_at, '%Y-%m-%d') AS date FROM words w INNER JOIN spaced_repetition s ON w.hid = s.hid WHERE w.user =%s AND w.language=%s AND w.mode = 0 ORDER BY date",
                                            (session.get_user_id(), session.active_lang()))
         elif cmd2[1] == 'last':
             LIMIT = ""
@@ -181,7 +181,7 @@ async def start_message(message: types.Message):
                 n = cmd2[2]
                 LIMIT = ' LIMIT ' + str(n)
 
-            words = mysql_connect.fetchall("SELECT w.word, s.created_at FROM words w INNER JOIN spaced_repetition s ON w.hid = s.hid WHERE w.user =%s AND w.language=%s AND w.mode = 0 ORDER BY s.created_at DESC" + LIMIT,
+            words = mysql_connect.fetchall("SELECT w.word, w.definition, DATE_FORMAT(s.created_at, '%Y-%m-%d') AS date FROM words w INNER JOIN spaced_repetition s ON w.hid = s.hid WHERE w.user =%s AND w.language=%s AND w.mode = 0 ORDER BY date DESC" + LIMIT,
                                            (session.get_user_id(), session.active_lang()))
         else:
             letter = str(cmd2[1]) + '%'
@@ -194,9 +194,12 @@ async def start_message(message: types.Message):
                                        (session.get_user_id(), session.active_lang()))
 
     for w in words:
-        await bot.send_message(session.get_user_id(), "<b>{}</b> : {}".format(w[0], w[1]),
+        date_str = ""
+        if len(w) == 3:
+            date_str = "\n" + str(w[2])
+        await bot.send_message(session.get_user_id(), "<b>{}</b> : {}".format(w[0], w[1]) + date_str,
                                parse_mode=types.ParseMode.HTML, disable_notification=True)
-        time.sleep(.5)
+        time.sleep(.1)
     await bot.send_message(session.get_user_id(), "Total: {} words".format(len(words)))
 
 
