@@ -650,7 +650,7 @@ async def callback_forgot_action(query: types.CallbackQuery, callback_data: dict
     hid = session.get_current_hid()
     if hid is None:
         logger.error(str(session.get_user_id()) + ' hid is None')
-        bot.send_message(session.get_user_id(), RESTART)
+        await bot.send_message(session.get_user_id(), RESTART)
         return
     sr.update_item(hid, float(callback_data['data']))
     session.delete_current_word()
