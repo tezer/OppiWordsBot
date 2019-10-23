@@ -23,9 +23,6 @@ def update_item(hid, result):
         lastTest = datetime.strptime(word[1], "%Y-%m-%dT%H:%M:%S.%f")
         time_passed = (datetime.now() - lastTest) / oneHour
         model = tuple(json.loads(word[0]))
-    else:
-        print("hid does not exist while update: " + str(hid))
-        return
     recall = ebisu.predictRecall(model, time_passed, exact=True)
     print(str(hid), str(recall))
     new_model = ebisu.updateRecall(model, result, time_passed)

@@ -534,7 +534,7 @@ async def do_learning(session):
 
 async def do_learning1(session):
     if not session.has_more_words_to_learn():
-        await do_reading_errors1(session.get_user_id())
+        await do_reading_errors1(session)
     else:
         session = await get_session(session.get_user_id())
         if session is None:
