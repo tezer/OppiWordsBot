@@ -10,7 +10,14 @@ conf = dict()
 
 messages = {"no_words_added": "Looks like you haven't added words to learn yet? Try /setlanguage and then /addwords to add a few words.",
             "has_words_to_learn": "You have {} words to learn. Use /learn command to start learning them.",
-            "all": "Hi!\nNow you can add words from *language frequency lists*! Some say, that only 500 most frequent words in a language may help you understand up to 80% of texts. Have a try with command /wordlist \n"
+            "all": "Hi!\nWe added a long awaited ability to show all added words. "
+                    "\n<b>/show</b> - shows all added words in alphabetical order"
+                    "\n<b>/show</b> <i>date</i> - shows all words ordered by adding date (from the oldest to the newest)"
+                    "\n<b>/show</b> <i>last N</i> - shows N words added most recently (replace <i>N</i> with an actual number, e.g. <i>5</i>"
+                    "\n<b>/show</b> <i>abc</i> - shows all words that start with <i>abc</i> (of course, replace <i>abc</i> with actual letters) "
+            
+            
+                   "\nIf you have ideas to share, questions or suggestions, you can join <b>OppiWordsBotGroup</b> (https://t.me/OppiWords) to discuss . \n"
 }
 
 
