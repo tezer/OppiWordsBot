@@ -19,10 +19,10 @@ def add_item(user_language, word_meaning, mode):
 def update_item(hid, result):
     time_passed = 0.1
     word = db.fetchone("SELECT model, last_date FROM spaced_repetition WHERE hid=%s", (hid,))
-    if word is not None and word[1] is not None:
+    if word[1] is not None:
         lastTest = datetime.strptime(word[1], "%Y-%m-%dT%H:%M:%S.%f")
         time_passed = (datetime.now() - lastTest) / oneHour
-        model = tuple(json.loads(word[0]))
+    model = tuple(json.loads(word[0]))
     recall = ebisu.predictRecall(model, time_passed, exact=True)
     print(str(hid), str(recall))
     new_model = ebisu.updateRecall(model, result, time_passed)
