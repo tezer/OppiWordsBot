@@ -486,6 +486,8 @@ async def do_reading_errors(query: types.CallbackQuery, callback_data: dict):
         n = len(session.read_error_storage)
         if n > 0:
             await query.answer("Yes! " + str(n) + " to go")
+        elif n == 0:
+            await query.answer("Yes! And that is all.")
     await do_reading_errors1(session)
 
 
@@ -504,8 +506,8 @@ async def do_reading_errors1(session):
         keyboard = to_vertical_keyboard(variants,
                                         data=[-3] * len(variants),
                                         action=a)  # mc = multiple choice
-        if word[3] < 2:
-            await bot.send_message(session.get_user_id(), bot_response[word[3]])
+        if word[2] < 2:
+            await bot.send_message(session.get_user_id(), bot_response[word[2]])
 
         try:
             await bot.send_message(session.get_user_id(), definition, reply_markup=keyboard)
