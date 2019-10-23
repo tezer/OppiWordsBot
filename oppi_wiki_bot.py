@@ -116,17 +116,15 @@ async def get_session(user_id):
         return sessions[user_id]
     else:
         await bot.send_message(user_id, "You should /start the bot before learning")
-        # s = session.Session(user_id)
-        # sessions[user_id] = s
         return None
 
 
-async def autorize(user_id, with_lang=False):
+async def authorize(user_id, with_lang=False):
     session = await get_session(user_id)
     if session is None:
         return session, False
 
-    if ((with_lang) and (session.active_lang() is None)):
+    if (with_lang) and (session.active_lang() is None):
         await bot.send_message(user_id, "You need to /setlanguage first")
         return session, False
     return session, True
@@ -159,7 +157,7 @@ async def help_message(message: types.Message):
 async def start_message(message: types.Message):
     logger.info(str(message.from_user.id) + ' ' + str(message.text))
 
-    session, isValid = autorize(message.from_user.id, with_lang=True)
+    session, isValid = await authorize(message.from_user.id, with_lang=True)
     if not isValid:
         return
 
@@ -203,7 +201,7 @@ async def start_message(message: types.Message):
     user_id = message.from_user.id
     logger.info(str(user_id) + ' /addtext')
 
-    session, isValid = autorize(user_id, with_lang=True)
+    session, isValid = await authorize(user_id, with_lang=True)
     if not isValid:
         return
     m = await bot.send_message(user_id, "Paste in a short text here.")
@@ -235,7 +233,7 @@ async def start_message(message: types.Message):
 async def start_message(message: types.Message):
     user_id = message.from_user.id
     logger.info(str(user_id) + ' /wordlist')
-    session, isValid = autorize(user_id, with_lang=True)
+    session, isValid = await authorize(user_id, with_lang=True)
     if not isValid:
         return
     tokens = ["Top frequency words", "Smart list (coming soon)"]
@@ -247,7 +245,7 @@ async def start_message(message: types.Message):
 
 @dp.callback_query_handler(posts_cb.filter(action=["topn"]))
 async def callback_add_meaning_action(query: types.CallbackQuery, callback_data: dict):
-    session, isValid = autorize(query.from_user.id, with_lang=True)
+    session, isValid = await authorize(query.from_user.id, with_lang=True)
     if not isValid:
         return
     lang = session.active_lang().title()
@@ -262,7 +260,7 @@ async def callback_add_meaning_action(query: types.CallbackQuery, callback_data:
 
 @dp.message_handler(lambda message: user_state(message.from_user.id, "topn"))
 async def adding_word_to_list(message):
-    session, isValid = autorize(message.from_user.id, with_lang=True)
+    session, isValid = await authorize(message.from_user.id, with_lang=True)
     if not isValid:
         return
     session.status = 'topn'
@@ -297,7 +295,7 @@ async def adding_word_to_list(message):
 
 
 async def adding_list_words(message, query, list_name):
-    session, isValid = autorize(query.from_user.id, with_lang=True)
+    session, isValid = await authorize(query.from_user.id, with_lang=True)
     if not isValid:
         return
     if session.list_hid_word is not None:
@@ -330,7 +328,7 @@ async def callback_add_meaning_action(query: types.CallbackQuery, callback_data:
 
 @dp.message_handler(commands=['delete'])
 async def delete_message(message: types.Message):
-    session, isValid = autorize(message.from_user.id)
+    session, isValid = await authorize(message.from_user.id)
     if not isValid:
         return
     logger.info(str(session.get_user_id()) + ' /delete command')
@@ -340,7 +338,7 @@ async def delete_message(message: types.Message):
 
 @dp.message_handler(lambda message: user_state(message.from_user.id, "delete"))
 async def deleting_word(message):
-    session, isValid = autorize(message.from_user.id, with_lang=True)
+    session, isValid = await authorize(message.from_user.id, with_lang=True)
     if not isValid:
         return
     logger.info(str(session.get_user_id())
@@ -362,7 +360,7 @@ async def deleting_word(message):
 @dp.callback_query_handler(posts_cb.filter(action=["delete"]))
 async def callback_add_meaning_action(query: types.CallbackQuery, callback_data: dict):
     await query.answer()
-    session, isValid = autorize(query.from_user.id)
+    session, isValid = await authorize(query.from_user.id)
     if not isValid:
         return
     logger.info(str(session.get_user_id())
@@ -380,7 +378,7 @@ async def callback_add_meaning_action(query: types.CallbackQuery, callback_data:
 @dp.callback_query_handler(posts_cb.filter(action=["keep"]))
 async def callback_add_meaning_action(query: types.CallbackQuery, callback_data: dict):
     await query.answer()
-    session, isValid = autorize(query.from_user.id)
+    session, isValid = await authorize(query.from_user.id)
     if not isValid:
         return
     logger.info(str(session.get_user_id()) + ' is keeping word ' + s.hid_cash)
@@ -394,7 +392,7 @@ async def callback_add_meaning_action(query: types.CallbackQuery, callback_data:
 # Checking prerequisites and collecting data
 @dp.message_handler(commands=['learn', 'test'])
 async def start_learning_message(message):
-    session, isValid = autorize(message.from_user.id, with_lang=True)
+    session, isValid = await authorize(message.from_user.id, with_lang=True)
     if not isValid:
         return
     if message.text == '/test':
@@ -417,7 +415,7 @@ async def learning(query: types.CallbackQuery, callback_data: dict):
     logger.debug(str(query.from_user.id)
                  + "start_learning  " + str(callback_data))
     n = int(callback_data['data'])
-    session, isValid = autorize(query.from_user.id, with_lang=True)
+    session, isValid = await authorize(query.from_user.id, with_lang=True)
     if not isValid:
         return
     if n > 0:  # 10, 20, 30, 40, 1000
@@ -467,7 +465,7 @@ async def start_learning(query: types.CallbackQuery, callback_data: dict, sessio
 # Reading errors loop, end of the learning loop if no more words to learn
 @dp.callback_query_handler(posts_cb.filter(action=["mc_correct", "reading_errors"]))
 async def do_reading_errors(query: types.CallbackQuery, callback_data: dict):
-    session, isValid = autorize(query.from_user.id)
+    session, isValid = await authorize(query.from_user.id)
     if not isValid:
         return
     if "mc_correct" == callback_data['action']:
@@ -516,8 +514,8 @@ async def do_reading_errors1(session):
 
 # The learning loop, reading task 1
 @dp.callback_query_handler(posts_cb.filter(action=["do_learning"]))
-async def do_learning(query: types.CallbackQuery, callback_data: dict):
-    session, isValid = autorize(query.from_user.id)
+async def do_learning(session):
+    session, isValid = await authorize(session.get_user_id())
     if not isValid:
         return
     await do_learning1(session)
@@ -550,7 +548,7 @@ async def do_learning1(session):
 @dp.message_handler(lambda message: user_state(message.from_user.id, 'type_in'))
 async def type_in_message(message):
     logger.info(str(message.from_user.id) + " Type_in message")
-    session, isValid = autorize(message.from_user.id)
+    session, isValid = await authorize(message.from_user.id)
     if not isValid:
         return
     word = session.get_current_word()
@@ -583,7 +581,7 @@ async def type_in_message(message):
 # reading task 1 answer "I remember"
 @dp.callback_query_handler(posts_cb.filter(action=["I_remember"]))
 async def i_remember(query: types.CallbackQuery, callback_data: dict):
-    session, isValid = autorize(query.from_user.id)
+    session, isValid = await authorize(query.from_user.id)
     if not isValid:
         return
     hid = session.get_current_hid()
@@ -610,7 +608,7 @@ async def i_remember(query: types.CallbackQuery, callback_data: dict):
 async def callback_show_action(query: types.CallbackQuery, callback_data: dict):
     logger.info('Got this callback data: %r', callback_data)
     await query.answer()
-    session, isValid = autorize(query.from_user.id)
+    session, isValid = await authorize(query.from_user.id)
     if not isValid:
         return
     session.add_error()
@@ -633,7 +631,7 @@ async def callback_show_action(query: types.CallbackQuery, callback_data: dict):
 async def callback_forgot_action(query: types.CallbackQuery, callback_data: dict):
     logger.debug(str(query.from_user.id)
                  + ' Got this callback data: %r', callback_data)
-    session, isValid = autorize(query.from_user.id)
+    session, isValid = await authorize(query.from_user.id)
     if not isValid:
         return
     hid = session.get_current_hid()
@@ -653,7 +651,7 @@ async def callback_forgot_action(query: types.CallbackQuery, callback_data: dict
 async def callback_mc_action(query: types.CallbackQuery, callback_data: dict):
     logger.debug('Got this callback data: %r', callback_data)
     await query.answer("Wrong.")
-    session, isValid = autorize(query.from_user.id)
+    session, isValid = await authorize(query.from_user.id)
     if not isValid:
         return
     answer = session.get_error_answer()
@@ -669,7 +667,7 @@ async def callback_mc_action(query: types.CallbackQuery, callback_data: dict):
 @dp.message_handler(commands=['setlanguage'])
 async def setlanguage_command_message(message: types.Message):
     logger.debug(message)
-    session, isValid = autorize(message.from_user.id)
+    session, isValid = await authorize(message.from_user.id)
     if not isValid:
         return
     session.status = 'setlanguage'
@@ -684,7 +682,7 @@ async def setlanguage_command_message(message: types.Message):
 
 @dp.callback_query_handler(posts_cb.filter(action=["setlanguage"]))
 async def callback_add_meaning_action(query: types.CallbackQuery, callback_data: dict):
-    session, isValid = autorize(query.from_user.id)
+    session, isValid = await authorize(query.from_user.id)
     if not isValid:
         return
     session.status = "setlanguage"
@@ -695,7 +693,7 @@ async def callback_add_meaning_action(query: types.CallbackQuery, callback_data:
 async def setlanguage_message(message):
     logger.debug("Received message")
     logger.debug(message)
-    session, isValid = autorize(message.from_user.id)
+    session, isValid = await authorize(message.from_user.id)
     if not isValid:
         return
     language_name = str(message.text)
@@ -732,7 +730,7 @@ async def setlanguage_message(message):
 async def addwords_message(message):
     logger.info(str(message.from_user.id) + " started adding new words")
     command = str(message.text)
-    session, isValid = autorize(message.from_user.id, with_lang=True)
+    session, isValid = await authorize(message.from_user.id, with_lang=True)
     if not isValid:
         return
     lists_to_add = mysql_connect.lists_to_add(
@@ -764,7 +762,7 @@ def user_state(user_id, state):
 
 @dp.callback_query_handler(posts_cb.filter(action=["skip_list"]))
 async def callback_add_meaning_action(query: types.CallbackQuery, callback_data: dict):
-    session, isValid = autorize(query.from_user.id)
+    session, isValid = await authorize(query.from_user.id)
     if not isValid:
         return
     session.status = "/addwords"
@@ -784,7 +782,7 @@ async def callback_add_meaning_action(query: types.CallbackQuery, callback_data:
 async def wiktionary_search(message):
     logger.debug(str(message.from_user.id) + " Adding word: " + message.text)
     logger.info(str(message.from_user.id) + " Sending request to Wiktionary")
-    session, isValid = autorize(message.from_user.id)
+    session, isValid = await authorize(message.from_user.id)
     if not isValid:
         return
     begin = time.time()
@@ -852,7 +850,7 @@ async def callback_add_meaning_action(query: types.CallbackQuery, callback_data:
     logger.info(str(query.from_user.id)
                 + ' Got this callback data: %r', callback_data)
 
-    session, isValid = autorize(query.from_user.id)
+    session, isValid = await authorize(query.from_user.id)
     if not isValid:
         return
 
@@ -884,7 +882,7 @@ async def callback_add_user_definition_action(query: types.CallbackQuery, callba
     logger.debug(
         'callback_add_user_definition_action Got this callback data: %r', callback_data)
     await query.answer()
-    session, isValid = autorize(query.from_user.id)
+    session, isValid = await authorize(query.from_user.id)
     if not isValid:
         return
     if callback_data.get('data') == "1":
@@ -901,7 +899,7 @@ async def callback_add_user_definition_action(query: types.CallbackQuery, callba
 
 @dp.message_handler(lambda message: user_state(message.from_user.id, "adding_user_definition"))
 async def adding_words(message):
-    session, isValid = autorize(message.from_user.id)
+    session, isValid = await authorize(message.from_user.id)
     if not isValid:
         return
     definition = message.text
@@ -922,7 +920,7 @@ async def adding_words(message):
 async def finish_adding_meanings_action(query: types.CallbackQuery, callback_data: dict):
     logger.info(str(
         query.from_user.id) + ' Finished adding definitions. Got this callback data: %r', callback_data)
-    session, isValid = autorize(query.from_user.id)
+    session, isValid = await authorize(query.from_user.id)
     if not isValid:
         return
     session.words_to_add = None
@@ -959,7 +957,7 @@ async def text_message(message):
     buttons.append("CANCEL")
     actions.append("finish_adding_meanings")
     data = ['0'] * len(buttons)
-    session, isValid = autorize(message.from_user.id)
+    session, isValid = await authorize(message.from_user.id)
     if not isValid:
         return
     session.words_to_add = (t,)
