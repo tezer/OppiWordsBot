@@ -170,7 +170,7 @@ async def start_message(message: types.Message):
             words = mysql_connect.fetchall("SELECT w.word, s.created_at FROM words w INNER JOIN spaced_repetition s ON w.hid = s.hid WHERE w.user =%s AND w.language=%s AND w.mode = 0 ORDER BY s.created_at DESC" + LIMIT,
                                            (user_id, s.active_lang()))
         else:
-            letter = str(cmd2) + '%'
+            letter = str(cmd2[1]) + '%'
             words = mysql_connect.fetchall(
                 "SELECT word, definition FROM words WHERE user =%s AND language=%s AND mode = 0 AND word LIKE %s ORDER BY word",
                 (user_id, s.active_lang(), letter))
