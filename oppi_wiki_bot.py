@@ -283,13 +283,13 @@ async def adding_word_to_list(message):
     topn = word_lists.get_top_n(
         lang=session.active_lang(), start=start, end=end)
     list_name = str(session.active_lang()) + " top" + str(n)
-    logger.debug("{} is adding list {}, list length {}".format(
-        session.get_user_id(), list_name, len(topn)))
     if topn is None:
         logger.error("{} is adding list {}, which is None".format(
             session.get_user_id(), list_name))
         await bot.send_message(session.get_user_id(), "Sorry cannot add your list. Try again")
         return
+    logger.debug("{} is adding list {}, list length {}".format(
+        session.get_user_id(), list_name, len(topn)))
     await bot.send_message(session.get_user_id(), (
         "The list name is {}.The words are ready to be added to your dictionary. /addwords to do so.".format(
             list_name)))
@@ -300,7 +300,10 @@ async def adding_word_to_list(message):
 
 
 async def adding_list_words(message, query, list_name):
-    session, isValid = await authorize(query.from_user.id, with_lang=True)
+    if query is None:
+        session, isValid = await authorize(message.from_user.id, with_lang=True)
+    elif message is None:
+        session, isValid = await authorize(query.from_user.id, with_lang=True)
     if not isValid:
         return
     if session.list_hid_word is not None:
