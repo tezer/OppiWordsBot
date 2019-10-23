@@ -55,5 +55,5 @@ mysql> describe words;
 
 3. Store your credentials in settings.py
 
-4. run it with in dev configuration: python3.7 dev 
-or in prod configuration python3.7: prod
+4. run it with in dev configuration: _python3.7 dev_ 
+or in prod configuration _python3.7 prod_
