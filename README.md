@@ -1,9 +1,9 @@
 # OppiWordsBot
 A Telegram bot for learning languages
-To run it you need Python 3.7
 
-To run the bot you need:
-1. geister your own bot ad BotFather
+To run it you need Python 3.7 and:
+
+1. register your own bot ad BotFather
 2. set a MySQL database as follows:
 mysql> describe spaced_repetition;
 
@@ -54,5 +54,6 @@ mysql> describe words;
 | listname   | varchar(255) | YES  |     | NULL    |       |
 
 3. Store your credentials in settings.py
-4 run it with in dev configuration: python3.7 dev 
-or in prod configuration python3.7: prod
+
+4. run it with in dev configuration: _python3.7 dev_ 
+or in prod configuration _python3.7 prod_
