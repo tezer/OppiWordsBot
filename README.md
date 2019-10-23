@@ -54,5 +54,6 @@ mysql> describe words;
 | listname   | varchar(255) | YES  |     | NULL    |       |
 
 3. Store your credentials in settings.py
-4 run it with in dev configuration: python3.7 dev 
+
+4. run it with in dev configuration: python3.7 dev 
 or in prod configuration python3.7: prod
