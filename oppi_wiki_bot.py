@@ -37,13 +37,14 @@ logger.setLevel(logging.DEBUG)
 #
 # help - get help
 # start - start the bot and get help
-# show - show all added words in alphabetical order
-# addwords - add words to learn
 # setlanguage - specify a language you want to learn. You can switch between languages or add new ones any time
+# addwords - add words to learn
+# wordlist - add a list of words (you will have to add definitions after adding the list)
 # learn - learn the words you added
 # test - test the words you learned
+# show - show all added words in alphabetical order
 # delete - delete a word form your dictionary
-# wordlist - add a list of words (you will have to add definitions after adding the list)
+#
 
 
 bot = Bot(token=bot_token[sys.argv[1:][0]],
@@ -75,6 +76,7 @@ sessions = load_data("sessions.pkl")  # user_id: session
 help_text = 'Welcome!' \
             '\nFirst, select language to learn with /setlanguage.' \
             '\nThen /addwords to get exercises. ' \
+            '\nOr you can add many words with /wordlist command. ' \
             '\nThen type /learn to start training.' \
             '\nIf you already learned some words, type /test' \
             '\nYou can delete words with a /delete command' \
@@ -687,7 +689,7 @@ async def setlanguage_command_message(message: types.Message):
     else:
 
         forced_reply = types.ForceReply()
-        await message.reply("Set language to learn (e.g. English, Finnish or other.\n"
+        await message.reply("Type the name of the language to learn (e.g. English, Finnish or other.\n"
                             "You can always change it with /setlanguage", reply_markup=forced_reply)
 
 
@@ -850,7 +852,7 @@ async def prepare_definition_selection(session, query):
     k = to_vertical_keyboard(
         definitions, action=actions, data=[0] * len(actions))
     if query is None:
-        await bot.send_message(session.get_user_id(), "Select a meaning to learn", reply_markup=k, parse_mode=types.ParseMode.MARKDOWN)
+        await bot.send_message(session.get_user_id(), "Tap a button with a meaning to learn", reply_markup=k, parse_mode=types.ParseMode.MARKDOWN)
     else:
         await bot.edit_message_reply_markup(session.get_user_id(), query.message.message_id, reply_markup=k)
 
