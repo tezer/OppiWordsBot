@@ -73,19 +73,21 @@ word_etimology = dict()
 sessions = load_data("sessions.pkl")  # user_id: session
 # tmp_voc = dict() #(user, language): (word, [definitions])
 
-help_text = 'Welcome!' \
-            '\nFirst, select language to learn with /setlanguage.' \
-            '\nThen /addwords to get exercises. ' \
-            '\nOr you can add many words with /wordlist command. ' \
-            '\nThen type /learn to start training.' \
-            '\nIf you already learned some words, type /test' \
-            '\nYou can delete words with a /delete command' \
-            '\n/show - show all added words in alphabetical order' \
-            '\n/show _date_ - shows all added words starting from oldest to newly added' \
-            '\n/show _abc_ - shows all words that start with \'abc\'' \
-            '\n/show _last N_ - shows last N added words (replace N with an actual number)' \
-            '\nType /help if you want to see this text again.' \
-            '\nYou can always access the commands from the list which is in *the down right corner of the bot window*.'
+help_text = 'Welcome!\n' \
+            '1. Select language to learn with /setlanguage.\n' \
+            '2. Then /addwords to get exercises.\n' \
+            '  Or you can add many words with /wordlist command.\n' \
+            '3. Then type /learn to start training.\n' \
+            '  - If you already learned some words, type /test\n' \
+            '  - You can delete words with a /delete command\n\n' \
+            'To see the words that you already added:\n' \
+            ' /show - shows all added words in alphabetical order\n' \
+            ' /show _date_ - shows all added words starting from oldest to newly added\n' \
+            ' /show _abc_ - shows all words that start with _abc_ \n' \
+            ' /show _last N_ - shows last N added words (replace _N_ with an actual number)\n\n' \
+            'To get help:\n' \
+            '- Type /help if you want to see this text again\n' \
+            '- Start typing "/" any time to access the commands from the list'
 
 
 # Test independent loop
