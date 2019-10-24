@@ -394,7 +394,7 @@ async def callback_add_meaning_action(query: types.CallbackQuery, callback_data:
     session, isValid = await authorize(query.from_user.id)
     if not isValid:
         return
-    logger.info(str(session.get_user_id()) + ' is keeping word ' + s.hid_cash)
+    logger.info(str(session.get_user_id()) + ' is keeping word ' + session.hid_cash)
     session.hid_cash = ""
     await bot.send_message(session.get_user_id(), "OK, let's keep it")
 
