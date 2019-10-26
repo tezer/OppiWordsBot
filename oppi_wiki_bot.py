@@ -854,7 +854,7 @@ async def prepare_definition_selection(session, query):
 
     # k = to_vertical_keyboard(definitions, action=actions, data=list(range(0, len(actions), 1)))
     k = to_vertical_keyboard(
-        definitions, action=actions, data=[0] * len(actions))
+        definitions, action=actions, data=list(range(0, len(actions), 1)))
     if query is None:
         await bot.send_message(session.get_user_id(), "Tap a button with a meaning to learn", reply_markup=k, parse_mode=types.ParseMode.MARKDOWN)
     else:
