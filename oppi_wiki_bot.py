@@ -838,23 +838,27 @@ async def prepare_definition_selection(session, query):
     definitions = truncate(definitions,
                            30)  # FIXME ideally, it should be called once, not every time the keyboard is built
     actions = ['meaning'] * len(definitions)
-    actions.append('add_user_definition')
-
     button_titiles = definitions
+    data=list(range(0, len(actions), 1))
+
+    actions.append('add_user_definition')
     button_titiles.append("ADD YOUR DEFINITION")
+    data.append(0)
 
     if session.list_hid_word is None:
         button_titiles.append("CLOSE")
         actions.append('finish_adding_meanings')
+        data.append(-1)
     else:
         button_titiles.append("NEXT")
         actions.append('next_word_from_list')
+        data.append(-1)
         button_titiles.append("FINISH")
         actions.append('finish_adding_meanings')
+        data.append(-1)
 
     # k = to_vertical_keyboard(definitions, action=actions, data=list(range(0, len(actions), 1)))
-    k = to_vertical_keyboard(
-        definitions, action=actions, data=list(range(0, len(actions), 1)))
+    k = to_vertical_keyboard(definitions, action=actions, data=data)
     if query is None:
         await bot.send_message(session.get_user_id(), "Tap a button with a meaning to learn", reply_markup=k, parse_mode=types.ParseMode.MARKDOWN)
     else:
