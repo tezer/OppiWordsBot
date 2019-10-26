@@ -320,10 +320,14 @@ async def adding_list_words(message, query, list_name):
     session.status = '/addwords'
     word_list = mysql_connect.get_list(
         session.get_user_id(), session.active_lang(), list_name)
-    if len(word_list) == 0:
+    if len(word_list) == 0 and list_name is not None:
         await bot.send_message(session.get_user_id(), "You added all words from the list *{}*\n"
                                "Now you can /learn words".format(list_name.title()))
         return
+    if list_name is None:
+        logger.error("{}, list_name is None".format(session.get_user_id()))
+        return
+
     word = word_list[0][2]
     m = await bot.send_message(session.get_user_id(), "{} words to add from list _{}_\n*{}*".format(len(word_list), list_name.title(), word))
     session.list_hid_word = word_list[0]
