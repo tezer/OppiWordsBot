@@ -1,8 +1,12 @@
+import json
 import re
 from wiktionaryparser import WiktionaryParser
 from aiogram import types
 from aiogram.utils.callback_data import CallbackData
 import logging
+
+from yandex_dictionary import YandexDictionary
+
 logger = logging.getLogger('utils')
 # hdlr = logging.StreamHandler()
 hdlr = logging.FileHandler('bot.log')
@@ -11,9 +15,35 @@ hdlr.setFormatter(formatter)
 logger.addHandler(hdlr)
 logger.setLevel(logging.DEBUG)
 
+import settings
+
+key = settings.ya_key
+ya_dict = YandexDictionary(key)
+
+CODES = {'czech': 'cs',
+         'danish': 'da',
+         'dutch': 'nl',
+         'english': 'en',
+         'finnish': 'fi',
+         'french': 'fr',
+         'german': 'de',
+         'greek': 'el',
+         'hungarian': 'hu',
+         'italian': 'it',
+         'latvian': 'lv',
+         'norwegian': 'no',
+         'polish': 'pl',
+         'portuguese': 'pt',
+         'russian': 'ru',
+         'spanish': 'es',
+         'swedish': 'sv',
+         'turkish': 'tr',
+         'ukrainian': 'uk',
+         }
 
 parser = WiktionaryParser()
 posts_cb = CallbackData('post', 'data', 'action')
+
 
 def truncate(definitions, limit):
     result = list()
@@ -34,9 +64,36 @@ def truncate(definitions, limit):
     return result
 
 
+def to_list(response):
+    res = list()
+    definitions = response['def']
+    for d in definitions:
+        translations = d['tr']
+        for t in translations:
+            ts = ''
+            if 'ts' in t.keys():
+                ts = ' [' + str(t['ts']) + '] '
+            s = str(t['text']) + ' (' + t['pos'] + ') ' + ts
+            res.append(s)
+    return res
 
-def get_definitions(language, word):
+
+def get_definitions(language, user_lang, word):
     result = list()
+    if user_lang is None:
+        user_lang = 'en'
+    if user_lang in CODES.values():
+        try:
+            response = ya_dict.lookup(word, CODES[language], user_lang)
+            result = to_list(json.loads(response))
+
+        except Exception as e:
+            logger.warning("Yandex dictionary exception: " + str(e))
+            return result
+
+        if len(result) > 0:
+            return result
+
     try:
         w = parser.fetch(word.lower(), language=language)
     except Exception as e:
@@ -63,8 +120,6 @@ def get_hint(text):
     return "; ".join(l)
 
 
-
-
 def to_one_row_keyboard(tokens, data=None, action=None):
     keyboard = types.InlineKeyboardMarkup(action=action)
     text_and_data = list()
@@ -78,6 +133,7 @@ def to_one_row_keyboard(tokens, data=None, action=None):
     keyboard.row(*row_btns)
     return keyboard
 
+
 def to_vertical_keyboard(tokens, data=[], action=[]):
     keyboard = types.InlineKeyboardMarkup(action=action)
     for i in range(len(tokens)):
@@ -88,3 +144,5 @@ def to_vertical_keyboard(tokens, data=[], action=[]):
     return keyboard
 
 
+if __name__ == "__main__":
+    ya_dict = YandexDictionary(key=key)

@@ -74,7 +74,8 @@ sessions = load_data("sessions.pkl")  # user_id: session
 # tmp_voc = dict() #(user, language): (word, [definitions])
 
 help_text = 'Welcome!\n' \
-            '1. Select language to learn with /setlanguage.\n' \
+            '1. Select language to learn with /setlanguage.\n'\
+            '  The bot will try to show word definitions in your user language set in Telegram if possible.\n'\
             '2. Then /addwords to get exercises.\n' \
             '  Or you can add many words with /wordlist command.\n' \
             '3. Then type /learn to start training.\n' \
@@ -147,6 +148,8 @@ async def start_message(message: types.Message):
     logger.info(str(message.from_user.id) + ' /start command')
     s = Session(message.from_user.id, message.from_user.first_name, message.from_user.last_name,
                 message.from_user.language_code)
+    if message.from_user.language_code is None:
+        await bot.send_message(message.from_user.id, "Your user language is not set. It means that all word definitions will be in English. Set your Telegram user language and /start the bot again.")
     mysql_connect.update_user(message.from_user.id, message.from_user.first_name, message.from_user.last_name,
                               message.from_user.language_code)
     sessions[message.from_user.id] = s
@@ -802,13 +805,13 @@ async def callback_add_meaning_action(query: types.CallbackQuery, callback_data:
 @dp.message_handler(lambda message: user_state(message.from_user.id, "/addwords"))
 async def wiktionary_search(message):
     logger.debug(str(message.from_user.id) + " Adding word: " + message.text)
-    logger.info(str(message.from_user.id) + " Sending request to Wiktionary")
+    logger.info(str(message.from_user.id) + " Sending request to dictionaries")
     session, isValid = await authorize(message.from_user.id)
     if not isValid:
         return
     begin = time.time()
-    definitions = get_definitions(session.active_lang(), message.text)
-    logger.info(str(session.get_user_id()) + " Received response from Wiktionary "
+    definitions = get_definitions(session.active_lang(), session.language_code, message.text)
+    logger.info(str(session.get_user_id()) + " Received response from dictionaries "
                 + str(time.time() - begin))
     logger.debug(str(session.get_user_id())
                  + " Received definitions: " + str(definitions))
