@@ -75,7 +75,8 @@ def fetchall(query, args):
         conn = mysql.connector.connect(host=conf['host'],
                                        database=conf['database'],
                                        user=conf['user'],
-                                       password=conf['password'])
+                                       password=conf['password'],
+                                       port=conf['port'])
         cursor = conn.cursor(buffered=True)
         cursor.execute(query, args)
         rows = cursor.fetchall()

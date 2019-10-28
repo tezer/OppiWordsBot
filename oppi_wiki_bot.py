@@ -74,7 +74,8 @@ sessions = load_data("sessions.pkl")  # user_id: session
 # tmp_voc = dict() #(user, language): (word, [definitions])
 
 help_text = 'Welcome!\n' \
-            '1. Select language to learn with /setlanguage.\n' \
+            '1. Select language to learn with /setlanguage.\n'\
+            '  The bot will try to show word definitions in your user language set in Telegram if possible.\n'\
             '2. Then /addwords to get exercises.\n' \
             '  Or you can add many words with /wordlist command.\n' \
             '3. Then type /learn to start training.\n' \
@@ -147,6 +148,8 @@ async def start_message(message: types.Message):
     logger.info(str(message.from_user.id) + ' /start command')
     s = Session(message.from_user.id, message.from_user.first_name, message.from_user.last_name,
                 message.from_user.language_code)
+    if message.from_user.language_code is None:
+        await bot.send_message(message.from_user.id, "Your user language is not set. It means that all word definitions will be in English. Set your Telegram user language and /start the bot again.")
     mysql_connect.update_user(message.from_user.id, message.from_user.first_name, message.from_user.last_name,
                               message.from_user.language_code)
     sessions[message.from_user.id] = s
@@ -160,6 +163,36 @@ async def help_message(message: types.Message):
     await message.reply(help_text)
     await bot.send_photo(message.from_user.id, types.InputFile('menu1.1.png'))
     await bot.send_message(message.from_user.id, "*If you have questions, you can ask them at https://t.me/OppiWords*")
+
+
+@dp.message_handler(commands=['settings'])
+async def help_message(message: types.Message):
+    logger.info(str(message.from_user.id) + ' /settings command')
+    session, isValid = await authorize(message.from_user.id, with_lang=True)
+    if not isValid:
+        return
+    await bot.send_message(message.from_user.id, "A few settings to make.")
+    await bot.send_message(message.from_user.id, "*If you have questions, you can ask them at https://t.me/OppiWords*")
+    m = await bot.send_message(message.from_user.id, "Please, specify the language in which you want to get definitions (e.g. Russian or German or any other language name) "
+                                                 "of words and phrases", reply_markup=types.ForceReply())
+    session.status = m.message_id + 1
+
+
+@dp.message_handler(lambda message: user_state(message.from_user.id, message.message_id))
+async def set_user_language_message(message: types.Message):
+    user_id = message.from_user.id
+    logger.info(str(user_id) + ' /settings received')
+    session = await get_session(user_id)
+    if session is None:
+        return
+    if message.text.lower() not in LANGS:
+        await message.reply("Sorry, can't recognize the language name. Make sure it's correct and is *in English* "
+                            "(e.g. instead of _Deutsch_ use _German_).")
+        return
+    session.status = None
+    session.language_code = message.text.lower()
+    await bot.send_message(user_id, "The language is set to {}".format(str(session.language_code).title()))
+    session.language_code = message.text.lower()
 
 # SHOW WORDS ========================================================
 @dp.message_handler(commands=['show'])
@@ -217,7 +250,6 @@ async def start_message(message: types.Message):
     if not isValid:
         return
     m = await bot.send_message(user_id, "Paste in a short text here.")
-    print(m.message_id)
     session.status = m.message_id + 1
 
 
@@ -802,13 +834,13 @@ async def callback_add_meaning_action(query: types.CallbackQuery, callback_data:
 @dp.message_handler(lambda message: user_state(message.from_user.id, "/addwords"))
 async def wiktionary_search(message):
     logger.debug(str(message.from_user.id) + " Adding word: " + message.text)
-    logger.info(str(message.from_user.id) + " Sending request to Wiktionary")
+    logger.info(str(message.from_user.id) + " Sending request to dictionaries")
     session, isValid = await authorize(message.from_user.id)
     if not isValid:
         return
     begin = time.time()
-    definitions = get_definitions(session.active_lang(), message.text)
-    logger.info(str(session.get_user_id()) + " Received response from Wiktionary "
+    definitions = get_definitions(session.active_lang(), session.language_code, message.text)
+    logger.info(str(session.get_user_id()) + " Received response from dictionaries "
                 + str(time.time() - begin))
     logger.debug(str(session.get_user_id())
                  + " Received definitions: " + str(definitions))
