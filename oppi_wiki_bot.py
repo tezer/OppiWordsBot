@@ -194,6 +194,8 @@ async def set_user_language_message(message: types.Message):
     session.language_code = message.text.lower()
     await bot.send_message(user_id, "The language is set to {}".format(str(session.language_code).title()))
     session.language_code = message.text.lower()
+    with open('sessions.pkl', 'wb') as f:
+        pickle.dump(sessions, f)
 
 # SHOW WORDS ========================================================
 @dp.message_handler(commands=['show'])
