@@ -6,6 +6,12 @@ from aiogram.utils.callback_data import CallbackData
 import logging
 
 from yandex_dictionary import YandexDictionary
+import settings
+import os
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"]= settings.google_env
+from google.cloud import translate_v2
+translate_client = translate_v2.Client()
+
 
 logger = logging.getLogger('utils')
 # hdlr = logging.StreamHandler()
@@ -15,7 +21,7 @@ hdlr.setFormatter(formatter)
 logger.addHandler(hdlr)
 logger.setLevel(logging.DEBUG)
 
-import settings
+
 
 key = settings.ya_key
 ya_dict = YandexDictionary(key)
@@ -78,13 +84,22 @@ def to_list(response):
     return res
 
 
+def process_wiktionary(w):
+    result = list()
+    for definition in w[0]['definitions']:
+        pos = definition['partOfSpeech']
+        for d in definition['text'][1:]:
+            result.append(d + " (" + pos + ")")
+    return result
+
+
 def get_definitions(language, user_lang, word):
     result = list()
     if user_lang is None:
         user_lang = 'en'
-    if user_lang in CODES.values():
+    if user_lang in CODES.keys():
         try:
-            response = ya_dict.lookup(word, CODES[language], user_lang)
+            response = ya_dict.lookup(word, CODES[language], CODES[user_lang])
             result = to_list(json.loads(response))
 
         except Exception as e:
@@ -99,13 +114,18 @@ def get_definitions(language, user_lang, word):
     except Exception as e:
         logger.warning("Wiktionary exception: " + str(e))
         return result
-    if len(w) == 0:
-        logger.debug("No data: " + str(w) + " : " + word)
-        return result
-    for definition in w[0]['definitions']:
-        pos = definition['partOfSpeech']
-        for d in definition['text'][1:]:
-            result.append(d + " (" + pos + ")")
+    if len(w) > 0:
+        result = process_wiktionary(w)
+        if len(result) > 0:
+            return result
+        elif len(word) <= 50 :
+            try:
+                tr = translate_client.translate(
+                    word,
+                    target_language=CODES[user_lang])
+                result.append(tr['translatedText'])
+            except Exception as e:
+                print(e)
     return result
 
 

@@ -164,6 +164,36 @@ async def help_message(message: types.Message):
     await bot.send_photo(message.from_user.id, types.InputFile('menu1.1.png'))
     await bot.send_message(message.from_user.id, "*If you have questions, you can ask them at https://t.me/OppiWords*")
 
+
+@dp.message_handler(commands=['settings'])
+async def help_message(message: types.Message):
+    logger.info(str(message.from_user.id) + ' /settings command')
+    session, isValid = await authorize(message.from_user.id, with_lang=True)
+    if not isValid:
+        return
+    await bot.send_message(message.from_user.id, "A few settings to make.")
+    await bot.send_message(message.from_user.id, "*If you have questions, you can ask them at https://t.me/OppiWords*")
+    m = await bot.send_message(message.from_user.id, "Please, specify the language in which you want to get definitions (e.g. Russian or German or any other language name) "
+                                                 "of words and phrases", reply_markup=types.ForceReply())
+    session.status = m.message_id + 1
+
+
+@dp.message_handler(lambda message: user_state(message.from_user.id, message.message_id))
+async def set_user_language_message(message: types.Message):
+    user_id = message.from_user.id
+    logger.info(str(user_id) + ' /settings received')
+    session = await get_session(user_id)
+    if session is None:
+        return
+    if message.text.lower() not in LANGS:
+        await message.reply("Sorry, can't recognize the language name. Make sure it's correct and is *in English* "
+                            "(e.g. instead of _Deutsch_ use _German_).")
+        return
+    session.status = None
+    session.language_code = message.text.lower()
+    await bot.send_message(user_id, "The language is set to {}".format(str(session.language_code).title()))
+    session.language_code = message.text.lower()
+
 # SHOW WORDS ========================================================
 @dp.message_handler(commands=['show'])
 async def start_message(message: types.Message):
@@ -220,7 +250,6 @@ async def start_message(message: types.Message):
     if not isValid:
         return
     m = await bot.send_message(user_id, "Paste in a short text here.")
-    print(m.message_id)
     session.status = m.message_id + 1
 
 
