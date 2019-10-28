@@ -75,7 +75,8 @@ sessions = load_data("sessions.pkl")  # user_id: session
 
 help_text = 'Welcome!\n' \
             '1. Select language to learn with /setlanguage.\n'\
-            '  The bot will try to show word definitions in your user language set in Telegram if possible.\n'\
+            '  The bot will try to show word definitions in your user language set in Telegram if possible.\n' \
+            '  You can change your user language with /settings command\n'\
             '2. Then /addwords to get exercises.\n' \
             '  Or you can add many words with /wordlist command.\n' \
             '3. Then type /learn to start training.\n' \
@@ -105,7 +106,7 @@ async def send_notifications_to_users(message: types.Message):
     await bot.send_message(admin, "sending {} notifications to users".format(len(notifications)))
     blocked = 0
     for user_id, notification_text in notifications.items():
-        time.sleep(1)
+        time.sleep(.5)
         # user_id = admin #USE FOR TESTING
         try:
             logger.debug("Sending notification to " + str(user_id))
