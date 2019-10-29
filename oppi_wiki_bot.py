@@ -993,6 +993,9 @@ async def adding_words(message):
     if not isValid:
         return
     definition = message.text
+    if session.words_to_add is None:
+        await bot.send_message(message.from_user.id, "Sorry, cannot add the definition.\nPlease, use /addwords command first and *then* type words that you want to add in a new line.")
+        return
     word = session.words_to_add[0]
     session.words_to_add = None
     logger.debug(word + ": " + definition)
