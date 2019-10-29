@@ -6,6 +6,7 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.utils.callback_data import CallbackData
 
 import time
+from datetime import datetime
 import random
 import pickle
 from pathlib import Path
@@ -23,6 +24,7 @@ import word_lists
 import logging
 import mysql_connect
 import user_stat
+import smart_list
 
 RESTART = '"Sorry, something went wrong. Try restarting with /start, your progress is saved"'
 LANGS = list()
@@ -283,7 +285,7 @@ async def start_message(message: types.Message):
     session, isValid = await authorize(user_id, with_lang=True)
     if not isValid:
         return
-    tokens = ["Top frequency words", "Smart list (coming soon)"]
+    tokens = ["Top frequency words", "Smart list (ENGLISH ONLY)"]
     data = [0, 0]
     actions = ['topn', 'smart']
     k = to_vertical_keyboard(tokens=tokens, data=data, action=actions)
@@ -299,10 +301,38 @@ async def callback_add_meaning_action(query: types.CallbackQuery, callback_data:
     session.status = 'topn'
     m = query.message
     await m.edit_reply_markup()
-    # await m.edit_text("How many words would you like? (only digits: 10 or 50 or any other value)"
     await m.edit_text("Type _0:100_ if you want to add top 100 most frequent words for {}"
                       "\nor _50:100_ if you want to skip top 50 words. You can specify any range in the format _start:end_"
                       "\nThe words don't have definitions. You will add them afterwards. ".format(lang))
+
+
+@dp.callback_query_handler(posts_cb.filter(action=["smart"]))
+async def callback_add_meaning_action(query: types.CallbackQuery, callback_data: dict):
+    session, isValid = await authorize(query.from_user.id, with_lang=True)
+    if not isValid:
+        return
+    lang = session.active_lang().title()
+    m = query.message
+    if lang != 'English':
+
+        await m.edit_reply_markup()
+        await m.edit_text("Sorry, the Smart list works with English only. You can get in touch with the bot developers "
+                          "at *OppiWordsBotGroup* (https://t.me/OppiWords)")
+        return
+    session.status = 'topn'
+    await m.edit_reply_markup()
+    await m.edit_text("The bot will offer you words which are semantically related to the last 5 words you recently learned in {}.".format(lang))
+    words = smart_list.get_list(query.from_user.id)
+    list_name = "SmartList " + str(datetime.today().strftime('%Y-%m-%d'))
+    await bot.send_message(session.get_user_id(), (
+        "The list name is _{}_. {} words are ready to be added to your dictionary. /addwords to do so.".
+            format(list_name, len(words))))
+    mysql_connect.add_list(user=str(
+        session.get_user_id()), word_list=words, lang=session.active_lang(), list_name=list_name)
+    session.status = None
+    await adding_list_words(None, query, list_name)
+
+
 
 
 @dp.message_handler(lambda message: user_state(message.from_user.id, "topn"))
