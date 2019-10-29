@@ -323,14 +323,18 @@ async def callback_add_meaning_action(query: types.CallbackQuery, callback_data:
     await m.edit_reply_markup()
     await m.edit_text("The bot will offer you words which are semantically related to the last 5 words you recently learned in {}.".format(lang))
     words = smart_list.get_list(query.from_user.id)
-    list_name = "SmartList " + str(datetime.today().strftime('%Y-%m-%d'))
-    await bot.send_message(session.get_user_id(), (
-        "The list name is _{}_. {} words are ready to be added to your dictionary. /addwords to do so.".
-            format(list_name, len(words))))
-    mysql_connect.add_list(user=str(
-        session.get_user_id()), word_list=words, lang=session.active_lang(), list_name=list_name)
-    session.status = None
-    await adding_list_words(None, query, list_name)
+    if len(words) > 0:
+        list_name = "SmartList " + str(datetime.today().strftime('%Y-%m-%d'))
+        await bot.send_message(session.get_user_id(),"The list name is _{}_. {} words are ready to be added to your dictionary. /addwords to do so.".
+                format(list_name, len(words)))
+        mysql_connect.add_list(user=str(
+            session.get_user_id()), word_list=words, lang=session.active_lang(), list_name=list_name)
+        session.status = None
+        await adding_list_words(None, query, list_name)
+    else:
+        logger.warning(str(session.get_user_id() + " bot didn't find words to add"))
+        await bot.send_message(session.get_user_id(), "Sorry, the bot failed to suggest words for the list. I'll double check if it really smart enough)")
+
 
 
 
