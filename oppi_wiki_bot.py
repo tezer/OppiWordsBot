@@ -327,8 +327,10 @@ async def callback_add_meaning_action(query: types.CallbackQuery, callback_data:
         list_name = "SmartList " + str(datetime.today().strftime('%Y-%m-%d'))
         await bot.send_message(session.get_user_id(),"The list name is _{}_. {} words are ready to be added to your dictionary. /addwords to do so.".
                 format(list_name, len(words)))
-        mysql_connect.add_list(user=str(
-            session.get_user_id()), word_list=words, lang=session.active_lang(), list_name=list_name)
+        mysql_connect.add_list(user=str(session.get_user_id()),
+                               word_list=words,
+                               lang=session.active_lang(),
+                               list_name=list_name)
         session.status = None
         await adding_list_words(None, query, list_name)
     else:
@@ -381,6 +383,7 @@ async def adding_list_words(message, query, list_name):
     elif message is None:
         session, isValid = await authorize(query.from_user.id, with_lang=True)
     if not isValid:
+        logger.warning("User is not authorized")
         return
     if session.list_hid_word is not None:
         hid = session.list_hid_word[1]
