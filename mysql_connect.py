@@ -1,6 +1,15 @@
 import mysql.connector
 from mysql.connector import Error
 import hashlib
+import logging
+logger = logging.getLogger('mysql_connect')
+# hdlr = logging.StreamHandler()
+hdlr = logging.FileHandler('mysql.log')
+formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+hdlr.setFormatter(formatter)
+logger.addHandler(hdlr)
+logger.setLevel(logging.DEBUG)
+
 conf = dict()
 
 
@@ -16,7 +25,7 @@ def fetchone(query, args):
         cursor.execute(query, args)
         row = cursor.fetchone()
     except Error as e:
-        print(e)
+        print("fetchone", e)
 
     finally:
         cursor.close()
@@ -63,7 +72,7 @@ def delete_by_hid(hid):
         cursor.execute(query, args)
         conn.commit()
     except Error as e:
-        print(e)
+        print('delete_by_hid', e)
         res = False
     finally:
         cursor.close()
@@ -82,7 +91,7 @@ def fetchall(query, args):
         cursor.execute(query, args)
         rows = cursor.fetchall()
     except Error as e:
-        print(e)
+        print('fetchall', e)
 
     finally:
         cursor.close()
@@ -111,7 +120,7 @@ def fetchmany(query, n):
             print(row)
 
     except Error as e:
-        print(e)
+        print('fetchmany', e)
 
     finally:
         cursor.close()
@@ -133,8 +142,8 @@ def insert_word(user, language, word, definition, mode, hid):
 
         conn.commit()
     except Error as error:
-        print(error)
-
+        print('insert_word', error)
+        logger.error("{} received error message {}".format(user, error))
     finally:
         cursor.close()
         conn.close()
@@ -143,7 +152,7 @@ def insert_word(user, language, word, definition, mode, hid):
 def insert_words(words):
     query = "INSERT INTO words(user, language, word, definition, mode, hid) " \
             "VALUES(%s,%s,%s,%s,%s,%s)"
-
+    user = words[0][0]
     try:
         conn = mysql.connector.connect(host=conf['host'],
                                        database=conf['database'],
@@ -153,8 +162,8 @@ def insert_words(words):
         cursor.executemany(query, words)
         conn.commit()
     except Error as error:
-        print(error)
-
+        print('insert_words', error)
+        logger.error("{} received error message {}".format(user, error))
     finally:
         cursor.close()
         conn.close()
@@ -171,8 +180,8 @@ def unblock_user(user_id):
         cursor.execute(query, (user_id, ))
         conn.commit()
     except Error as error:
-        print(error)
-
+        print('unblock_user', error)
+        logger.error("{} received error message {}".format(user_id, error))
     finally:
         cursor.close()
         conn.close()
@@ -194,7 +203,7 @@ def check_exists(user_id):
 
     except Error as e:
         print("check_exists: ", e)
-
+        logger.error("{} received error message {}".format(user_id, e))
     finally:
         cursor.close()
         conn.close()
@@ -222,8 +231,8 @@ def update_user(user_id, first_name, last_name, language_code):
         cursor.execute(query, args)
         conn.commit()
     except Error as error:
-        print(error)
-
+        print('update_user', error)
+        logger.error("{} received error message {}".format(user_id, error))
     finally:
         cursor.close()
         conn.close()
@@ -243,7 +252,8 @@ def add_sr_item(hid, defaultModel, lastTime, user, language):
         cursor.execute(query, args)
         conn.commit()
     except Error as error:
-        print(error)
+        logger.error("{} received error message {}".format(user, error))
+        print('add_sr_item', error)
 
     finally:
         cursor.close()
@@ -261,8 +271,8 @@ def update_sr_item(hid, model, lastTime):
         cursor.execute(query, (model, lastTime, hid))
         conn.commit()
     except Error as error:
-        print(error)
-
+        print('update_sr_item', error)
+        logger.error("{} received error message {}".format(hid, error))
     finally:
         cursor.close()
         conn.close()
@@ -271,14 +281,19 @@ def update_sr_item(hid, model, lastTime):
 
 def add_list(user, word_list, lang, list_name):
     data = list()
+    logger.debug("Adding {} words to list_name {} for user {}"
+                 .format(len(word_list), list_name, user))
     for word in word_list:
         hid = hashlib.md5((word+lang+user+list_name).encode('utf-8')).hexdigest()
         args = (hid, list_name, user, lang, word )
         data.append(args)
 
     try:
-        query = "INSERT INTO word_lists (hid, listname, user, LANGUAGE, word ) " \
+        query = "INSERT IGNORE INTO word_lists (hid, listname, user, LANGUAGE, word ) " \
                 "VALUES(%s,%s,%s,%s,%s)"
+        # query = "INSERT INTO word_lists (hid, listname, user, LANGUAGE, word ) " \
+        #         "VALUES(%s,%s,%s,%s,%s)"
+        logger.debug("{} data ready".format(user))
         conn = mysql.connector.connect(host=conf['host'],
                                        database=conf['database'],
                                        user=conf['user'],
@@ -288,7 +303,7 @@ def add_list(user, word_list, lang, list_name):
         conn.commit()
     except Error as error:
         print(error)
-
+        logger.error("{} user got error while adding data to db {}".format(user, error))
     finally:
         cursor.close()
         conn.close()
@@ -311,7 +326,7 @@ def get_list(user_id, language, list_name):
 
     except Error as e:
         print("fetch_word_list: ", e)
-
+        logger.error("{} received error message {}".format(user_id, e))
     finally:
         cursor.close()
         conn.close()
@@ -332,7 +347,8 @@ def delete_from_list(hid):
         cursor.execute(query, args)
         conn.commit()
     except Error as e:
-        print(e)
+        print('delete_from_list', e)
+        logger.error("{} received error message {}".format(hid, e))
         res = False
     finally:
         cursor.close()
@@ -357,6 +373,7 @@ def lists_to_add(user, lang):
 
     except Error as e:
         print("lists_to_add: ", e)
+        logger.error("{} received error message {}".format(user, e))
 
     finally:
         cursor.close()
@@ -375,8 +392,8 @@ def update_blocked(user_id):
         cursor.execute(query, (user_id,))
         conn.commit()
     except Error as error:
-        print(error)
-
+        print('update_blocked', error)
+        logger.error("{} received error message {}".format(user_id, error))
     finally:
         cursor.close()
         conn.close()
