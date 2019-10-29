@@ -334,7 +334,7 @@ async def callback_add_meaning_action(query: types.CallbackQuery, callback_data:
         session.status = None
         await adding_list_words(None, query, list_name)
     else:
-        logger.warning(str(session.get_user_id() + " bot didn't find words to add"))
+        logger.warning(str(session.get_user_id()) + " bot didn't find words to add")
         await bot.send_message(session.get_user_id(), "Sorry, the bot failed to suggest words for the list. I'll double check if it really smart enough)")
 
 
