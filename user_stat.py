@@ -10,13 +10,8 @@ conf = dict()
 
 messages = {"no_words_added": "Looks like you haven't added words to learn yet? Try /setlanguage and then /addwords to add a few words.",
             "has_words_to_learn": "You have {} words to learn. Use /learn command to start learning them.",
-            "all": "Hi!\nWe added a long awaited ability to show all added words. "
-                    "\n<b>/show</b> - shows all added words in alphabetical order"
-                    "\n<b>/show</b> <i>date</i> - shows all words ordered by adding date (from the oldest to the newest)"
-                    "\n<b>/show</b> <i>last N</i> - shows N words added most recently (replace <i>N</i> with an actual number, e.g. <i>5</i>"
-                    "\n<b>/show</b> <i>abc</i> - shows all words that start with <i>abc</i> (of course, replace <i>abc</i> with actual letters) "
-            
-            
+            "all": "Hi!\nNow you can add not only words, but also <b>phrases</b>! The bot will try to show word definitions in your user language set in Telegram if possible.\n"
+                   "You can change your user language with /settings command"
                    "\nIf you have ideas to share, questions or suggestions, you can join <b>OppiWordsBotGroup</b> (https://t.me/OppiWords) to discuss . \n"
 }
 
