@@ -11,7 +11,6 @@ import os
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"]= settings.google_env
 from google.cloud import translate_v2
 translate_client = translate_v2.Client()
-from text_experiment.text_methodology.yandex_translate import YandexTranslate
 
 
 logger = logging.getLogger('utils')
@@ -50,7 +49,6 @@ CODES = {'czech': 'cs',
 
 parser = WiktionaryParser()
 posts_cb = CallbackData('post', 'data', 'action')
-ya_tr = YandexTranslate(settings.ya_trans)
 
 
 def truncate(definitions, limit):
@@ -163,6 +161,3 @@ def to_vertical_keyboard(tokens, data=[], action=[]):
                                                                            action=action[i])))
     return keyboard
 
-
-if __name__ == "__main__":
-    ya_dict = YandexDictionary(key=key)
