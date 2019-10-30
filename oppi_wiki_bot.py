@@ -369,7 +369,7 @@ async def adding_word_to_list(message):
     logger.debug("{} is adding list {}, list length {}".format(
         session.get_user_id(), list_name, len(topn)))
     await bot.send_message(session.get_user_id(), (
-        "The list name is {}.The words are ready to be added to your dictionary. /addwords to do so.".format(
+        "The list name is _{}_.The words are ready to be added to your dictionary. /addwords to do so.".format(
             list_name)))
     mysql_connect.add_list(user=str(session.get_user_id()), word_list=topn,
                            lang=session.active_lang(), list_name=list_name)
@@ -395,6 +395,7 @@ async def adding_list_words(message, query, list_name):
     if len(word_list) == 0 and list_name is not None:
         await bot.send_message(session.get_user_id(), "You added all words from the list *{}*\n"
                                "Now you can /learn words".format(list_name.title()))
+        session.list_hid_word = None
         return
     if list_name is None:
         logger.error("{}, list_name is None".format(session.get_user_id()))

@@ -17,7 +17,7 @@ class Session:
         self.hid_cash = str()
         self.words_to_add = None
         self.definitions = list()
-        self.list_hid_word = None  # ""(hid, word)
+        self.list_hid_word = None  # ""(list_name, hid)
 
     def active_lang(self):
         for l, active in self.languages.items():
