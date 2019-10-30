@@ -4,6 +4,7 @@ from aiogram import Bot, Dispatcher, executor, md, types
 from aiogram.utils.exceptions import BotBlocked as Blocked, CantParseEntities
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.utils.callback_data import CallbackData
+from aiogram.types.message import ContentTypes
 
 import time
 from datetime import datetime
@@ -20,6 +21,7 @@ from settings import admin
 from bot_utils import get_definitions, get_hint, to_one_row_keyboard, truncate, \
     to_vertical_keyboard
 import word_lists
+from speech import speech2text
 
 import logging
 import mysql_connect
@@ -48,8 +50,9 @@ logger.setLevel(logging.DEBUG)
 # delete - delete a word form your dictionary
 #
 
+TOKEN = bot_token[sys.argv[1:][0]]
 
-bot = Bot(token=bot_token[sys.argv[1:][0]],
+bot = Bot(token=TOKEN,
           parse_mode=types.ParseMode.MARKDOWN)
 mysql_connect.conf = db_conf[sys.argv[1:][0]]
 user_stat.conf = db_conf[sys.argv[1:][0]]
@@ -1030,6 +1033,22 @@ async def finish_adding_meanings_action(query: types.CallbackQuery, callback_dat
     session.adding_list = False
     await bot.edit_message_text(chat_id=session.get_user_id(), message_id=query.message.message_id,
                                 text="OK. You can add more words. Or /learn the new ones.")
+
+# VOICE processing
+
+@dp.message_handler(content_types=ContentTypes.VOICE)
+async def start_message(message: types.Message):
+    session, isValid = await authorize(message.from_user.id)
+    if not isValid:
+        return
+    logger.info(str(message.from_user.id) + ' voice message received')
+    file = await bot.get_file(message.voice.file_id)
+    url = 'https://api.telegram.org/file/bot{}/'.format(TOKEN)
+    url = url + file["file_path"]
+    logger.debug("{} received voice at {}".format(message.from_user.id, url))
+    print(session.get_current_word()[0])
+    transcript = speech2text.compare(url, session.active_lang(), session.get_current_word()[0])
+    await bot.send_message(message.from_user.id, transcript)
 
 
 # UNKNOWN input
