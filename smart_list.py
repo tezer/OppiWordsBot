@@ -56,20 +56,9 @@ def get_list(user_id):
             if s in words:
                 continue
             result.append(s)
-    return result
+    return result[:20]
 
 if __name__ == '__main__':
-    words = get_list(76673167)
+    words = get_list(0000)
     print(words)
-    # print(len(words))
-    # n = 0
-    # for w in words.items():
-    #     z = wordfreq.zipf_frequency(w[0], lang='en')
-    #     print('=' * 20, '\n',w, z, w[1], '\n')
-    #     sems = get_sems(w[0])
-    #     if sems is None:
-    #         continue
-    #     n += len(sems)
-    #     for s in sems:
-    #         print(s, wordfreq.zipf_frequency(s, lang='en'))
-    # print(n)
+
