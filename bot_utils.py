@@ -96,7 +96,7 @@ def process_wiktionary(w):
 def get_definitions(language, user_lang, word):
     result = list()
     if user_lang is None:
-        user_lang = 'en'
+        user_lang = 'english'
     if user_lang in CODES.keys():
         try:
             response = ya_dict.lookup(word, CODES[language], CODES[user_lang])
@@ -104,8 +104,6 @@ def get_definitions(language, user_lang, word):
 
         except Exception as e:
             logger.warning("Yandex dictionary exception: " + str(e))
-            return result
-
         if len(result) > 0:
             return result
 
@@ -163,6 +161,3 @@ def to_vertical_keyboard(tokens, data=[], action=[]):
                                                                            action=action[i])))
     return keyboard
 
-
-if __name__ == "__main__":
-    ya_dict = YandexDictionary(key=key)
