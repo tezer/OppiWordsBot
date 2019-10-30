@@ -11,6 +11,7 @@ import os
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"]= settings.google_env
 from google.cloud import translate_v2
 translate_client = translate_v2.Client()
+from text_experiment.text_methodology.yandex_translate import YandexTranslate
 
 
 logger = logging.getLogger('utils')
@@ -49,6 +50,7 @@ CODES = {'czech': 'cs',
 
 parser = WiktionaryParser()
 posts_cb = CallbackData('post', 'data', 'action')
+ya_tr = YandexTranslate(settings.ya_trans)
 
 
 def truncate(definitions, limit):
@@ -96,7 +98,7 @@ def process_wiktionary(w):
 def get_definitions(language, user_lang, word):
     result = list()
     if user_lang is None:
-        user_lang = 'en'
+        user_lang = 'english'
     if user_lang in CODES.keys():
         try:
             response = ya_dict.lookup(word, CODES[language], CODES[user_lang])
@@ -104,8 +106,6 @@ def get_definitions(language, user_lang, word):
 
         except Exception as e:
             logger.warning("Yandex dictionary exception: " + str(e))
-            return result
-
         if len(result) > 0:
             return result
 
