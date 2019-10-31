@@ -19,7 +19,7 @@ from settings import bot_token
 from settings import db_conf
 from settings import admin
 from bot_utils import get_definitions, get_hint, to_one_row_keyboard, truncate, \
-    to_vertical_keyboard
+    to_vertical_keyboard, compare
 import word_lists
 from speech import speech2text
 
@@ -663,7 +663,11 @@ async def type_in_message(message):
         time.sleep(2)
     else:
         sr.update_item(session.get_current_hid(), 0)
-        await bot.send_message(session.get_user_id(), "Wrong. It is *" + session.get_current_word()[0] + "*")
+        w1, w2 = compare(str(word).lower(), str(message.text).lower())
+        await bot.send_message(session.get_user_id(), "Wrong.\n"
+                                                      "It should be: {}\n"
+                                                      "you wrote:    {}".format(w1, w2),
+                               parse_mode=types.ParseMode.HTML)
         time.sleep(3)
         misspelt_word = str(message.text)
         if word[0].isupper():
@@ -1034,7 +1038,7 @@ async def finish_adding_meanings_action(query: types.CallbackQuery, callback_dat
     await bot.edit_message_text(chat_id=session.get_user_id(), message_id=query.message.message_id,
                                 text="OK. You can add more words. Or /learn the new ones.")
 
-# VOICE processing
+# VOICE processing ===============================================================
 
 @dp.message_handler(content_types=ContentTypes.VOICE)
 async def start_message(message: types.Message):
@@ -1047,8 +1051,17 @@ async def start_message(message: types.Message):
     url = url + file["file_path"]
     logger.debug("{} received voice at {}".format(message.from_user.id, url))
     print(session.get_current_word()[0])
-    transcript = speech2text.compare(url, session.active_lang(), session.get_current_word()[0])
-    await bot.send_message(message.from_user.id, transcript)
+    transcript = speech2text.transcribe(url, session.active_lang())
+    print(transcript)
+    word = session.get_current_word()[0]
+    if transcript.lower() != word.lower():
+        word, transcript = compare(word.lower(), transcript.lower())
+        print(word, transcript)
+        await bot.send_message(message.from_user.id, "Correct word: {}\n"
+                                                 "Transcript:     {}".format(word, transcript),
+                               parse_mode=types.ParseMode.HTML)
+    else:
+        await bot.send_message(message.from_user.id, "Excellent!")
 
 
 # UNKNOWN input
