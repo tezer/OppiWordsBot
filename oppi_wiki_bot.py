@@ -551,7 +551,7 @@ async def start_learning(query: types.CallbackQuery, callback_data: dict, sessio
         await bot.send_message(session.get_user_id(), "You have only *" + str(len(words)) + "* words for this session")
     if n < len(words):
         words = words[:n]
-    random.shuffle(words)
+    words = sorted(words, key=lambda x: x[2])
     session.words_to_learn = words
     await bot.send_message(session.get_user_id(), "Check if you remember these words")
     await do_learning(session)
