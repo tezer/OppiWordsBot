@@ -11,7 +11,7 @@ import os
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"]= settings.google_env
 from google.cloud import translate_v2
 translate_client = translate_v2.Client()
-
+import difflib
 
 logger = logging.getLogger('utils')
 # hdlr = logging.StreamHandler()
@@ -161,3 +161,40 @@ def to_vertical_keyboard(tokens, data=[], action=[]):
                                                                            action=action[i])))
     return keyboard
 
+
+def get_diff_ranges(blocks, index):
+    result = list()
+    start = 0
+    for block in blocks:
+        if index == 0:
+            bl = block.a
+        else:
+            bl = block.b
+        if bl == 0:
+            start = block.size
+            continue
+        r = (start, bl)
+        result.insert(0, r)
+        start = bl + block.size
+    return result
+
+
+def mark_up(word, open, close, ranges):
+    for r in ranges:
+        a = word[:r[1]]
+        b = word[r[1]:]
+        word = a + close + b
+        a = word[:r[0]]
+        b = word[r[0]:]
+        word = a + open + b
+    return word
+
+
+def compare(word1, word2):
+    s = difflib.SequenceMatcher(None, word1, word2)
+    blocks = s.get_matching_blocks()
+    ranges = get_diff_ranges(blocks, 0)
+    word1 = mark_up(word1,'<b>', '</b>', ranges )
+    ranges = get_diff_ranges(blocks, 1)
+    word2 = mark_up(word2,'<b>', '</b>', ranges )
+    return word1, word2
