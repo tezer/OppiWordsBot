@@ -81,9 +81,9 @@ sessions = load_data("sessions.pkl")  # user_id: session
 # tmp_voc = dict() #(user, language): (word, [definitions])
 
 help_text = 'Welcome!\n' \
-            '1. Select language to learn with /setlanguage.\n'\
+            '1. Select language to learn with /setlanguage.\n' \
             '  The bot will try to show word definitions in your user language set in Telegram if possible.\n' \
-            '  You can change your user language with /settings command\n'\
+            '  You can change your user language with /settings command\n' \
             '2. Then /addwords to get exercises.\n' \
             '  Or you can add many words with /wordlist command.\n' \
             '3. Then type /learn to start training.\n' \
@@ -157,7 +157,8 @@ async def start_message(message: types.Message):
     s = Session(message.from_user.id, message.from_user.first_name, message.from_user.last_name,
                 message.from_user.language_code)
     if message.from_user.language_code is None:
-        await bot.send_message(message.from_user.id, "Your user language is not set. It means that all word definitions will be in English. Set your Telegram user language and /start the bot again.")
+        await bot.send_message(message.from_user.id,
+                               "Your user language is not set. It means that all word definitions will be in English. Set your Telegram user language and /start the bot again.")
     mysql_connect.update_user(message.from_user.id, message.from_user.first_name, message.from_user.last_name,
                               message.from_user.language_code)
     sessions[message.from_user.id] = s
@@ -181,8 +182,9 @@ async def help_message(message: types.Message):
         return
     await bot.send_message(message.from_user.id, "A few settings to make.")
     await bot.send_message(message.from_user.id, "*If you have questions, you can ask them at https://t.me/OppiWords*")
-    m = await bot.send_message(message.from_user.id, "Please, specify the language in which you want to get definitions (e.g. Russian or German or any other language name) "
-                                                 "of words and phrases", reply_markup=types.ForceReply())
+    m = await bot.send_message(message.from_user.id,
+                               "Please, specify the language in which you want to get definitions (e.g. Russian or German or any other language name) "
+                               "of words and phrases", reply_markup=types.ForceReply())
     session.status = m.message_id + 1
 
 
@@ -204,6 +206,7 @@ async def set_user_language_message(message: types.Message):
     with open('sessions.pkl', 'wb') as f:
         pickle.dump(sessions, f)
 
+
 # SHOW WORDS ========================================================
 @dp.message_handler(commands=['show'])
 async def start_message(message: types.Message):
@@ -217,19 +220,21 @@ async def start_message(message: types.Message):
     if ' ' in cmd:
         cmd2 = str(cmd).split(' ')
         if cmd2[1] == 'list':
-            #TODO ask for list name and show words from the list
+            # TODO ask for list name and show words from the list
             pass
         elif cmd2[1] == 'date':
-            words = mysql_connect.fetchall("SELECT w.word, w.definition, DATE_FORMAT(s.created_at, '%Y-%m-%d') AS date FROM words w INNER JOIN spaced_repetition s ON w.hid = s.hid WHERE w.user =%s AND w.language=%s AND w.mode = 0 ORDER BY date",
-                                           (session.get_user_id(), session.active_lang()))
+            words = mysql_connect.fetchall(
+                "SELECT w.word, w.definition, DATE_FORMAT(s.created_at, '%Y-%m-%d') AS date FROM words w INNER JOIN spaced_repetition s ON w.hid = s.hid WHERE w.user =%s AND w.language=%s AND w.mode = 0 ORDER BY date",
+                (session.get_user_id(), session.active_lang()))
         elif cmd2[1] == 'last':
             LIMIT = ""
             if len(cmd2) == 3:
                 n = cmd2[2]
                 LIMIT = ' LIMIT ' + str(n)
 
-            words = mysql_connect.fetchall("SELECT w.word, w.definition, DATE_FORMAT(s.created_at, '%Y-%m-%d') AS date FROM words w INNER JOIN spaced_repetition s ON w.hid = s.hid WHERE w.user =%s AND w.language=%s AND w.mode = 0 ORDER BY date DESC" + LIMIT,
-                                           (session.get_user_id(), session.active_lang()))
+            words = mysql_connect.fetchall(
+                "SELECT w.word, w.definition, DATE_FORMAT(s.created_at, '%Y-%m-%d') AS date FROM words w INNER JOIN spaced_repetition s ON w.hid = s.hid WHERE w.user =%s AND w.language=%s AND w.mode = 0 ORDER BY date DESC" + LIMIT,
+                (session.get_user_id(), session.active_lang()))
         else:
             letter = str(cmd2[1]) + '%'
             words = mysql_connect.fetchall(
@@ -237,8 +242,9 @@ async def start_message(message: types.Message):
                 (session.get_user_id(), session.active_lang(), letter))
 
     else:
-        words = mysql_connect.fetchall("SELECT word, definition FROM words WHERE user=%s AND language=%s AND mode = 0 ORDER BY word",
-                                       (session.get_user_id(), session.active_lang()))
+        words = mysql_connect.fetchall(
+            "SELECT word, definition FROM words WHERE user=%s AND language=%s AND mode = 0 ORDER BY word",
+            (session.get_user_id(), session.active_lang()))
 
     for w in words:
         date_str = ""
@@ -319,19 +325,21 @@ async def callback_add_meaning_action(query: types.CallbackQuery, callback_data:
     lang = session.active_lang().title()
     m = query.message
     if lang not in smart_list.CODES.keys():
-
         await m.edit_reply_markup()
         await m.edit_text("Sorry, the Smart list works with {} only. You can get in touch with the bot developers "
                           "at *OppiWordsBotGroup* (https://t.me/OppiWords)".format(lang))
         return
     session.status = 'topn'
     await m.edit_reply_markup()
-    await m.edit_text("The bot will offer you words which are semantically related to the last 5 words you recently learned in {}.".format(lang))
+    await m.edit_text(
+        "The bot will offer you words which are semantically related to the last 5 words you recently learned in {}.".format(
+            lang))
     words = smart_list.get_list(query.from_user.id, lang)
     if len(words) > 0:
         list_name = "SmartList " + str(datetime.today().strftime('%Y-%m-%d'))
-        await bot.send_message(session.get_user_id(),"The list name is _{}_. {} words are ready to be added to your dictionary. /addwords to do so.".
-                format(list_name, len(words)))
+        await bot.send_message(session.get_user_id(),
+                               "The list name is _{}_. {} words are ready to be added to your dictionary. /addwords to do so.".
+                               format(list_name, len(words)))
         mysql_connect.add_list(user=str(session.get_user_id()),
                                word_list=words,
                                lang=session.active_lang(),
@@ -340,10 +348,8 @@ async def callback_add_meaning_action(query: types.CallbackQuery, callback_data:
         await adding_list_words(None, query, list_name)
     else:
         logger.warning(str(session.get_user_id()) + " bot didn't find words to add")
-        await bot.send_message(session.get_user_id(), "Sorry, the bot failed to suggest words for the list. I'll double check if it really smart enough)")
-
-
-
+        await bot.send_message(session.get_user_id(),
+                               "Sorry, the bot failed to suggest words for the list. I'll double check if it really smart enough)")
 
 
 @dp.message_handler(lambda message: user_state(message.from_user.id, "topn"))
@@ -355,13 +361,13 @@ async def adding_word_to_list(message):
     n = message.text
     if not re.match("\d+:\d+", n):
         await bot.send_message(session.get_user_id(), "Please use format: _start:end_. "
-                               "For example _0:50_ to get top 50 most frequent words")
+                                                      "For example _0:50_ to get top 50 most frequent words")
         return
     start = int(str(n).split(':')[0])
     end = int(str(n).split(':')[1])
     if start >= end:
         await bot.send_message(session.get_user_id(), "Please use format: _start:end_. "
-                               "For example _0:50_ to get top 50 most frequent words")
+                                                      "For example _0:50_ to get top 50 most frequent words")
         return
     topn = word_lists.get_top_n(
         lang=session.active_lang(), start=start, end=end)
@@ -399,7 +405,7 @@ async def adding_list_words(message, query, list_name):
         session.get_user_id(), session.active_lang(), list_name)
     if len(word_list) == 0 and list_name is not None:
         await bot.send_message(session.get_user_id(), "You added all words from the list *{}*\n"
-                               "Now you can /learn words".format(list_name.title()))
+                                                      "Now you can /learn words".format(list_name.title()))
         session.list_hid_word = None
         return
     if list_name is None:
@@ -407,7 +413,8 @@ async def adding_list_words(message, query, list_name):
         return
 
     word = word_list[0][2]
-    m = await bot.send_message(session.get_user_id(), "{} words to add from list _{}_\n*{}*".format(len(word_list), list_name.title(), word))
+    m = await bot.send_message(session.get_user_id(),
+                               "{} words to add from list _{}_\n*{}*".format(len(word_list), list_name.title(), word))
     session.list_hid_word = word_list[0]
     m.text = word
     m.from_user.id = session.get_user_id()
@@ -449,7 +456,7 @@ async def deleting_word(message):
         return
     session.hid_cash = data[2]
     k = to_one_row_keyboard(["Keep", "Delete"], data=[
-                            0, 1], action=["keep", "delete"])
+        0, 1], action=["keep", "delete"])
     await bot.send_message(session.get_user_id(), "Do you want to delete word *{}* with definition\n{}"
                            .format(data[0], data[1]), reply_markup=k)
 
@@ -648,9 +655,9 @@ async def do_learning1(session):
                                    format(word[0], word[1]))
             voice = text2speech.get_voice(word[0], session.active_lang())
             await bot.send_audio(chat_id=session.get_user_id(),
-                audio=voice,
-                performer=word[1], caption=None,
-                title=word[0])
+                                 audio=voice,
+                                 performer=word[1], caption=None,
+                                 title=word[0])
         elif word[2] == 1:
             session.status = tasks[1]
             await bot.send_message(session.get_user_id(),
@@ -709,7 +716,6 @@ async def i_remember(query: types.CallbackQuery, callback_data: dict):
     if n > 0:
         await query.answer(str(n) + " to go")
     await do_learning(session)
-
 
 
 # reading task showing definition, adding word to the error list
@@ -791,12 +797,13 @@ async def start_message(message: types.Message):
         word, transcript = compare(word.lower(), transcript.lower())
         print(word, transcript)
         await bot.send_message(message.from_user.id, "Correct word: {}\n"
-                                                 "Transcript:     {}".format(word, transcript),
+                                                     "Transcript:     {}".format(word, transcript),
                                parse_mode=types.ParseMode.HTML)
     else:
         level_up(session)
         await bot.send_message(message.from_user.id, "Excellent!")
     await do_learning(session)
+
 
 # ==========================================================================================
 # Selecting a language to learn
@@ -876,7 +883,7 @@ async def addwords_message(message):
         word_list = str(lists_to_add[0][0])
         session.list_hid_word = (word_list, None, None)
         k = to_one_row_keyboard(['Add words', 'Not now'], [0, 0], [
-                                "next_word_from_list", "skip_list"])
+            "next_word_from_list", "skip_list"])
         await bot.send_message(message.from_user.id,
                                "You have words to add from list *{}*".format(
                                    word_list.title()),
@@ -907,6 +914,7 @@ async def callback_add_meaning_action(query: types.CallbackQuery, callback_data:
     session.list_hid_word = None
     logger.debug(str(query.from_user.id) + session.status)
     await bot.send_message(query.from_user.id, "Type in words in *" + session.active_lang().title() + "*")
+
 
 # Getting a new word typed in by a user and getting definitions
 @dp.callback_query_handler(posts_cb.filter(action=["wiktionary_search"]))
@@ -959,7 +967,7 @@ async def prepare_definition_selection(session, query):
                            30)  # FIXME ideally, it should be called once, not every time the keyboard is built
     actions = ['meaning'] * len(definitions)
     button_titiles = definitions
-    data=list(range(0, len(actions), 1))
+    data = list(range(0, len(actions), 1))
 
     actions.append('add_user_definition')
     button_titiles.append("ADD YOUR DEFINITION")
@@ -980,7 +988,8 @@ async def prepare_definition_selection(session, query):
     # k = to_vertical_keyboard(definitions, action=actions, data=list(range(0, len(actions), 1)))
     k = to_vertical_keyboard(definitions, action=actions, data=data)
     if query is None:
-        await bot.send_message(session.get_user_id(), "Tap a button with a meaning to learn", reply_markup=k, parse_mode=types.ParseMode.MARKDOWN)
+        await bot.send_message(session.get_user_id(), "Tap a button with a meaning to learn", reply_markup=k,
+                               parse_mode=types.ParseMode.MARKDOWN)
     else:
         await bot.edit_message_reply_markup(session.get_user_id(), query.message.message_id, reply_markup=k)
 
@@ -1045,7 +1054,8 @@ async def adding_words(message):
         return
     definition = message.text
     if session.words_to_add is None:
-        await bot.send_message(message.from_user.id, "Sorry, cannot add the definition.\nPlease, use /addwords command first and *then* type words that you want to add in a new line.")
+        await bot.send_message(message.from_user.id,
+                               "Sorry, cannot add the definition.\nPlease, use /addwords command first and *then* type words that you want to add in a new line.")
         return
     word = session.words_to_add[0]
     session.words_to_add = None
@@ -1073,6 +1083,7 @@ async def finish_adding_meanings_action(query: types.CallbackQuery, callback_dat
     session.adding_list = False
     await bot.edit_message_text(chat_id=session.get_user_id(), message_id=query.message.message_id,
                                 text="OK. You can add more words. Or /learn the new ones.")
+
 
 # UNKNOWN input
 # ===============================================================
