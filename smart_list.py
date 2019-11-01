@@ -1,9 +1,7 @@
-import json
-
-import wordfreq
-import requests
-import requests.exceptions
 import settings
+import os
+os.environ["POLYGLOT_DATA_PATH"]="/media/taras/data/OppiAI/FIN/polyglot"
+from polyglot.text import Word
 
 api_url = settings.w2v_api
 
@@ -11,45 +9,44 @@ import mysql_connect
 import settings
 
 mysql_connect.conf = settings.db_conf['prod']
-N_LAST = 5
+N_LAST = 3
 
-# QUERY = 'SELECT w.word, s.last_date ' \
+CODES = {
+    'finnish': 'fi',
+    'german': 'de',
+    'english': 'en'
+}
+
 QUERY = 'SELECT w.word, s.last_date ' \
         'FROM spaced_repetition s ' \
         'INNER JOIN words w ON w.hid = s.hid ' \
         'WHERE w.user=%s ' \
-        'AND w.language=\'english\'' \
+        'AND w.language=\'{}\'' \
         'AND last_date IS NOT NULL ' \
         'ORDER BY last_date DESC;'
 # select word from words where language='english' and user='444209921';
 
-def get_user_words(user_id):
+def get_user_words(user_id, lang):
     result = set()
-    words = mysql_connect.fetchall(QUERY, (user_id,))
+    words = mysql_connect.fetchall(QUERY.format(lang), (user_id,))
     words = words[:N_LAST]
     for w in words:
         result.add(w[0])
     return result
 
 
-def get_sems(word):
-    try:
-        response = requests.get(
-            api_url + '?' + word)
-    except requests.exceptions.ConnectionError as e:
-        print(e)
-    data = json.loads(response.text)
-    if len(data) == 0:
-        return
-    return data[word]['sems']
+def get_sems(word, lang):
+    print(word)
+    w = Word(word.lower(), language=CODES[lang])
+    return w.neighbors
 
 
-def get_list(user_id):
+def get_list(user_id, lang):
     result = list()
-    words = get_user_words(user_id)
+    words = get_user_words(user_id, lang)
     words = [w.lower() for w in words]
     for w in words:
-        sems = get_sems(w)
+        sems = get_sems(w, lang)
         if sems is None:
             continue
         for s in sems:

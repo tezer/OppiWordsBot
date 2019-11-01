@@ -318,16 +318,16 @@ async def callback_add_meaning_action(query: types.CallbackQuery, callback_data:
         return
     lang = session.active_lang().title()
     m = query.message
-    if lang != 'English':
+    if lang not in smart_list.CODES.keys():
 
         await m.edit_reply_markup()
-        await m.edit_text("Sorry, the Smart list works with English only. You can get in touch with the bot developers "
-                          "at *OppiWordsBotGroup* (https://t.me/OppiWords)")
+        await m.edit_text("Sorry, the Smart list works with {} only. You can get in touch with the bot developers "
+                          "at *OppiWordsBotGroup* (https://t.me/OppiWords)".format(lang))
         return
     session.status = 'topn'
     await m.edit_reply_markup()
     await m.edit_text("The bot will offer you words which are semantically related to the last 5 words you recently learned in {}.".format(lang))
-    words = smart_list.get_list(query.from_user.id)
+    words = smart_list.get_list(query.from_user.id, lang)
     if len(words) > 0:
         list_name = "SmartList " + str(datetime.today().strftime('%Y-%m-%d'))
         await bot.send_message(session.get_user_id(),"The list name is _{}_. {} words are ready to be added to your dictionary. /addwords to do so.".
