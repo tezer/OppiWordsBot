@@ -27,6 +27,7 @@ import logging
 import mysql_connect
 import user_stat
 import smart_list
+from ilt import level_up
 
 RESTART = '"Sorry, something went wrong. Try restarting with /start, your progress is saved"'
 LANGS = list()
@@ -637,9 +638,13 @@ async def do_learning1(session):
                                            action=["I_remember", "show"])
             hint = get_hint(word[1])
             await bot.send_message(session.get_user_id(), '*' + word[0] + "*\n" + hint, reply_markup=keyboard)
+        elif word[2] == 2:
+            session.status = "say"
+            await bot.send_message(session.get_user_id(), "*SAY* this word: *" + word[1] + "*")
         elif word[2] == 1:
             session.status = "type_in"
-            await bot.send_message(session.get_user_id(), "Write the correct word for the definition:\n*" + word[1] + "*")
+            await bot.send_message(session.get_user_id(),
+                                   "*WRITE* the correct word for the definition:\n*" + word[1] + "*")
 
 
 @dp.message_handler(lambda message: user_state(message.from_user.id, 'type_in'))
@@ -655,11 +660,15 @@ async def type_in_message(message):
         return
     word = word[0]
     if str(word).lower() == str(message.text).lower():
+        # TODO do next word state, when it is available by task_transitions table
         sr.update_item(session.get_current_hid(), 1)
         session.delete_current_word()
         n = len(session.words_to_learn) - session.current_word
         if n > 0:
             await bot.send_message(session.get_user_id(), "*Correct!* *{}* to go".format(n))
+        else:
+            await bot.send_message(session.get_user_id(), "*Correct!* This was the last word.".format(n))
+            logger.debug('last word')
         time.sleep(2)
     else:
         sr.update_item(session.get_current_hid(), 0)
@@ -685,23 +694,12 @@ async def i_remember(query: types.CallbackQuery, callback_data: dict):
     session, isValid = await authorize(query.from_user.id)
     if not isValid:
         return
-    hid = session.get_current_hid()
-    sr.update_item(hid, 1)
-    new_hid = sr.add_item((session.get_user_id(), session.active_lang()),
-                          (session.get_current_word()[0],
-                           session.get_current_definition()),
-                          session.get_current_mode() + 1)
-
-    mysql_connect.insert_word(session.get_user_id(), session.active_lang(),
-                              session.get_current_word()[0],
-                              session.get_current_definition(),
-                              session.get_current_mode() + 1, new_hid)
-    session.level_up_current_word(new_hid)
-    session.delete_current_word()
+    level_up(session)
     n = len(session.words_to_learn) - session.current_word
     if n > 0:
         await query.answer(str(n) + " to go")
     await do_learning(session)
+
 
 
 # reading task showing definition, adding word to the error list
@@ -761,6 +759,33 @@ async def callback_mc_action(query: types.CallbackQuery, callback_data: dict):
     await bot.send_message(chat_id=session.get_user_id(), text="It's " + answer, reply_markup=k)
     # await do_reading_errors(query, callback_data)
 
+
+# VOICE processing ===============================================================
+
+@dp.message_handler(content_types=ContentTypes.VOICE)
+async def start_message(message: types.Message):
+    session, isValid = await authorize(message.from_user.id)
+    if not isValid:
+        return
+    logger.info(str(message.from_user.id) + ' voice message received')
+    file = await bot.get_file(message.voice.file_id)
+    url = 'https://api.telegram.org/file/bot{}/'.format(TOKEN)
+    url = url + file["file_path"]
+    logger.debug("{} received voice at {}".format(message.from_user.id, url))
+    print(session.get_current_word()[0])
+    transcript = speech2text.transcribe(url, session.active_lang())
+    print(transcript)
+    word = session.get_current_word()[0]
+    if transcript.lower() != word.lower():
+        word, transcript = compare(word.lower(), transcript.lower())
+        print(word, transcript)
+        await bot.send_message(message.from_user.id, "Correct word: {}\n"
+                                                 "Transcript:     {}".format(word, transcript),
+                               parse_mode=types.ParseMode.HTML)
+    else:
+        level_up(session)
+        await bot.send_message(message.from_user.id, "Excellent!")
+    await do_learning(session)
 
 # ==========================================================================================
 # Selecting a language to learn
@@ -1037,32 +1062,6 @@ async def finish_adding_meanings_action(query: types.CallbackQuery, callback_dat
     session.adding_list = False
     await bot.edit_message_text(chat_id=session.get_user_id(), message_id=query.message.message_id,
                                 text="OK. You can add more words. Or /learn the new ones.")
-
-# VOICE processing ===============================================================
-
-@dp.message_handler(content_types=ContentTypes.VOICE)
-async def start_message(message: types.Message):
-    session, isValid = await authorize(message.from_user.id)
-    if not isValid:
-        return
-    logger.info(str(message.from_user.id) + ' voice message received')
-    file = await bot.get_file(message.voice.file_id)
-    url = 'https://api.telegram.org/file/bot{}/'.format(TOKEN)
-    url = url + file["file_path"]
-    logger.debug("{} received voice at {}".format(message.from_user.id, url))
-    print(session.get_current_word()[0])
-    transcript = speech2text.transcribe(url, session.active_lang())
-    print(transcript)
-    word = session.get_current_word()[0]
-    if transcript.lower() != word.lower():
-        word, transcript = compare(word.lower(), transcript.lower())
-        print(word, transcript)
-        await bot.send_message(message.from_user.id, "Correct word: {}\n"
-                                                 "Transcript:     {}".format(word, transcript),
-                               parse_mode=types.ParseMode.HTML)
-    else:
-        await bot.send_message(message.from_user.id, "Excellent!")
-
 
 # UNKNOWN input
 # ===============================================================

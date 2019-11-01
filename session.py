@@ -97,9 +97,9 @@ class Session:
     def delete_current_word(self):
         self.current_word += 1
 
-    def level_up_current_word(self, new_hid):
+    def level_up_current_word(self, new_hid, new_level):
         word = self.words_to_learn[self.current_word]
-        mode = int(word[2]) + 1
+        mode = new_level
         new_word = (word[0], word[1], mode, new_hid)
         self.words_to_learn.append(new_word)
 
