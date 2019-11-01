@@ -22,12 +22,13 @@ from bot_utils import get_definitions, get_hint, to_one_row_keyboard, truncate, 
     to_vertical_keyboard, compare
 import word_lists
 from speech import speech2text
+from speech import text2speech
 
 import logging
 import mysql_connect
 import user_stat
 import smart_list
-from ilt import level_up
+from ilt import level_up, sort_words, tasks
 
 RESTART = '"Sorry, something went wrong. Try restarting with /start, your progress is saved"'
 LANGS = list()
@@ -552,7 +553,7 @@ async def start_learning(query: types.CallbackQuery, callback_data: dict, sessio
         await bot.send_message(session.get_user_id(), "You have only *" + str(len(words)) + "* words for this session")
     if n < len(words):
         words = words[:n]
-    words = sorted(words, key=lambda x: x[2])
+    words = sort_words(words)
     session.words_to_learn = words
     await bot.send_message(session.get_user_id(), "Check if you remember these words")
     await do_learning(session)
@@ -639,15 +640,24 @@ async def do_learning1(session):
             hint = get_hint(word[1])
             await bot.send_message(session.get_user_id(), '*' + word[0] + "*\n" + hint, reply_markup=keyboard)
         elif word[2] == 2:
-            session.status = "say"
+            session.status = tasks[2]
             await bot.send_message(session.get_user_id(), "*SAY* this word: *" + word[1] + "*")
+        elif word[2] == 3:
+            session.status = tasks[2]
+            await bot.send_message(session.get_user_id(), "*LISTEN* and *SAY* this word: *{}*\n{}".
+                                   format(word[0], word[1]))
+            voice = text2speech.get_voice(word[0], session.active_lang())
+            await bot.send_audio(chat_id=session.get_user_id(),
+                audio=voice,
+                performer=word[1], caption=None,
+                title=word[0])
         elif word[2] == 1:
-            session.status = "type_in"
+            session.status = tasks[1]
             await bot.send_message(session.get_user_id(),
                                    "*WRITE* the correct word for the definition:\n*" + word[1] + "*")
 
 
-@dp.message_handler(lambda message: user_state(message.from_user.id, 'type_in'))
+@dp.message_handler(lambda message: user_state(message.from_user.id, tasks[1]))
 async def type_in_message(message):
     logger.info(str(message.from_user.id) + " Type_in message")
     session, isValid = await authorize(message.from_user.id)
@@ -772,9 +782,10 @@ async def start_message(message: types.Message):
     url = 'https://api.telegram.org/file/bot{}/'.format(TOKEN)
     url = url + file["file_path"]
     logger.debug("{} received voice at {}".format(message.from_user.id, url))
-    print(session.get_current_word()[0])
     transcript = speech2text.transcribe(url, session.active_lang())
-    print(transcript)
+    if session.get_current_word() is None:
+        await bot.send_message(message.from_user.id, "Start /learn or /test")
+        return
     word = session.get_current_word()[0]
     if transcript.lower() != word.lower():
         word, transcript = compare(word.lower(), transcript.lower())

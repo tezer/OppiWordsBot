@@ -1,5 +1,6 @@
 import spaced_repetition as sr
 import mysql_connect as db
+from collections import OrderedDict
 
 import logging
 logger = logging.getLogger('ilt')
@@ -11,10 +12,13 @@ logger.addHandler(hdlr)
 logger.setLevel(logging.DEBUG)
 
 
-task_transitions={0:2, 2:1}
-task_names={0: 'word_recognition',
-            2: 'say_word',
-            1: 'write_word'}
+task_transitions={0:3, 3:2, 2:1}
+tasks = OrderedDict()
+tasks[0] = 'word_recognition'
+tasks[3] = 'pronounce'
+tasks[2] = 'say_word'
+tasks[1] = 'type_in'
+
 
 
 def level_up(session):
@@ -38,3 +42,12 @@ def level_up(session):
                               new_hid)
     session.level_up_current_word(new_hid, task_transitions[session.get_current_mode()])
     session.delete_current_word()
+
+def sort_words(words):
+    result = list()
+    for i in tasks.keys():
+        for word in words:
+            if word[2] == i:
+                result.append(word)
+    return result
+
