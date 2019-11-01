@@ -161,7 +161,7 @@ def to_vertical_keyboard(tokens, data=[], action=[]):
                                                                            action=action[i])))
     return keyboard
 
-
+#WORD DIFFERENCE =================================================================
 def get_diff_ranges(blocks, index):
     result = list()
     start = 0
