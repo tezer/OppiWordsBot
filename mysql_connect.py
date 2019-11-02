@@ -1,6 +1,7 @@
 import mysql.connector
 from mysql.connector import Error
 import hashlib
+import datetime
 import logging
 logger = logging.getLogger('mysql_connect')
 # hdlr = logging.StreamHandler()
@@ -26,7 +27,6 @@ def fetchone(query, args):
         row = cursor.fetchone()
     except Error as e:
         print("fetchone", e)
-
     finally:
         cursor.close()
         conn.close()
@@ -398,6 +398,18 @@ def update_blocked(user_id):
         cursor.close()
         conn.close()
     return None
+
+def check_subscribed(user):
+    query = "SELECT to_date FROM subscribed WHERE user=%s"
+    date = fetchone(query, user)
+    if len(date) == 0:
+        return False
+    else:
+        d = date[0]
+        f = '%Y-%m-%d %H:%M:%S'
+        d = datetime.datetime.strptime(d, f)
+        return datetime.now() < d
+
 
 def test(c):
     global conf

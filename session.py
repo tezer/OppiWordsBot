@@ -18,6 +18,7 @@ class Session:
         self.words_to_add = None
         self.definitions = list()
         self.list_hid_word = None  # ""(list_name, hid)
+        self.subscribed = False
 
     def active_lang(self):
         for l, active in self.languages.items():

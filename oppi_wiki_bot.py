@@ -156,6 +156,7 @@ async def start_message(message: types.Message):
     logger.info(str(message.from_user.id) + ' /start command')
     s = Session(message.from_user.id, message.from_user.first_name, message.from_user.last_name,
                 message.from_user.language_code)
+    s.subscribed = mysql_connect.check_subscribed(message.from_user.id)
     if message.from_user.language_code is None:
         await bot.send_message(message.from_user.id,
                                "Your user language is not set. It means that all word definitions will be in English. Set your Telegram user language and /start the bot again.")
@@ -647,17 +648,26 @@ async def do_learning1(session):
             hint = get_hint(word[1])
             await bot.send_message(session.get_user_id(), '*' + word[0] + "*\n" + hint, reply_markup=keyboard)
         elif word[2] == 2:
-            session.status = tasks[2]
-            await bot.send_message(session.get_user_id(), "*SAY* this word: *" + word[1] + "*")
+            if session.subscribed:
+                session.status = tasks[2]
+                await bot.send_message(session.get_user_id(), "*SAY* this word: *" + word[1] + "*")
+            else:
+                level_up(session)
+                await do_learning(session)
         elif word[2] == 3:
-            session.status = tasks[2]
-            await bot.send_message(session.get_user_id(), "*LISTEN* and *SAY* this word: *{}*\n{}".
-                                   format(word[0], word[1]))
-            voice = text2speech.get_voice(word[0], session.active_lang())
-            await bot.send_audio(chat_id=session.get_user_id(),
-                                 audio=voice,
-                                 performer=word[1], caption=None,
-                                 title=word[0])
+            if session.subscribed:
+                session.status = tasks[2]
+                await bot.send_message(session.get_user_id(), "*LISTEN* and *SAY* this word: *{}*\n{}".
+                                       format(word[0], word[1]))
+                voice = text2speech.get_voice(word[0], session.active_lang())
+                await bot.send_audio(chat_id=session.get_user_id(),
+                                     audio=voice,
+                                     performer=word[1], caption=None,
+                                     title=word[0])
+            else:
+                level_up(session)
+                await do_learning(session)
+
         elif word[2] == 1:
             session.status = tasks[1]
             await bot.send_message(session.get_user_id(),
