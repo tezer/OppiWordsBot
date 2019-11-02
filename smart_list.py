@@ -1,6 +1,4 @@
 import settings
-import os
-os.environ["POLYGLOT_DATA_PATH"]="/media/taras/data/OppiAI/FIN/polyglot"
 from polyglot.text import Word
 
 api_url = settings.w2v_api
