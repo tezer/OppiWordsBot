@@ -1,4 +1,6 @@
 import settings
+import os
+os.environ["POLYGLOT_DATA_PATH"]=settings.polyglot_env
 from polyglot.text import Word
 
 api_url = settings.w2v_api
