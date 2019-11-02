@@ -297,7 +297,7 @@ async def start_message(message: types.Message):
     session, isValid = await authorize(user_id, with_lang=True)
     if not isValid:
         return
-    tokens = ["Top frequency words", "Smart list (ENGLISH ONLY)"]
+    tokens = ["Top frequency words", "Smart list"]
     data = [0, 0]
     actions = ['topn', 'smart']
     k = to_vertical_keyboard(tokens=tokens, data=data, action=actions)
@@ -325,9 +325,9 @@ async def callback_add_meaning_action(query: types.CallbackQuery, callback_data:
         return
     lang = session.active_lang().title()
     m = query.message
-    if lang not in smart_list.CODES.keys():
+    if lang.lower() not in smart_list.CODES.keys():
         await m.edit_reply_markup()
-        await m.edit_text("Sorry, the Smart list works with {} only. You can get in touch with the bot developers "
+        await m.edit_text("Sorry, the Smart list does not support {}. You can get in touch with the bot developers "
                           "at *OppiWordsBotGroup* (https://t.me/OppiWords)".format(lang))
         return
     session.status = 'topn'
