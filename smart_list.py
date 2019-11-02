@@ -35,7 +35,7 @@ def get_user_words(user_id, lang):
 
 def get_sems(word, lang):
     print(word)
-    w = Word(word.lower(), language=CODES[lang])
+    w = Word(word.lower(), language=CODES[lang.lower()])
     return w.neighbors
 
 
