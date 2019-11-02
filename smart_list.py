@@ -14,7 +14,14 @@ N_LAST = 3
 CODES = {
     'finnish': 'fi',
     'german': 'de',
-    'english': 'en'
+    'english': 'en',
+    'italian': 'it',
+    'estonian': 'et',
+    'thai': 'th',
+    'japanese': 'ja',
+    'spanish': 'es',
+    'french': 'fr'
+
 }
 
 QUERY = 'SELECT w.word, s.last_date ' \
