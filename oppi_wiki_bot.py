@@ -258,7 +258,7 @@ async def start_message(message: types.Message):
 
 # ADDING TEXT========================================================
 @dp.message_handler(commands=['addtext'])
-async def start_message(message: types.Message):
+async def add_text_command(message: types.Message):
     user_id = message.from_user.id
     logger.info(str(user_id) + ' /addtext')
 
@@ -270,7 +270,7 @@ async def start_message(message: types.Message):
 
 
 @dp.message_handler(lambda message: user_state(message.from_user.id, message.message_id))
-async def start_message(message: types.Message):
+async def add_text(message: types.Message):
     user_id = message.from_user.id
     logger.info(str(user_id) + ' /addtext received')
     session = await get_session(user_id)
