@@ -6,9 +6,7 @@ from polyglot.text import Word
 api_url = settings.w2v_api
 
 import mysql_connect
-import settings
 
-mysql_connect.conf = settings.db_conf['prod']
 N_LAST = 3
 
 CODES = {

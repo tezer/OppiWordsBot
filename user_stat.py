@@ -6,7 +6,7 @@ import spaced_repetition
 
 oneHour = timedelta(hours=1)
 
-conf = dict()
+dbconf = dict()
 
 messages = {"no_words_added": "Looks like you haven't added words to learn yet? Try /setlanguage and then /addwords to add a few words.",
             "has_words_to_learn": "You have {} words to learn. Use /learn command to start learning them.",
@@ -24,10 +24,10 @@ def get_user_last_activity(user=None):
         query = "SELECT last_date FROM spaced_repetition WHERE user='" + user + "'"
 
     try:
-        conn = mysql.connector.connect(host=conf['host'],
-                                       database=conf['database'],
-                                       user=conf['user'],
-                                       password=conf['password'])
+        conn = mysql.connector.connect(host=dbconf['host'],
+                                       database=dbconf['database'],
+                                       user=dbconf['user'],
+                                       password=dbconf['password'])
         cursor = conn.cursor(buffered=True)
         cursor.execute(query)
         rows = cursor.fetchall()
@@ -60,10 +60,10 @@ def get_user_message(period):
     query = "SELECT user_id from users where blocked = 0"
 
     try:
-        conn = mysql.connector.connect(host=conf['host'],
-                                       database=conf['database'],
-                                       user=conf['user'],
-                                       password=conf['password'])
+        conn = mysql.connector.connect(host=dbconf['host'],
+                                       database=dbconf['database'],
+                                       user=dbconf['user'],
+                                       password=dbconf['password'])
         cursor = conn.cursor(buffered=True)
         cursor.execute(query)
         rows = cursor.fetchall()
@@ -87,11 +87,11 @@ def get_user_message(period):
                 result[user] += messages["has_words_to_learn"].format(n)
         return result
 
-
-
-if __name__ == '__main__':
-    import settings
-    conf = settings.db_conf['dev']
-    import mysql_connect
-    mysql_connect.test(conf)
-    print(get_user_message(24))
+#
+#
+# if __name__ == '__main__':
+#     import settings
+#     conf = settings.db_conf['dev']
+#     import mysql_connect
+#     mysql_connect.test(conf)
+#     print(get_user_message(24))

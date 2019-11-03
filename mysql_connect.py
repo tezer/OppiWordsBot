@@ -2,19 +2,16 @@ import mysql.connector
 from mysql.connector import Error
 import hashlib
 import datetime
-import logging
-logger = logging.getLogger('mysql_connect')
-# hdlr = logging.StreamHandler()
-hdlr = logging.FileHandler('mysql.log')
-formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-hdlr.setFormatter(formatter)
-logger.addHandler(hdlr)
-logger.setLevel(logging.DEBUG)
 
-conf = dict()
+from app import core
 
+from loguru import logger
+
+conf = core.db_conf
+logger.info(conf)
 
 def fetchone(query, args):
+    logger.info(conf)
     row = tuple()
     try:
         conn = mysql.connector.connect(host=conf['host'],
@@ -26,6 +23,7 @@ def fetchone(query, args):
         cursor.execute(query, args)
         row = cursor.fetchone()
     except Error as e:
+        logger.error(e)
         print("fetchone", e)
     finally:
         cursor.close()
