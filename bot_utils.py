@@ -96,10 +96,12 @@ def process_wiktionary(w):
 def get_definitions(language, user_lang, word):
     result = list()
     if user_lang is None:
-        user_lang = 'english'
+        user_lang = 'en'
+    if len(user_lang) > 2:
+        user_lang = CODES[user_lang]
     if user_lang in CODES.keys():
         try:
-            response = ya_dict.lookup(word, CODES[language], CODES[user_lang])
+            response = ya_dict.lookup(word, CODES[language], user_lang)
             result = to_list(json.loads(response))
 
         except Exception as e:
@@ -116,11 +118,11 @@ def get_definitions(language, user_lang, word):
         result = process_wiktionary(w)
         if len(result) > 0:
             return result
-        elif len(word) <= 50 :
+        elif len(word) <= 100 :
             try:
                 tr = translate_client.translate(
                     word,
-                    target_language=CODES[user_lang])
+                    target_language=user_lang)
                 result.append(tr['translatedText'])
             except Exception as e:
                 print(e)
