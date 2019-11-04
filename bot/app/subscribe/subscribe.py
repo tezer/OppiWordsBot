@@ -1,6 +1,7 @@
 from loguru import logger
 from aiogram import types
 from bot.app.core import bot
+from bot.bot_utils import mysql_connect as bd
 from settings import PAYMENTS_PROVIDER_TOKEN
 
 prices = [
@@ -9,6 +10,8 @@ prices = [
 
 
 async def subscribe_command(message: types.Message):
+    #TODO Check if the user already has subscription
+    #TODO If the user has subscription notify them and use this date to calculate the and date
     await bot.send_message(message.chat.id,
                            "*This is a test subscription*"
                            "\nReal cards won't work here, *no money will be debited from your account*."
@@ -33,7 +36,7 @@ async def subscribe_command(message: types.Message):
                            currency='eur',
                            prices=prices,
                            start_parameter='one-month-subscription',
-                           payload='payload string')
+                           payload='1')
 
 
 async def checkout(pre_checkout_query: types.PreCheckoutQuery):
@@ -46,3 +49,5 @@ async def got_payment(message: types.Message):
     await bot.send_message(message.chat.id,
                            'Thank you for your payment! Now you can use your premium features.',
                            parse_mode='Markdown')
+
+    bd.set_premium(message.from_user.id, message.successful_payment.invoice_payload)
