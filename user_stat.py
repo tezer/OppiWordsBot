@@ -10,7 +10,7 @@ conf = dict()
 
 messages = {"no_words_added": "Looks like you haven't added words to learn yet? Try /setlanguage and then /addwords to add a few words.",
             "has_words_to_learn": "You have {} words to learn. Use /learn command to start learning them.",
-            "all": "Hi!\nTry new SmartList for English language learners with /wordlist command."
+            "all": "Hi!\nNow <b>SmartList</b> is available in a number fo languages. Try it with /wordlist command."
                    "\nIf you have ideas to share, questions or suggestions, you can join <b>OppiWordsBotGroup</b> (https://t.me/OppiWords) to discuss . \n"
 }
 
