@@ -15,6 +15,7 @@ conf = dict()
 
 
 def fetchone(query, args):
+    logger.info(conf)
     row = tuple()
     try:
         conn = mysql.connector.connect(host=conf['host'],
@@ -26,6 +27,8 @@ def fetchone(query, args):
         cursor.execute(query, args)
         row = cursor.fetchone()
     except Error as e:
+        logger.error(query)
+        logger.error(e)
         print("fetchone", e)
     finally:
         cursor.close()
