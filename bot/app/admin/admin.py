@@ -4,7 +4,7 @@ from loguru import logger
 
 from bot.bot_utils import mysql_connect, user_stat
 from settings import admin
-from app.core import bot
+from bot.app.core import bot
 from aiogram import types
 from aiogram.utils.exceptions import BotBlocked as Blocked
 

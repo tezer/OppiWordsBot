@@ -1,7 +1,7 @@
 import pickle
 
 from loguru import logger
-from app.core import authorize, bot, LANGS, sessions
+from bot.app.core import authorize, bot, LANGS, sessions
 from aiogram import types
 
 async def setlanguage_command_message(message: types.Message):

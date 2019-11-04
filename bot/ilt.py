@@ -1,14 +1,6 @@
+from loguru import logger
 from bot.bot_utils import spaced_repetition as sr, mysql_connect as db
 from collections import OrderedDict
-
-import logging
-logger = logging.getLogger('ilt')
-# hdlr = logging.StreamHandler()
-hdlr = logging.FileHandler('ilt.log')
-formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-hdlr.setFormatter(formatter)
-logger.addHandler(hdlr)
-logger.setLevel(logging.DEBUG)
 
 
 task_transitions={0:3, 3:2, 2:1}

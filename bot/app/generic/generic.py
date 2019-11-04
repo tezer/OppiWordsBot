@@ -4,7 +4,7 @@ import sys
 from loguru import logger
 from aiogram import types
 
-from app.core import authorize, bot, sessions, get_session, LANGS
+from bot.app.core import authorize, bot, sessions, get_session, LANGS
 from bot.bot_utils.bot_utils import to_vertical_keyboard
 from bot.session import Session
 from bot.bot_utils import mysql_connect as db

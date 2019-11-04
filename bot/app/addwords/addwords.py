@@ -2,9 +2,9 @@ import time
 
 from loguru import logger
 from aiogram import types
-from app.core import authorize, bot, RESTART
+from bot.app.core import authorize, bot, RESTART
 from bot.bot_utils.bot_utils import to_one_row_keyboard, truncate, to_vertical_keyboard, get_definitions
-from app.wordlist import wordlist
+from bot.app.wordlist import wordlist
 from bot.bot_utils import spaced_repetition as sr, mysql_connect
 
 

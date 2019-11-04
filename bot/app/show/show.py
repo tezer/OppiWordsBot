@@ -4,7 +4,7 @@ from loguru import logger
 from aiogram import types
 
 from bot.bot_utils import mysql_connect
-from app.core import authorize, bot
+from bot.app.core import authorize, bot
 
 async def show_command(message: types.Message):
     logger.info(str(message.from_user.id) + ' ' + str(message.text))

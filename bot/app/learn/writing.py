@@ -2,8 +2,8 @@ import time
 from aiogram import types
 from loguru import logger
 from bot.bot_utils import spaced_repetition as sr
-from app.core import authorize, bot, RESTART
-from app.learn.control import do_learning1
+from bot.app.core import authorize, bot, RESTART
+from bot.app.learn.control import do_learning1
 from bot.bot_utils.bot_utils import compare
 
 

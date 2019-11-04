@@ -2,8 +2,8 @@ from loguru import logger
 from aiogram import types
 
 from bot.bot_utils import mysql_connect, word_lists
-from app.core import authorize, bot, get_session
-from app.wordlist import wordlist
+from bot.app.core import authorize, bot, get_session
+from bot.app.wordlist import wordlist
 
 
 async def add_text_command(message: types.Message):

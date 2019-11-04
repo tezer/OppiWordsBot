@@ -7,6 +7,7 @@ from bot.ilt import tasks
 
 from bot.app.setlanguage import setlanguage
 from bot.app.delete import delete
+from bot.app.subscribe import subscribe
 from bot.app.show import show
 from bot.app.generic import generic
 from bot.app.admin import admin
@@ -56,6 +57,11 @@ async def settings_message(message: types.Message):
 @dp.message_handler(lambda message: user_state(message.from_user.id, message.message_id))
 async def set_user_language_message(message: types.Message):
     await generic.set_user_language_message(message)
+
+# SUBSCRIBE =========================================================
+@dp.message_handler(commands=['subscribe'])
+async def start_message(message: types.Message):
+    await subscribe.subscribe_message(message)
 
 
 # SHOW WORDS ========================================================
