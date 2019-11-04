@@ -2,7 +2,7 @@ import ebisu
 from datetime import datetime, timedelta
 import hashlib
 import json
-import mysql_connect as db
+from bot.bot_utils import mysql_connect as db
 
 oneHour = timedelta(hours=1)
 defaultModel = (3., 3., 4.) # alpha, beta, and half-life in hours

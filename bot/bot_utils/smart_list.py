@@ -5,7 +5,7 @@ from polyglot.text import Word
 
 api_url = settings.w2v_api
 
-import mysql_connect
+from bot.bot_utils import mysql_connect
 
 N_LAST = 3
 

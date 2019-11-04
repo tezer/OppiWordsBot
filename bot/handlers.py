@@ -3,20 +3,18 @@ from aiogram import types
 from aiogram.utils.callback_data import CallbackData
 from aiogram.types.message import ContentTypes
 
-from ilt import tasks
+from bot.ilt import tasks
 
-from app.setlanguage import setlanguage
-from app.delete import delete
-from app.show import show
-from app.generic import generic
-from app.admin import admin
-from app.addtext import addtext
-from app.wordlist import wordlist
-from app.addwords import addwords
-from app.learn import reading, listening, speaking, writing, control
-from app.core import dp, user_state
-
-from loguru import logger
+from bot.app.setlanguage import setlanguage
+from bot.app.delete import delete
+from bot.app.show import show
+from bot.app.generic import generic
+from bot.app.admin import admin
+from bot.app.addtext import addtext
+from bot.app.wordlist import wordlist
+from bot.app.addwords import addwords
+from bot.app.learn import reading, speaking, writing, control
+from bot.app.core import dp, user_state
 
 #
 # help - get help
@@ -245,7 +243,6 @@ async def finish_adding_meanings_action(query: types.CallbackQuery, callback_dat
 
 
 # SUBSCRIBE ====================================================
-from app import subscribtion, core
 
 
 # UNKNOWN input

@@ -1,5 +1,4 @@
-import spaced_repetition as sr
-import mysql_connect as db
+from bot.bot_utils import spaced_repetition as sr, mysql_connect as db
 from collections import OrderedDict
 
 import logging

@@ -5,7 +5,7 @@ from aiogram import types
 from aiogram.utils.callback_data import CallbackData
 import logging
 
-from yandex_dictionary import YandexDictionary
+from bot.bot_utils.yandex_dictionary import YandexDictionary
 import settings
 import os
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"]= settings.google_env

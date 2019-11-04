@@ -1,8 +1,7 @@
 import mysql.connector
 from mysql.connector import Error
 from datetime import datetime, timedelta
-import spaced_repetition
-
+from bot.bot_utils import spaced_repetition
 
 oneHour = timedelta(hours=1)
 
