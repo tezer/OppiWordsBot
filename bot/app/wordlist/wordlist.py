@@ -4,8 +4,8 @@ import re
 from aiogram import types
 
 from bot.bot_utils import mysql_connect, smart_list, word_lists
-from app.addwords.addwords import wiktionary_search
-from app.core import authorize, bot, logger
+from bot.app.addwords.addwords import wiktionary_search
+from bot.app.core import authorize, bot, logger
 from bot.bot_utils.bot_utils import to_vertical_keyboard
 
 

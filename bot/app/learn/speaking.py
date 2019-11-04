@@ -1,4 +1,4 @@
-from app.core import authorize, bot
+from bot.app.core import authorize, bot
 from loguru import logger
 from aiogram import types
 

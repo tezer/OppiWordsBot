@@ -2,7 +2,7 @@ from loguru import logger
 from aiogram import types
 
 from bot.bot_utils import mysql_connect
-from app.core import authorize, bot
+from bot.app.core import authorize, bot
 from bot.bot_utils.bot_utils import to_one_row_keyboard
 
 
