@@ -1,9 +1,11 @@
+import calendar
+
 import mysql.connector
 from mysql.connector import Error
 import hashlib
 import datetime
 
-from app import core
+from bot.app import core
 
 from loguru import logger
 
@@ -397,6 +399,23 @@ def update_blocked(user_id):
         conn.close()
     return None
 
+def add_months(sourcedate, months):
+    month = sourcedate.month - 1 + months
+    year = sourcedate.year + month // 12
+    month = month % 12 + 1
+    day = min(sourcedate.day, calendar.monthrange(year,month)[1])
+    return datetime.date(year, month, day)
+
+
+def set_premium(user, number_of_month):
+    # TODO check the input
+    n = int(number_of_month)
+    # TODO get the start_date from DB if current subscription is still on
+    start_date = datetime.date.today()
+    end_date = add_months(start_date, n)
+    print(user, start_date, end_date)
+    return end_date
+
 def check_subscribed(user):
     query = "SELECT to_date FROM subscribed WHERE user=%s"
     date = fetchone(query, user)
@@ -404,9 +423,9 @@ def check_subscribed(user):
         return False
     else:
         d = date[0]
-        f = '%Y-%m-%d %H:%M:%S'
-        d = datetime.datetime.strptime(d, f)
-        return datetime.now() < d
+        f = '%Y-%m-%d'
+        d = date.strptime(d, f)
+        return date.now() <= d
 
 
 def test(c):
@@ -415,6 +434,7 @@ def test(c):
 
 
 # if __name__ == '__main__':
+#     set_premium('000', '1')
     # insert_word("test", "lang", "word", "definition", 0, "12345")
     # words=[
     #     ("test", "lang", "word0", "definition", 0, "012345"),
