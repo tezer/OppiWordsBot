@@ -61,8 +61,15 @@ async def set_user_language_message(message: types.Message):
 # SUBSCRIBE =========================================================
 @dp.message_handler(commands=['subscribe'])
 async def start_message(message: types.Message):
-    await subscribe.subscribe_message(message)
+    await subscribe.subscribe_command(message)
 
+@dp.pre_checkout_query_handler(lambda query: True)
+async def checkout(pre_checkout_query: types.PreCheckoutQuery):
+    await subscribe.checkout(pre_checkout_query)
+
+@dp.message_handler(content_types=ContentTypes.SUCCESSFUL_PAYMENT)
+async def got_payment(message: types.Message):
+    await subscribe.got_payment(message)
 
 # SHOW WORDS ========================================================
 @dp.message_handler(commands=['show'])
