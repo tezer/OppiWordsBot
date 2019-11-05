@@ -49,7 +49,7 @@ async def start_message(message: types.Message):
 async def help_message(message: types.Message):
     logger.info(str(message.from_user.id) + ' /help command')
     await message.reply(help_text)
-    await bot.send_photo(message.from_user.id, types.InputFile('menu1.1.png'))
+    await bot.send_photo(message.from_user.id, types.InputFile('bot/menu1.1.png'))
     await bot.send_message(message.from_user.id, "*If you have questions, you can ask them at https://t.me/OppiWords*")
 
 
