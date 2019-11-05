@@ -43,7 +43,7 @@ async def start_message(message: types.Message):
                               message.from_user.language_code)
     sessions[message.from_user.id] = s
     await message.reply(help_text)
-    await bot.send_photo(message.from_user.id, types.InputFile('menu1.1.png'))
+    await bot.send_photo(message.from_user.id, types.InputFile('bot/menu1.1.png'))
 
 
 async def help_message(message: types.Message):
