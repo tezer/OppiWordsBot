@@ -407,16 +407,50 @@ def add_months(sourcedate, months):
     return datetime.date(year, month, day)
 
 
-def get_subscription_expiration_date(user):
-    query = "SELECT to_date FROM subscribed WHERE user=%s"
+def get_subscription_dates(user):
+    query = "SELECT start_date, end_date FROM subscribed WHERE user=%s"
     date = fetchone(query, user)
     if len(date) == 0:
-        return False
+        return None
     else:
-        d = date[0]
-        f = '%Y-%m-%d'
-        d = date.strptime(d, f)
-        return d
+        return date
+
+
+def insertone(query, args):
+    try:
+        conn = mysql.connector.connect(host=conf['host'],
+                                       database=conf['database'],
+                                       user=conf['user'],
+                                       password=conf['password'])
+        cursor = conn.cursor()
+        cursor.execute(query, args)
+        conn.commit()
+    except Error as error:
+        logger.error("received error message {}".format(error))
+        print('insertone', error)
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def updateone(query, args):
+    try:
+        conn = mysql.connector.connect(host=conf['host'],
+                                       database=conf['database'],
+                                       user=conf['user'],
+                                       password=conf['password'])
+        cursor = conn.cursor()
+        cursor.execute(query, args)
+        conn.commit()
+    except Error as error:
+        print('updateone', error)
+        logger.error("{} received error message {}".format(query, error))
+    finally:
+        cursor.close()
+        conn.close()
+    return None
+
 
 def set_premium(user, number_of_month):
     try:
@@ -426,14 +460,27 @@ def set_premium(user, number_of_month):
         return False
     start_date = datetime.date.today()
     if check_subscribed(user):
-        start_date = get_subscription_expiration_date(user)
-    end_date = add_months(start_date, n)
-    print(user, start_date, end_date)
+        dates = get_subscription_dates(user)
+        end_date = add_months(dates[1], n)
+        data = (start_date, end_date, user)
+        query = 'UPDATE subscribed SET start_date = %s, end_date=%s WHERE user_id = %s'
+        updateone(query, data)
+    else:
+        end_date = add_months(start_date, n)
+        query = "INSERT INTO subscribed (user, start_date,  end_date) " \
+                "VALUES(%s,%s,%s)"
+        data = (user, start_date, end_date)
+        insertone(query, data)
+
+    logger.info("{} subscribed from {} to {}", user, start_date, end_date)
     return end_date
 
 def check_subscribed(user):
-        d = get_subscription_expiration_date(user)
-        return datetime.date.today() <= d
+        d = get_subscription_dates(user)
+        if d is None:
+            return False
+        end_date = datetime.datetime.strptime(d[1], "%Y-%m-%d")
+        return datetime.date.today() <= end_date
 
 
 def test(c):
