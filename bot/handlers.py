@@ -59,6 +59,13 @@ async def set_user_language_message(message: types.Message):
     await generic.set_user_language_message(message)
 
 # SUBSCRIBE =========================================================
+# LL 19.99 € = 6.66 € в месяц (3mo);  26.9€ = 2.2€ в месяц (12mo)
+# EasyTen €1.08 - €31.17 per item
+# Mondly €4.99 - €191.99 per item
+# €3.99 - €89.95 per item
+
+# TODO: one week free; specify number of months; discounted 1 year subscription
+# TODO: limit free use?
 @dp.message_handler(commands=['subscribe'])
 async def start_message(message: types.Message):
     await subscribe.subscribe_command(message)
