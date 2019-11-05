@@ -36,6 +36,7 @@ async def start_message(message: types.Message):
     s = Session(message.from_user.id, message.from_user.first_name, message.from_user.last_name,
                 message.from_user.language_code)
     s.subscribed = db.check_subscribed(message.from_user.id)
+    logger.info("{} subsctibtion status is {}", message.from_user.id, s.subscribed)
     if message.from_user.language_code is None:
         await bot.send_message(message.from_user.id,
                                "Your user language is not set. It means that all word definitions will be in English. Set your Telegram user language and /start the bot again.")
