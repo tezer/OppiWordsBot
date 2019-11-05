@@ -409,7 +409,7 @@ def add_months(sourcedate, months):
 
 def get_subscription_dates(user):
     query = "SELECT start_date, end_date FROM subscribed WHERE user=%s"
-    date = fetchone(query, user)
+    date = fetchone(query, (user,))
     if len(date) == 0:
         return None
     else:
@@ -479,8 +479,8 @@ def check_subscribed(user):
         d = get_subscription_dates(user)
         if d is None:
             return False
-        end_date = datetime.datetime.strptime(d[1], "%Y-%m-%d")
-        return datetime.date.today() <= end_date
+        end_date = datetime.datetime.strptime(str(d[1]), "%Y-%m-%d")
+        return datetime.date.today() <= end_date.date()
 
 
 def test(c):
