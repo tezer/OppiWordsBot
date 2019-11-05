@@ -407,16 +407,7 @@ def add_months(sourcedate, months):
     return datetime.date(year, month, day)
 
 
-def set_premium(user, number_of_month):
-    # TODO check the input
-    n = int(number_of_month)
-    # TODO get the start_date from DB if current subscription is still on
-    start_date = datetime.date.today()
-    end_date = add_months(start_date, n)
-    print(user, start_date, end_date)
-    return end_date
-
-def check_subscribed(user):
+def get_subscription_expiration_date(user):
     query = "SELECT to_date FROM subscribed WHERE user=%s"
     date = fetchone(query, user)
     if len(date) == 0:
@@ -425,7 +416,24 @@ def check_subscribed(user):
         d = date[0]
         f = '%Y-%m-%d'
         d = date.strptime(d, f)
-        return date.now() <= d
+        return d
+
+def set_premium(user, number_of_month):
+    try:
+        n = int(number_of_month)
+    except ValueError as  e:
+        logger.error(e)
+        return False
+    start_date = datetime.date.today()
+    if check_subscribed(user):
+        start_date = get_subscription_expiration_date(user)
+    end_date = add_months(start_date, n)
+    print(user, start_date, end_date)
+    return end_date
+
+def check_subscribed(user):
+        d = get_subscription_expiration_date(user)
+        return datetime.date.today() <= d
 
 
 def test(c):
