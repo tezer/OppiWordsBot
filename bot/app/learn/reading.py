@@ -3,11 +3,12 @@ import random
 from aiogram.utils.exceptions import CantParseEntities
 from loguru import logger
 from aiogram import types
-from bot.app.core import authorize, bot
+from bot.app.core import authorize, bot, RESTART
 
 from bot.app.learn.control import do_learning1, do_learning
 from bot.bot_utils.bot_utils import to_vertical_keyboard, to_one_row_keyboard
 from bot.ilt import level_up
+from bot.bot_utils import spaced_repetition as sr
 
 
 # Reading errors loop, end of the learning loop if no more words to learn
@@ -73,6 +74,23 @@ async def i_remember(query: types.CallbackQuery, callback_data: dict):
     await do_learning(session)
 
 
+async def callback_forgot_action(query: types.CallbackQuery, callback_data: dict):
+    logger.debug(str(query.from_user.id)
+                 + ' Got this callback data: %r', callback_data)
+    session, isValid = await authorize(query.from_user.id)
+    if not isValid:
+        return
+    hid = session.get_current_hid()
+    if hid is None:
+        logger.error(str(session.get_user_id()) + ' hid is None')
+        await bot.send_message(session.get_user_id(), RESTART)
+        return
+    sr.update_item(hid, float(callback_data['data']))
+    session.delete_current_word()
+    n = len(session.words_to_learn) - session.current_word
+    if n > 0:
+        await query.answer(str(n) + " words to go")
+    await do_learning(session)
 
 
 # reading task showing definition, adding word to the error list
