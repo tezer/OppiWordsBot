@@ -297,8 +297,7 @@ def add_list(user, word_list, lang, list_name):
     try:
         query = "INSERT IGNORE INTO word_lists (hid, listname, user, LANGUAGE, word ) " \
                 "VALUES(%s,%s,%s,%s,%s)"
-        # query = "INSERT INTO word_lists (hid, listname, user, LANGUAGE, word ) " \
-        #         "VALUES(%s,%s,%s,%s,%s)"
+
         logger.debug("{} data ready".format(user))
         conn = mysql.connector.connect(host=conf['host'],
                                        database=conf['database'],
