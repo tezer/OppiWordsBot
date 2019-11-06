@@ -3,8 +3,7 @@ import re
 from wiktionaryparser import WiktionaryParser
 from aiogram import types
 from aiogram.utils.callback_data import CallbackData
-import logging
-
+from expiringdict import ExpiringDict
 from bot.bot_utils.yandex_dictionary import YandexDictionary
 import settings
 import os
@@ -12,16 +11,10 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"]= settings.google_env
 from google.cloud import translate_v2
 translate_client = translate_v2.Client()
 import difflib
-
-logger = logging.getLogger('utils')
-# hdlr = logging.StreamHandler()
-hdlr = logging.FileHandler('bot.log')
-formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-hdlr.setFormatter(formatter)
-logger.addHandler(hdlr)
-logger.setLevel(logging.DEBUG)
+from loguru import logger
 
 
+MEM_CACHE = ExpiringDict(max_len=100, max_age_seconds=6000)
 
 key = settings.ya_key
 ya_dict = YandexDictionary(key)
@@ -94,6 +87,9 @@ def process_wiktionary(w):
 
 
 def get_definitions(language, user_lang, word):
+    if language + '_' + user_lang + '_' + word in MEM_CACHE.keys():
+        logger.debug("Reading translations from cache for " + language + '_' + user_lang + '_' + word)
+        return MEM_CACHE[language + '_' + user_lang + '_' + word]
     result = list()
     if user_lang is None:
         user_lang = 'english'
@@ -111,12 +107,13 @@ def get_definitions(language, user_lang, word):
         w = parser.fetch(word.lower(), language=language)
     except Exception as e:
         logger.warning("Wiktionary exception: " + str(e))
+        MEM_CACHE[language + '_' + user_lang + '_' + word] = result
         return result
     if len(w) > 0:
         result = process_wiktionary(w)
         if len(result) > 0:
             return result
-        elif len(word) <= 50 :
+        elif len(word) <= 500 :
             try:
                 tr = translate_client.translate(
                     word,
@@ -124,6 +121,7 @@ def get_definitions(language, user_lang, word):
                 result.append(tr['translatedText'])
             except Exception as e:
                 print(e)
+    MEM_CACHE[language + '_' + user_lang + '_' + word] = result
     return result
 
 
