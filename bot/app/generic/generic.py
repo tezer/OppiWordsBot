@@ -84,6 +84,20 @@ async def set_user_language_message(message: types.Message):
     with open('sessions.pkl', 'wb') as f:
         pickle.dump(sessions, f)
 
+async def stop_message(message: types.Message):
+    logger.info(str(message.from_user.id) + ' /stop command')
+    session, isValid = await authorize(message.from_user.id, with_lang=True)
+    if not isValid:
+        return
+    session.status = str()
+    session.words_to_learn = list()
+    session.read_error_storage = list()
+    session.current_word = 0
+    session.hid_cash=str()
+    session.words_to_add=None
+    session.definitions = list()
+    session.list_hid_word = None  # ""(list_name, hid)
+    await message.reply("You session is restarted.")
 
 async def text_message(message):
     logger.debug(str(message.from_user.id)
