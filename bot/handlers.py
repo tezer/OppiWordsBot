@@ -49,6 +49,11 @@ async def help_message(message: types.Message):
     await generic.help_message(message)
 
 
+@dp.message_handler(commands=['stop', 'finish', 'restart'])
+async def stop_message(message: types.Message):
+    await generic.stop_message(message)
+
+
 @dp.message_handler(commands=['settings'])
 async def settings_message(message: types.Message):
     await generic.settings_message(message)
