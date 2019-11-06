@@ -5,19 +5,11 @@ from google.cloud.speech import enums
 from google.cloud.speech import types as gtypes
 import urllib.request
 import os
-
+from loguru import logger
 
 import settings
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"]= settings.google_env
-import logging
 
-logger = logging.getLogger('speech2text')
-hdlr = logging.StreamHandler()
-# hdlr = logging.FileHandler('speech2text.log')
-formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-hdlr.setFormatter(formatter)
-logger.addHandler(hdlr)
-logger.setLevel(logging.DEBUG)
 
 configs = dict()
 
