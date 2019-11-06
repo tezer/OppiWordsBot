@@ -59,10 +59,7 @@ def fetch_by_hids(user_id, hids):
         conn.close()
         return result
 
-
-def delete_by_hid(hid):
-    query = "DELETE FROM words WHERE hid = %s"
-    args = (hid,)
+def deleteone(query, args):
     res = True
     try:
         conn = mysql.connector.connect(host=conf['host'],
@@ -73,12 +70,21 @@ def delete_by_hid(hid):
         cursor.execute(query, args)
         conn.commit()
     except Error as e:
-        print('delete_by_hid', e)
+        print('deleteone', e)
+        logger.error(e)
         res = False
     finally:
         cursor.close()
         conn.close()
         return res
+
+def delete_by_hid(hid):
+    query = "DELETE FROM words WHERE hid = %s"
+    args = (hid,)
+    res1 = deleteone(query, args)
+    query = "DELETE FROM spaced_repetition WHERE hid = %s"
+    res2 = deleteone(query, args)
+    return res1 and res2
 
 
 def fetchall(query, args):
@@ -335,23 +341,7 @@ def get_list(user_id, language, list_name):
 def delete_from_list(hid):
     query = "DELETE FROM word_lists WHERE hid = %s"
     args = (hid,)
-    res = True
-    try:
-        conn = mysql.connector.connect(host=conf['host'],
-                                       database=conf['database'],
-                                       user=conf['user'],
-                                       password=conf['password'])
-        cursor = conn.cursor()
-        cursor.execute(query, args)
-        conn.commit()
-    except Error as e:
-        print('delete_from_list', e)
-        logger.error("{} received error message {}".format(hid, e))
-        res = False
-    finally:
-        cursor.close()
-        conn.close()
-        return res
+    return deleteone(query, args)
 
 
 def lists_to_add(user, lang):
