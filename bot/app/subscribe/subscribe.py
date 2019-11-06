@@ -2,11 +2,12 @@ from loguru import logger
 from aiogram import types
 from bot.app.core import bot
 from bot.bot_utils import mysql_connect as bd
-from settings import PAYMENTS_PROVIDER_TOKEN
+from settings import PAYMENTS_PROVIDER_TOKEN, prices
 
-prices = [
-    types.LabeledPrice(label='One month subscription', amount=500),
-]
+
+def get_price(months):
+    price = prices[months]
+    return types.LabeledPrice(label=price['label'], amount=price['amount'])
 
 
 async def subscribe_command(message: types.Message):
@@ -34,7 +35,7 @@ async def subscribe_command(message: types.Message):
                                        'send an email to info@oppi.ai with the description of your problem',
                            provider_token=PAYMENTS_PROVIDER_TOKEN,
                            currency='eur',
-                           prices=prices,
+                           prices=get_price(1),
                            start_parameter='one-month-subscription',
                            payload='1')
 
