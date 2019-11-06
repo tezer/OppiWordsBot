@@ -92,17 +92,24 @@ async def add_word_to_storage(session, word, definition):
 async def prepare_definition_selection(session, query):
     logger.debug(str(session.get_user_id()) + " prepare_definition_selection")
     definitions = session.definitions
+    k = await prepare_keyboard(definitions, session.list_hid_word)
+    if query is None:
+        await bot.send_message(session.get_user_id(), "Tap a button with a meaning to learn", reply_markup=k,
+                               parse_mode=types.ParseMode.MARKDOWN)
+    else:
+        await bot.edit_message_reply_markup(session.get_user_id(), query.message.message_id, reply_markup=k)
+
+
+def prepare_keyboard(definitions, list_hid_word):
     definitions = truncate(definitions,
                            30)  # FIXME ideally, it should be called once, not every time the keyboard is built
     actions = ['meaning'] * len(definitions)
     button_titiles = definitions
     data = list(range(0, len(actions), 1))
-
     actions.append('add_user_definition')
     button_titiles.append("ADD YOUR DEFINITION")
     data.append(0)
-
-    if session.list_hid_word is None:
+    if list_hid_word is None:
         button_titiles.append("CLOSE")
         actions.append('finish_adding_meanings')
         data.append(-1)
@@ -113,14 +120,8 @@ async def prepare_definition_selection(session, query):
         button_titiles.append("FINISH")
         actions.append('finish_adding_meanings')
         data.append(-1)
-
-    # k = to_vertical_keyboard(definitions, action=actions, data=list(range(0, len(actions), 1)))
     k = to_vertical_keyboard(definitions, action=actions, data=data)
-    if query is None:
-        await bot.send_message(session.get_user_id(), "Tap a button with a meaning to learn", reply_markup=k,
-                               parse_mode=types.ParseMode.MARKDOWN)
-    else:
-        await bot.edit_message_reply_markup(session.get_user_id(), query.message.message_id, reply_markup=k)
+    return k
 
 
 # Adding selected definition
@@ -146,7 +147,6 @@ async def callback_add_meaning_action(query: types.CallbackQuery, callback_data:
         logger.warning(e)
         await bot.send_message(session.get_user_id(), RESTART)
         return
-    # session.words_to_add = None # Not needed for multiple definitions
     del session.definitions[n]
     logger.info(str(session.get_user_id()) + " Adding new word: "
                 + word + " - " + definition)
