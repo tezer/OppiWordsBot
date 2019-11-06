@@ -12,6 +12,7 @@ from loguru import logger
 conf = core.db_conf
 logger.info(conf)
 
+
 def fetchone(query, args):
     logger.info(conf)
     row = tuple()
@@ -177,7 +178,7 @@ def unblock_user(user_id):
                                        user=conf['user'],
                                        password=conf['password'])
         cursor = conn.cursor()
-        cursor.execute(query, (user_id, ))
+        cursor.execute(query, (user_id,))
         conn.commit()
     except Error as error:
         print('unblock_user', error)
@@ -198,7 +199,7 @@ def check_exists(user_id):
         cursor = conn.cursor(buffered=True)
 
         query = "SELECT blocked FROM users WHERE user_id=%s"
-        cursor.execute(query, (user_id, ))
+        cursor.execute(query, (user_id,))
         result = cursor.fetchone()
 
     except Error as e:
@@ -278,14 +279,13 @@ def update_sr_item(hid, model, lastTime):
         conn.close()
 
 
-
 def add_list(user, word_list, lang, list_name):
     data = list()
     logger.debug("Adding {} words to list_name {} for user {}"
                  .format(len(word_list), list_name, user))
     for word in word_list:
-        hid = hashlib.md5((word+lang+user+list_name).encode('utf-8')).hexdigest()
-        args = (hid, list_name, user, lang, word )
+        hid = hashlib.md5((word + lang + user + list_name).encode('utf-8')).hexdigest()
+        args = (hid, list_name, user, lang, word)
         data.append(args)
 
     try:
@@ -307,7 +307,6 @@ def add_list(user, word_list, lang, list_name):
     finally:
         cursor.close()
         conn.close()
-
 
 
 def get_list(user_id, language, list_name):
@@ -333,7 +332,6 @@ def get_list(user_id, language, list_name):
         return result
 
 
-
 def delete_from_list(hid):
     query = "DELETE FROM word_lists WHERE hid = %s"
     args = (hid,)
@@ -354,7 +352,6 @@ def delete_from_list(hid):
         cursor.close()
         conn.close()
         return res
-
 
 
 def lists_to_add(user, lang):
@@ -399,11 +396,12 @@ def update_blocked(user_id):
         conn.close()
     return None
 
+
 def add_months(sourcedate, months):
     month = sourcedate.month - 1 + months
     year = sourcedate.year + month // 12
     month = month % 12 + 1
-    day = min(sourcedate.day, calendar.monthrange(year,month)[1])
+    day = min(sourcedate.day, calendar.monthrange(year, month)[1])
     return datetime.date(year, month, day)
 
 
@@ -475,32 +473,31 @@ def set_premium(user, number_of_month):
     logger.info("{} subscribed from {} to {}", user, start_date, end_date)
     return end_date
 
+
 def check_subscribed(user):
-        d = get_subscription_dates(user)
-        if d is None:
-            return False
-        end_date = datetime.datetime.strptime(str(d[1]), "%Y-%m-%d")
-        return datetime.date.today() <= end_date.date()
+    d = get_subscription_dates(user)
+    if d is None:
+        return False
+    end_date = datetime.datetime.strptime(str(d[1]), "%Y-%m-%d")
+    return datetime.date.today() <= end_date.date()
 
 
 def test(c):
     global conf
     conf = c
 
-
 # if __name__ == '__main__':
 #     set_premium('000', '1')
-    # insert_word("test", "lang", "word", "definition", 0, "12345")
-    # words=[
-    #     ("test", "lang", "word0", "definition", 0, "012345"),
-    #     ("test", "lang1", "word1", "definition", 0, "0123451"),
-    #     ("test", "lang", "word1", "definition", 0, "0123452"),
-    #     ("test", "lang", "word2", "definition", 0, "0123453"),
-    #     ("test", "lang1", "word0", "definition", 0, "0123454")
-    # ]
-    # insert_words(words)
-    # print(fetchall("SELECT word, language FROM words WHERE user='76673167' AND mode=0 AND language='finnish'"))
-    # rows = fetchall("SELECT word, definition, mode FROM words WHERE user='test' AND hid='12345'")
-    # print(rows)
-    # fetchmany("SELECT * FROM words", 5)
-
+# insert_word("test", "lang", "word", "definition", 0, "12345")
+# words=[
+#     ("test", "lang", "word0", "definition", 0, "012345"),
+#     ("test", "lang1", "word1", "definition", 0, "0123451"),
+#     ("test", "lang", "word1", "definition", 0, "0123452"),
+#     ("test", "lang", "word2", "definition", 0, "0123453"),
+#     ("test", "lang1", "word0", "definition", 0, "0123454")
+# ]
+# insert_words(words)
+# print(fetchall("SELECT word, language FROM words WHERE user='76673167' AND mode=0 AND language='finnish'"))
+# rows = fetchall("SELECT word, definition, mode FROM words WHERE user='test' AND hid='12345'")
+# print(rows)
+# fetchmany("SELECT * FROM words", 5)
