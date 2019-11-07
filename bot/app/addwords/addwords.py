@@ -199,9 +199,14 @@ async def adding_words(message):
     word = session.words_to_add[0]
     session.words_to_add = None
     logger.debug(word + ": " + definition)
+    if session.list_hid_word is not None:
+        listname = session.list_hid_word[0]
+        list_hid = session.list_hid_word[1]
     await add_word_to_storage(session=session,
                               word=word,
-                              definition=definition)
+                              definition=definition,
+                              listname=listname,
+                              list_hid=list_hid)
     session.status = "/addwords"
     if session.list_hid_word is not None:
         await wordlist.adding_list_words(message, None, None)
