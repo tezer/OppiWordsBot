@@ -476,7 +476,7 @@ def check_subscribed(user):
 
 #TEXTS ============================================================
 def add_text(language, text):
-    hid = hashlib.md5((text).encode('utf-8')).hexdigest()
+    hid = hashlib.md5(text.encode('utf-8')).hexdigest()
 
     query = "INSERT INTO texts (hid, language, text) " \
                 "VALUES(%s,%s,%s)"
@@ -502,14 +502,14 @@ def add_sentence(text, start, end, text_hid):
 
 def add_sentence_translation(translation, sent_hid, lang):
     hid = hashlib.md5((translation).encode('utf-8')).hexdigest()
-    query = "INSERT INTO translations (hid, sent_hid, language) " \
-                "VALUES(%s, %s, %s)"
-    args = (hid,sent_hid, lang)
+    query = "INSERT INTO translations (hid, sent_hid, language, translation) " \
+                "VALUES(%s, %s, %s, %s)"
+    args = (hid, sent_hid, lang, translation)
     insertone(query, args)
     return hid
 
 def add_text_word(word, sent_hid, lang, user,  list_name):
-    hid = get_hid(word, lang, user,  list_name)
+    hid = get_hid(word, lang, str(user),  list_name)
     query = "INSERT INTO  text_words(hid, sent_hid) " \
                 "VALUES(%s, %s)"
     args = (hid,sent_hid)
@@ -518,6 +518,34 @@ def add_text_word(word, sent_hid, lang, user,  list_name):
                 "VALUES(%s,%s,%s,%s,%s)"
     args = (hid, list_name, user, lang, word)
     insertone(query, args)
+
+def get_context(list_hid):
+    # select sent_hid from text_words where hid='286e0232518ad56ebd96586026b89ff4';
+    # SELECT translation FROM translations WHERE sent_hid='23c080b92c0819da5b8c8cbfd8e1e86e';
+    # SELECT start, end, text_hid FROM sentences WHERE hid='23c080b92c0819da5b8c8cbfd8e1e86e';
+    # SELECT text FROM texts WHERE hid='4aeaa92457047f1d13e522a7b3cb7613';
+    translation = ''
+    context = ''
+    query = 'SELECT sent_hid FROM text_words WHERE hid=%s'
+    args = (list_hid, )
+    sent_hid = fetchone(query, args)
+    if len(sent_hid) == 0:
+        return ''
+
+    query = 'SELECT translation FROM translations WHERE sent_hid=%s';
+    res = fetchone(query, sent_hid)
+    if len(res) > 0:
+        translation = res[0]
+
+    query = 'SELECT start, end, text_hid FROM sentences WHERE hid=%s'
+    start_end_text_hid = fetchone(query, sent_hid)
+
+    query = 'SELECT text FROM texts WHERE hid=%s'
+    args = (start_end_text_hid[2],)
+    text = fetchone(query, args)[0]
+    if len(text) >= start_end_text_hid[1]:
+        context = text[start_end_text_hid[0]:start_end_text_hid[1]]
+    return translation, context
 
 
 def test(c):
