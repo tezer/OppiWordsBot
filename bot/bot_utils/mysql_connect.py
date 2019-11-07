@@ -134,10 +134,10 @@ def fetchmany(query, n):
         conn.close()
 
 
-def insert_word(user, language, word, definition, mode, hid):
-    query = "INSERT INTO words(user, language, word, definition, mode, hid) " \
-            "VALUES(%s,%s,%s,%s,%s,%s)"
-    args = (user, language, word, definition, mode, hid)
+def insert_word(user, language, word, definition, mode, hid, listname, list_hid):
+    query = "INSERT INTO words(user, language, word, definition, mode, hid, listname, list_hid) " \
+            "VALUES(%s,%s,%s,%s,%s,%s, %s, %s)"
+    args = (user, language, word, definition, mode, hid, listname, list_hid)
 
     try:
         conn = mysql.connector.connect(host=conf['host'],
