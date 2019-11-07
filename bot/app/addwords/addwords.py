@@ -80,19 +80,27 @@ async def wiktionary_search(message):
         await prepare_definition_selection(session, None)
 
 
-async def add_word_to_storage(session, word, definition):
+async def add_word_to_storage(session, word, definition, listname, list_hid):
     # session.get_session()
     hid = sr.add_item(
         (session.get_user_id(), session.active_lang()), (word, definition), 0)
-    mysql_connect.insert_word(session.get_user_id(), session.active_lang(),
-                              word, definition, 0, hid)
+
+    mysql_connect.insert_word(session.get_user_id(),
+                              session.active_lang(),
+                              word,
+                              definition,
+                              0,
+                              hid,
+                              listname,
+                              list_hid)
+    return hid
 
 
 # building up inline keybard
 async def prepare_definition_selection(session, query):
     logger.debug(str(session.get_user_id()) + " prepare_definition_selection")
     definitions = session.definitions
-    k = await prepare_keyboard(definitions, session.list_hid_word)
+    k = prepare_keyboard(definitions, session.list_hid_word)
     if query is None:
         await bot.send_message(session.get_user_id(), "Tap a button with a meaning to learn", reply_markup=k,
                                parse_mode=types.ParseMode.MARKDOWN)
@@ -150,7 +158,12 @@ async def callback_add_meaning_action(query: types.CallbackQuery, callback_data:
     del session.definitions[n]
     logger.info(str(session.get_user_id()) + " Adding new word: "
                 + word + " - " + definition)
-    await add_word_to_storage(session, word, definition)
+    listname = None
+    list_hid = None
+    if session.list_hid_word is not None:
+        listname = session.list_hid_word[0]
+        list_hid = session.list_hid_word[1]
+    await add_word_to_storage(session, word, definition, listname, list_hid)
     await query.answer("Definition added")
     await prepare_definition_selection(session, query)
 
