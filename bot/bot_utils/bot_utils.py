@@ -86,6 +86,14 @@ def process_wiktionary(w):
     return result
 
 
+def get_lang_code(user_lang):
+    if user_lang in CODES.keys():
+        return CODES[user_lang]
+    if user_lang in CODES.values():
+        return user_lang
+
+
+
 def get_definitions(language, user_lang, word):
     if language + '_' + user_lang + '_' + word in MEM_CACHE.keys():
         logger.debug("Reading translations from cache for " + language + '_' + user_lang + '_' + word)
@@ -93,15 +101,15 @@ def get_definitions(language, user_lang, word):
     result = list()
     if user_lang is None:
         user_lang = 'english'
-    if user_lang in CODES.keys():
-        try:
-            response = ya_dict.lookup(word, CODES[language], CODES[user_lang])
-            result = to_list(json.loads(response))
 
-        except Exception as e:
-            logger.warning("Yandex dictionary exception: " + str(e))
-        if len(result) > 0:
-            return result
+    try:
+        response = ya_dict.lookup(word, CODES[language], get_lang_code(user_lang))
+        result = to_list(json.loads(response))
+
+    except Exception as e:
+        logger.warning("Yandex dictionary exception: " + str(e))
+    if len(result) > 0:
+        return result
 
     try:
         w = parser.fetch(word.lower(), language=language)
@@ -117,10 +125,10 @@ def get_definitions(language, user_lang, word):
             try:
                 tr = translate_client.translate(
                     word,
-                    target_language=CODES[user_lang])
+                    target_language=get_lang_code(user_lang))
                 result.append(tr['translatedText'])
             except Exception as e:
-                print(e)
+                logger.error(e)
     MEM_CACHE[language + '_' + user_lang + '_' + word] = result
     return result
 
