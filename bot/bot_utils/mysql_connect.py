@@ -285,12 +285,16 @@ def update_sr_item(hid, model, lastTime):
         conn.close()
 
 
+def get_hid(word, lang, user, list_name):
+    return hashlib.md5((word + lang + user + list_name).encode('utf-8')).hexdigest()
+
+
 def add_list(user, word_list, lang, list_name):
     data = list()
     logger.debug("Adding {} words to list_name {} for user {}"
                  .format(len(word_list), list_name, user))
     for word in word_list:
-        hid = hashlib.md5((word + lang + user + list_name).encode('utf-8')).hexdigest()
+        hid = get_hid(word, lang, user,  list_name)
         args = (hid, list_name, user, lang, word)
         data.append(args)
 
@@ -503,6 +507,17 @@ def add_sentence_translation(translation, sent_hid, lang):
     args = (hid,sent_hid, lang)
     insertone(query, args)
     return hid
+
+def add_text_word(word, sent_hid, lang, user,  list_name):
+    hid = get_hid(word, lang, user,  list_name)
+    query = "INSERT INTO  text_words(hid, sent_hid) " \
+                "VALUES(%s, %s)"
+    args = (hid,sent_hid)
+    insertone(query, args)
+    query = "INSERT IGNORE INTO word_lists (hid, listname, user, LANGUAGE, word ) " \
+                "VALUES(%s,%s,%s,%s,%s)"
+    args = (hid, list_name, user, lang, word)
+    insertone(query, args)
 
 
 def test(c):
