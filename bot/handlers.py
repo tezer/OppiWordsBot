@@ -94,7 +94,7 @@ async def add_text_command(message: types.Message):
     await addtext.add_text_command(message)
 
 
-@dp.message_handler(lambda message: user_state(message.from_user.id, message.message_id))
+@dp.message_handler(lambda message: user_state(message.from_user.id, "text_added"))
 async def add_text(message: types.Message):
     await addtext.add_text(message)
 
