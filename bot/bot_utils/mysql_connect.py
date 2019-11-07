@@ -481,6 +481,14 @@ def add_text(language, text):
     return hid
 
 
+def add_user_text(user, hid):
+
+    query = "INSERT INTO user_texts (user, text_hid) " \
+                "VALUES(%s,%s)"
+    args = (user, hid)
+    insertone(query, args)
+
+
 def test(c):
     global conf
     conf = c
