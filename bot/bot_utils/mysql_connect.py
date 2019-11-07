@@ -520,16 +520,12 @@ def add_text_word(word, sent_hid, lang, user,  list_name):
     insertone(query, args)
 
 def get_context(list_hid):
-    # select sent_hid from text_words where hid='286e0232518ad56ebd96586026b89ff4';
-    # SELECT translation FROM translations WHERE sent_hid='23c080b92c0819da5b8c8cbfd8e1e86e';
-    # SELECT start, end, text_hid FROM sentences WHERE hid='23c080b92c0819da5b8c8cbfd8e1e86e';
-    # SELECT text FROM texts WHERE hid='4aeaa92457047f1d13e522a7b3cb7613';
     translation = ''
     context = ''
     query = 'SELECT sent_hid FROM text_words WHERE hid=%s'
     args = (list_hid, )
     sent_hid = fetchone(query, args)
-    if len(sent_hid) == 0:
+    if sent_hid is None or len(sent_hid) == 0:
         return ''
 
     query = 'SELECT translation FROM translations WHERE sent_hid=%s';
@@ -543,7 +539,7 @@ def get_context(list_hid):
     query = 'SELECT text FROM texts WHERE hid=%s'
     args = (start_end_text_hid[2],)
     text = fetchone(query, args)[0]
-    if len(text) >= start_end_text_hid[1]:
+    if text is not None and len(text) >= start_end_text_hid[1]:
         context = text[start_end_text_hid[0]:start_end_text_hid[1]]
     return translation, context
 
