@@ -129,10 +129,22 @@ async def adding_list_words(message, query, list_name):
     if list_name is None:
         logger.error("{}, list_name is None".format(session.get_user_id()))
         return
-
+    list_hid = word_list[0][1]
+    translation_context = mysql_connect.get_context(list_hid)
+    translation = ''
     word = word_list[0][2]
+    context = '<b>' + word + '</b>'
+    if translation_context is not None and len(translation_context) > 0:
+        if len(translation_context[0]) > 0:
+            translation = '\n' + translation_context[0]
+        if len(translation_context) > 1:
+            context = re.sub(r'\b' + word + r'\b', '<b>' + word + '</b>', translation_context[1])
+
     m = await bot.send_message(session.get_user_id(),
-                               "{} words to add from list _{}_\n*{}*".format(len(word_list), list_name.title(), word))
+                               "{} words to add from list <i>{}</i>{}\n{}".format(
+                                   len(word_list), list_name.title(),
+                                   translation, context),
+                               parse_mode=types.ParseMode.HTML)
     session.list_hid_word = word_list[0]
     m.text = word
     m.from_user.id = session.get_user_id()
