@@ -470,6 +470,16 @@ def check_subscribed(user):
     end_date = datetime.datetime.strptime(str(d[1]), "%Y-%m-%d")
     return datetime.date.today() <= end_date.date()
 
+#TEXTS ============================================================
+def add_text(language, text):
+    hid = hashlib.md5((text).encode('utf-8')).hexdigest()
+
+    query = "INSERT INTO texts (hid, language, text) " \
+                "VALUES(%s,%s,%s)"
+    args = (hid, language, text)
+    insertone(query, args)
+    return hid
+
 
 def test(c):
     global conf
