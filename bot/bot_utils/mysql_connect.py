@@ -488,6 +488,22 @@ def add_user_text(user, hid):
     args = (user, hid)
     insertone(query, args)
 
+def add_sentence(text, start, end, text_hid):
+    hid = hashlib.md5((text).encode('utf-8')).hexdigest()
+    query = "INSERT INTO sentences (hid, start, end, text_hid) " \
+                "VALUES(%s, %s, %s, %s)"
+    args = (hid, start, end, text_hid)
+    insertone(query, args)
+    return hid
+
+def add_sentence_translation(translation, sent_hid, lang):
+    hid = hashlib.md5((translation).encode('utf-8')).hexdigest()
+    query = "INSERT INTO translations (hid, sent_hid, language) " \
+                "VALUES(%s, %s, %s)"
+    args = (hid,sent_hid, lang)
+    insertone(query, args)
+    return hid
+
 
 def test(c):
     global conf
