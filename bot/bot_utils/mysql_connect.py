@@ -249,7 +249,13 @@ def lists_to_add(user, lang):
     result = fetchall(query, args)
     return result
 
-
+def get_list_names(user):
+    query = "select DISTINCT listname FROM words WHERE listname <> '' AND user=%s"
+    args = (user,)
+    result = list()
+    for l in fetchall(query, args):
+        result.append(l[0])
+    return result
 
 #USER MANAGEMENT =====================================================================
 
