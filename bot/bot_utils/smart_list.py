@@ -2,7 +2,7 @@ import settings
 import os
 os.environ["POLYGLOT_DATA_PATH"]=settings.polyglot_env
 from polyglot.text import Word
-
+from loguru import logger
 api_url = settings.w2v_api
 
 from bot.bot_utils import mysql_connect
@@ -43,7 +43,12 @@ def get_user_words(user_id, lang):
 def get_sems(word, lang):
     print(word)
     w = Word(word.lower(), language=CODES[lang.lower()])
-    return w.neighbors
+    try:
+        res = w.neighbors
+    except Exception as e:
+        logger.warning(e)
+        return None
+    return res
 
 
 def get_list(user_id, lang):
