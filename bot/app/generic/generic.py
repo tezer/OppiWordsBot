@@ -120,8 +120,8 @@ async def text_message(message):
     await message.reply("What would you like to do with this word?", reply_markup=k)
 
 async def unknow_query_handler(query: types.CallbackQuery):
-    logger.info('Got this callback data: %r', query.data)
-    logger.info('Got this query.as_json: %r', query.as_json())
+    logger.info('Got this callback data: ', query.data)
+    logger.info('Got this query.as_json: ', query.as_json())
     await query.answer("Don't know what to do))")
 
 
