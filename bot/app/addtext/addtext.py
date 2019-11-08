@@ -10,7 +10,6 @@ import os
 import settings
 os.environ["POLYGLOT_DATA_PATH"]=settings.polyglot_env
 from polyglot.text import Text
-from text_experiment.text_methodology import text_processor
 
 CODES = {
     'finnish': 'fi',
@@ -35,6 +34,17 @@ async def add_text_command(message: types.Message):
     await bot.send_message(user_id, "Paste in a short text here.")
     session.status = "text_added"
 
+from multi_rake import Rake
+
+class TextPreprocessor(object):
+
+    def __init__(self, lang=None):
+        self.lang = lang
+        self.rake = Rake(language_code=self.lang, max_words=5)
+
+    def key_words(self, text):
+        return self.rake.apply(text)
+
 
 class BotSentence(object):
     def __init__(self, start, end):
@@ -56,7 +66,7 @@ class BotText(object):
 
 def get_words_and_phrases(text, text_language, user_language):
     sentences = list()
-    processor = text_processor.TextPreprocessor(CODES[text_language])
+    processor = TextPreprocessor(CODES[text_language])
     #TODO save to cache the processors
     t = Text(text)
     for s in t.sentences:
