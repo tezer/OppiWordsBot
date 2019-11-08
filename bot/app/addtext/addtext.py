@@ -80,6 +80,7 @@ def get_words_and_phrases(text, text_language, user_language):
             if ' ' in w:
                 sent.words.append(w)
         for word in s.words:
+            word = str(word)
             if re.match(r"[^\w]+", word) is not None:
                 continue
             sent.words.append(word)
