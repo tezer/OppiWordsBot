@@ -1,17 +1,15 @@
+import calendar
+
 import mysql.connector
 from mysql.connector import Error
 import hashlib
 import datetime
-import logging
-logger = logging.getLogger('mysql_connect')
-# hdlr = logging.StreamHandler()
-hdlr = logging.FileHandler('mysql.log')
-formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-hdlr.setFormatter(formatter)
-logger.addHandler(hdlr)
-logger.setLevel(logging.DEBUG)
 
-conf = dict()
+from bot.app import core
+
+from loguru import logger
+
+conf = core.db_conf
 
 
 def fetchone(query, args):
@@ -27,7 +25,6 @@ def fetchone(query, args):
         cursor.execute(query, args)
         row = cursor.fetchone()
     except Error as e:
-        logger.error(query)
         logger.error(e)
         print("fetchone", e)
     finally:
@@ -61,10 +58,7 @@ def fetch_by_hids(user_id, hids):
         conn.close()
         return result
 
-
-def delete_by_hid(hid):
-    query = "DELETE FROM words WHERE hid = %s"
-    args = (hid,)
+def deleteone(query, args):
     res = True
     try:
         conn = mysql.connector.connect(host=conf['host'],
@@ -75,12 +69,21 @@ def delete_by_hid(hid):
         cursor.execute(query, args)
         conn.commit()
     except Error as e:
-        print('delete_by_hid', e)
+        print('deleteone', e)
+        logger.error(e)
         res = False
     finally:
         cursor.close()
         conn.close()
         return res
+
+def delete_by_hid(hid):
+    query = "DELETE FROM words WHERE hid = %s"
+    args = (hid,)
+    res1 = deleteone(query, args)
+    query = "DELETE FROM spaced_repetition WHERE hid = %s"
+    res2 = deleteone(query, args)
+    return res1 and res2
 
 
 def fetchall(query, args):
@@ -130,10 +133,10 @@ def fetchmany(query, n):
         conn.close()
 
 
-def insert_word(user, language, word, definition, mode, hid):
-    query = "INSERT INTO words(user, language, word, definition, mode, hid) " \
-            "VALUES(%s,%s,%s,%s,%s,%s)"
-    args = (user, language, word, definition, mode, hid)
+def insert_word(user, language, word, definition, mode, hid, listname=None, list_hid=None):
+    query = "INSERT INTO words(user, language, word, definition, mode, hid, listname, list_hid) " \
+            "VALUES(%s,%s,%s,%s,%s,%s, %s, %s)"
+    args = (user, language, word, definition, mode, hid, listname, list_hid)
 
     try:
         conn = mysql.connector.connect(host=conf['host'],
@@ -180,7 +183,7 @@ def unblock_user(user_id):
                                        user=conf['user'],
                                        password=conf['password'])
         cursor = conn.cursor()
-        cursor.execute(query, (user_id, ))
+        cursor.execute(query, (user_id,))
         conn.commit()
     except Error as error:
         print('unblock_user', error)
@@ -201,7 +204,7 @@ def check_exists(user_id):
         cursor = conn.cursor(buffered=True)
 
         query = "SELECT blocked FROM users WHERE user_id=%s"
-        cursor.execute(query, (user_id, ))
+        cursor.execute(query, (user_id,))
         result = cursor.fetchone()
 
     except Error as e:
@@ -281,21 +284,23 @@ def update_sr_item(hid, model, lastTime):
         conn.close()
 
 
+def get_hid(word, lang, user, list_name):
+    return hashlib.md5((word + lang + user + list_name).encode('utf-8')).hexdigest()
+
 
 def add_list(user, word_list, lang, list_name):
     data = list()
     logger.debug("Adding {} words to list_name {} for user {}"
                  .format(len(word_list), list_name, user))
     for word in word_list:
-        hid = hashlib.md5((word+lang+user+list_name).encode('utf-8')).hexdigest()
-        args = (hid, list_name, user, lang, word )
+        hid = get_hid(word, lang, user,  list_name)
+        args = (hid, list_name, user, lang, word)
         data.append(args)
 
     try:
         query = "INSERT IGNORE INTO word_lists (hid, listname, user, LANGUAGE, word ) " \
                 "VALUES(%s,%s,%s,%s,%s)"
-        # query = "INSERT INTO word_lists (hid, listname, user, LANGUAGE, word ) " \
-        #         "VALUES(%s,%s,%s,%s,%s)"
+
         logger.debug("{} data ready".format(user))
         conn = mysql.connector.connect(host=conf['host'],
                                        database=conf['database'],
@@ -310,7 +315,6 @@ def add_list(user, word_list, lang, list_name):
     finally:
         cursor.close()
         conn.close()
-
 
 
 def get_list(user_id, language, list_name):
@@ -336,28 +340,10 @@ def get_list(user_id, language, list_name):
         return result
 
 
-
 def delete_from_list(hid):
     query = "DELETE FROM word_lists WHERE hid = %s"
     args = (hid,)
-    res = True
-    try:
-        conn = mysql.connector.connect(host=conf['host'],
-                                       database=conf['database'],
-                                       user=conf['user'],
-                                       password=conf['password'])
-        cursor = conn.cursor()
-        cursor.execute(query, args)
-        conn.commit()
-    except Error as e:
-        print('delete_from_list', e)
-        logger.error("{} received error message {}".format(hid, e))
-        res = False
-    finally:
-        cursor.close()
-        conn.close()
-        return res
-
+    return deleteone(query, args)
 
 
 def lists_to_add(user, lang):
@@ -402,35 +388,178 @@ def update_blocked(user_id):
         conn.close()
     return None
 
-def check_subscribed(user):
-    query = "SELECT to_date FROM subscribed WHERE user=%s"
-    date = fetchone(query, user)
-    if len(date) == 0:
-        return False
+
+def add_months(sourcedate, months):
+    month = sourcedate.month - 1 + months
+    year = sourcedate.year + month // 12
+    month = month % 12 + 1
+    day = min(sourcedate.day, calendar.monthrange(year, month)[1])
+    return datetime.date(year, month, day)
+
+
+def get_subscription_dates(user):
+    query = "SELECT start_date, end_date FROM subscribed WHERE user=%s"
+    date = fetchone(query, (user,))
+    if date is None or len(date) == 0:
+        return None
     else:
-        d = date[0]
-        f = '%Y-%m-%d %H:%M:%S'
-        d = datetime.datetime.strptime(d, f)
-        return datetime.now() < d
+        return date
+
+
+def insertone(query, args):
+    try:
+        conn = mysql.connector.connect(host=conf['host'],
+                                       database=conf['database'],
+                                       user=conf['user'],
+                                       password=conf['password'])
+        cursor = conn.cursor()
+        cursor.execute(query, args)
+        conn.commit()
+    except Error as error:
+        logger.error("received error message {}".format(error))
+        print('insertone', error)
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def updateone(query, args):
+    try:
+        conn = mysql.connector.connect(host=conf['host'],
+                                       database=conf['database'],
+                                       user=conf['user'],
+                                       password=conf['password'])
+        cursor = conn.cursor()
+        cursor.execute(query, args)
+        conn.commit()
+    except Error as error:
+        print('updateone', error)
+        logger.error("{} received error message {}".format(query, error))
+    finally:
+        cursor.close()
+        conn.close()
+    return None
+
+
+def set_premium(user, number_of_month):
+    try:
+        n = int(number_of_month)
+    except ValueError as  e:
+        logger.error(e)
+        return False
+    start_date = datetime.date.today()
+    if check_subscribed(user):
+        dates = get_subscription_dates(user)
+        end_date = add_months(dates[1], n)
+        data = (start_date, end_date, user)
+        query = 'UPDATE subscribed SET start_date = %s, end_date=%s WHERE user_id = %s'
+        updateone(query, data)
+    else:
+        end_date = add_months(start_date, n)
+        query = "INSERT INTO subscribed (user, start_date,  end_date) " \
+                "VALUES(%s,%s,%s)"
+        data = (user, start_date, end_date)
+        insertone(query, data)
+
+    logger.info("{} subscribed from {} to {}", user, start_date, end_date)
+    return end_date
+
+
+def check_subscribed(user):
+    d = get_subscription_dates(user)
+    if d is None:
+        return False
+    end_date = datetime.datetime.strptime(str(d[1]), "%Y-%m-%d")
+    return datetime.date.today() <= end_date.date()
+
+#TEXTS ============================================================
+def add_text(language, text):
+    hid = hashlib.md5(text.encode('utf-8')).hexdigest()
+
+    query = "INSERT INTO texts (hid, language, text) " \
+                "VALUES(%s,%s,%s)"
+    args = (hid, language, text)
+    insertone(query, args)
+    return hid
+
+
+def add_user_text(user, hid):
+
+    query = "INSERT INTO user_texts (user, text_hid) " \
+                "VALUES(%s,%s)"
+    args = (user, hid)
+    insertone(query, args)
+
+def add_sentence(text, start, end, text_hid):
+    hid = hashlib.md5((text).encode('utf-8')).hexdigest()
+    query = "INSERT INTO sentences (hid, start, end, text_hid) " \
+                "VALUES(%s, %s, %s, %s)"
+    args = (hid, start, end, text_hid)
+    insertone(query, args)
+    return hid
+
+def add_sentence_translation(translation, sent_hid, lang):
+    hid = hashlib.md5((translation).encode('utf-8')).hexdigest()
+    query = "INSERT INTO translations (hid, sent_hid, language, translation) " \
+                "VALUES(%s, %s, %s, %s)"
+    args = (hid, sent_hid, lang, translation)
+    insertone(query, args)
+    return hid
+
+def add_text_word(word, sent_hid, lang, user,  list_name):
+    logger.debug("{} {}", word, type(word))
+    hid = get_hid(word, lang, str(user),  list_name)
+    query = "INSERT INTO  text_words(hid, sent_hid) " \
+                "VALUES(%s, %s)"
+    args = (hid,sent_hid)
+    insertone(query, args)
+    query = "INSERT IGNORE INTO word_lists (hid, listname, user, LANGUAGE, word ) " \
+                "VALUES(%s,%s,%s,%s,%s)"
+    args = (hid, list_name, user, lang, word)
+    insertone(query, args)
+
+def get_context(list_hid):
+    translation = ''
+    context = ''
+    query = 'SELECT sent_hid FROM text_words WHERE hid=%s'
+    args = (list_hid, )
+    sent_hid = fetchone(query, args)
+    if sent_hid is None or len(sent_hid) == 0:
+        return ''
+
+    query = 'SELECT translation FROM translations WHERE sent_hid=%s';
+    res = fetchone(query, sent_hid)
+    if len(res) > 0:
+        translation = res[0]
+
+    query = 'SELECT start, end, text_hid FROM sentences WHERE hid=%s'
+    start_end_text_hid = fetchone(query, sent_hid)
+
+    query = 'SELECT text FROM texts WHERE hid=%s'
+    args = (start_end_text_hid[2],)
+    text = fetchone(query, args)[0]
+    if text is not None and len(text) >= start_end_text_hid[1]:
+        context = text[start_end_text_hid[0]:start_end_text_hid[1]]
+    return translation, context
 
 
 def test(c):
     global conf
     conf = c
 
-
 # if __name__ == '__main__':
-    # insert_word("test", "lang", "word", "definition", 0, "12345")
-    # words=[
-    #     ("test", "lang", "word0", "definition", 0, "012345"),
-    #     ("test", "lang1", "word1", "definition", 0, "0123451"),
-    #     ("test", "lang", "word1", "definition", 0, "0123452"),
-    #     ("test", "lang", "word2", "definition", 0, "0123453"),
-    #     ("test", "lang1", "word0", "definition", 0, "0123454")
-    # ]
-    # insert_words(words)
-    # print(fetchall("SELECT word, language FROM words WHERE user='76673167' AND mode=0 AND language='finnish'"))
-    # rows = fetchall("SELECT word, definition, mode FROM words WHERE user='test' AND hid='12345'")
-    # print(rows)
-    # fetchmany("SELECT * FROM words", 5)
-
+#     set_premium('000', '1')
+# insert_word("test", "lang", "word", "definition", 0, "12345")
+# words=[
+#     ("test", "lang", "word0", "definition", 0, "012345"),
+#     ("test", "lang1", "word1", "definition", 0, "0123451"),
+#     ("test", "lang", "word1", "definition", 0, "0123452"),
+#     ("test", "lang", "word2", "definition", 0, "0123453"),
+#     ("test", "lang1", "word0", "definition", 0, "0123454")
+# ]
+# insert_words(words)
+# print(fetchall("SELECT word, language FROM words WHERE user='76673167' AND mode=0 AND language='finnish'"))
+# rows = fetchall("SELECT word, definition, mode FROM words WHERE user='test' AND hid='12345'")
+# print(rows)
+# fetchmany("SELECT * FROM words", 5)
