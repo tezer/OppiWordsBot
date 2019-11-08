@@ -30,7 +30,7 @@ async def start_learning_message(message):
     if len(lists) > 0:
         keys.extend(lists)
         data.extend(list(range(len(lists))))
-        actions.extend(["learn_list"] * len(lists))
+        actions.extend(["start_learning"] * len(lists))
         await bot.send_message(session.get_user_id(), "You have {} lists to learn.\n"
                                .format(len(lists)))
 
@@ -48,7 +48,7 @@ async def learning(query: types.CallbackQuery, callback_data: dict):
     session, isValid = await authorize(query.from_user.id, with_lang=True)
     if not isValid:
         return
-    if n > 0:  # 10, 20, 30, 40, 1000
+    if n == -1:
         hids = list()
         if session.status == '/test':
             hids = sr.get_items_to_learn(
@@ -65,6 +65,11 @@ async def learning(query: types.CallbackQuery, callback_data: dict):
                 await bot.send_message(session.get_user_id(), 'Add more words with /addwords command or')
                 await bot.send_message(session.get_user_id(), 'or /test words you learned before.')
             return True
+    if n >= 0:
+        lists = mysql_connect.get_list_names(query.from_user.id)
+        list_name = lists[int(callback_data['data'])]
+        logger.info("{} learns {}", query.from_user.id,  list_name)
+        hids = mysql_connect.get_hids_for_list(query.from_user.id,  list_name)
     words = mysql_connect.fetch_by_hids(session.get_user_id(), hids)
     session.words_to_learn = words
     session.current_word = 0

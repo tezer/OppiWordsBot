@@ -256,6 +256,13 @@ def get_list_names(user):
         result.append(l[0])
     return result
 
+def get_hids_for_list(user,  list_name):
+    query = 'SELECT hid FROM words WHERE user=%s AND listname=%s'
+    args = (user,  list_name)
+    hids = fetchall(query, args)
+    result = list(x[0] for x in hids)
+    return result
+
 #USER MANAGEMENT =====================================================================
 
 def update_blocked(user_id):
