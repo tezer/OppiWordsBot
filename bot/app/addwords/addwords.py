@@ -202,6 +202,9 @@ async def adding_words(message):
     if session.list_hid_word is not None:
         listname = session.list_hid_word[0]
         list_hid = session.list_hid_word[1]
+    else:
+        listname = None
+        list_hid = None
     await add_word_to_storage(session=session,
                               word=word,
                               definition=definition,
