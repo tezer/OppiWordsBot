@@ -7,7 +7,8 @@ from settings import PAYMENTS_PROVIDER_TOKEN, prices
 
 def get_price(months):
     price = prices[months]
-    return types.LabeledPrice(label=price['label'], amount=price['amount'])
+    p = [types.LabeledPrice(label=price['label'], amount=price['amount'])]
+    return p
 
 
 async def subscribe_command(message: types.Message):
