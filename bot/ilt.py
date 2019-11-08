@@ -11,7 +11,7 @@ tasks[2] = 'say_word'
 tasks[1] = 'type_in'
 
 
-
+@logger.catch
 def level_up(session):
     hid = session.get_current_hid()
     sr.update_item(hid, 1)
@@ -26,11 +26,15 @@ def level_up(session):
                           (session.get_current_word()[0],
                            session.get_current_definition()),
                           task_transitions[session.get_current_mode()])
+    if session.list_hid_word is not None:
+        listname = session.list_hid_word[0]
+        list_hid = session.list_hid_word[1]
     db.insert_word(session.get_user_id(), session.active_lang(),
                               session.get_current_word()[0],
                               session.get_current_definition(),
                               task_transitions[session.get_current_mode()],
-                              new_hid)
+                              new_hid,listname, list_hid
+                   )
     session.level_up_current_word(new_hid, task_transitions[session.get_current_mode()])
     session.delete_current_word()
 
