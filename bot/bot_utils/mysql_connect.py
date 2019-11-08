@@ -50,7 +50,6 @@ def updateone(query, args):
 
 
 def fetchone(query, args):
-    logger.info(conf)
     row = tuple()
     try:
         conn = mysql.connector.connect(host=conf['host'],
