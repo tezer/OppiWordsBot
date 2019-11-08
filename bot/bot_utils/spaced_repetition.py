@@ -33,7 +33,7 @@ def update_item(hid, result):
     return True
 
 
-def get_items_to_learn(user_language, upper_recall_limit = -1, n = 10):
+def get_items_to_learn(user_language, upper_recall_limit = 0.5, n = -1):
     result = list()
     now = datetime.now()
     tmp = dict()
