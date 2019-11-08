@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "speedy-cedar-216917",
+  "private_key_id": "61ea1ffa1bc88e9d961982a3e93c44f9541ebfbd",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC7/1enW6YlSgB6\nF+Njx7D4AraCXq2ifBIejP4IjKg2kbsbrLWUamKtw36o8Rm2XtVzfDilcrxtHzqp\nwBrynjxOtHbk0+aQ0PRhHLkajB9VNkDjfArI4e3734KcHpVFUR68lO0jwYmgwbCB\nmhI7KEa0HFO3aNP38WoMqu+npqn3rLv+8+aQ24HMkRGaRl5u8IrQPrWjQ7dFU4uY\nZThXN+4Ugf5AS0H5gzDFZtfi/XqgSUdY4DbusGkQtZiZwewzUcO7ctiOjfuTuGJ6\nOq4ryLwUbyl4/eHH3YbEt3GClcUCgZ7JNMmEJCU4dg2cqAfdrN+FSBkDW4kKOsXD\nfEfv7Vc9AgMBAAECggEALXrPyzp2PrYg2GiYB4cDLnSFj5N1AQZv4bktKYdRmGX3\n9HF7Ogzkk3HkXd154W8ex0HpeEkCAYoZCIDjZAdYwpeQ3bnPoQAT5rxqoVv9poEq\nAH59I2zYxGKld7xEU1EVFP0YQ1qqP1wsJaZOu8X6GM9zhz7SbLyX8bmWoaHFo5dY\nmvanuewMxPfbgvjpyauVJvYKaOiCb4qPQNW/IckUm8MLblPMMwtYyvjjn/fI0vx+\n/rpzAApXf1cF7kWUbRr796HEYKN60XYKEkekCAHJ72ys36JiknYY0dqcfDAfxlHc\ns9OifBO2KxhKXHpnyWZYzXgIERoK3e6ahH5R/xTU4QKBgQD5hfap9ZMR617pWnND\nigwGugJMFjCJNZ8MWbn7/5CXkex8coH54KgffihhmQeCCEInvSNGSnLJS9P73Cmn\nOCcv7MDpWyzvNsS7AHiCSUck6u6HaFtsWghCbEUI724+kIVWxJs6yO8zTN/TISY2\n35vSwu7Agpl8Lw+4LI5eyfFh7QKBgQDA4I0BTlrfpdR9YNBW+aKl11MmLeHvQeXH\nz3Ui4uqsBKkS6uMh3SsPwV4dyliEwIj6A9A5RSuzU/lmd2FPfV4mMVch61/k/W/+\nDL9t9IuN02fgCiOvww+42IAguYJqk6QvD1szlkiuOD6dziyxrcY43gLe6kabsQJf\nN+RFb+xgkQKBgDHpJvbGJV3fO8PnkMjAszkhOdZoVdsMO70nsXkDnLOEv84AxZjq\n5BYwkPk8t/C9oCX8wjKML7uuDEADwN0u8T+31rqWvz02MlHJfVFqQO3UhFPXfvoE\nZESNDZ4E7oNbOyCpAPfYO2iChv7fUZqGTc/xp/of5X2emEFZwDybnkndAoGBAK/E\n8zsZeN8PdJG9xJ8+Z+bST8gfUCKF3y0z9f+Q42NX6+x9effGYhO9mFN1ry1reGi/\nSOaoDqciA8pJSLjz+vS7SjhzE7TO8VyHqXw+u17IJYWaN+NY098UDc/EvwD5A0qP\nqAFfF2UNhKKy3TAeuOHiEKOsxCPmL88uVCyjTrrBAoGBAOgKKUQxhYaPon3DXuIk\n2KoucFRzmsT/YS0552YDtq00uMpnlmOotw8dp1j63+OV7cItoAhJ2f0MMhBjWK+Q\nq2FIWtWFfyasT80oECgmloTge6Fd8fPydnMtU5Sz6DBzwK0KFYLIk/8BkN4vb1XY\nYRkmU9dMK5LZtja6lJWNfIiJ\n-----END PRIVATE KEY-----\n",
+  "client_email": "translation-service@speedy-cedar-216917.iam.gserviceaccount.com",
+  "client_id": "101241114512432674078",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/translation-service%40speedy-cedar-216917.iam.gserviceaccount.com"
+}

@@ -3,25 +3,18 @@ import re
 from wiktionaryparser import WiktionaryParser
 from aiogram import types
 from aiogram.utils.callback_data import CallbackData
-import logging
-
-from yandex_dictionary import YandexDictionary
+from expiringdict import ExpiringDict
+from bot.bot_utils.yandex_dictionary import YandexDictionary
 import settings
 import os
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"]= settings.google_env
 from google.cloud import translate_v2
 translate_client = translate_v2.Client()
 import difflib
-
-logger = logging.getLogger('utils')
-# hdlr = logging.StreamHandler()
-hdlr = logging.FileHandler('bot.log')
-formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-hdlr.setFormatter(formatter)
-logger.addHandler(hdlr)
-logger.setLevel(logging.DEBUG)
+from loguru import logger
 
 
+MEM_CACHE = ExpiringDict(max_len=100, max_age_seconds=6000)
 
 key = settings.ya_key
 ya_dict = YandexDictionary(key)
@@ -93,39 +86,50 @@ def process_wiktionary(w):
     return result
 
 
+def get_lang_code(user_lang):
+    if user_lang in CODES.keys():
+        return CODES[user_lang]
+    if user_lang in CODES.values():
+        return user_lang
+
+
+
 def get_definitions(language, user_lang, word):
+    if language + '_' + user_lang + '_' + word in MEM_CACHE.keys():
+        logger.debug("Reading translations from cache for " + language + '_' + user_lang + '_' + word)
+        return MEM_CACHE[language + '_' + user_lang + '_' + word]
     result = list()
     if user_lang is None:
-        user_lang = 'en'
-    if len(user_lang) > 2:
-        user_lang = CODES[user_lang]
-    if user_lang in CODES.keys():
-        try:
-            response = ya_dict.lookup(word, CODES[language], user_lang)
-            result = to_list(json.loads(response))
+        user_lang = 'english'
 
-        except Exception as e:
-            logger.warning("Yandex dictionary exception: " + str(e))
-        if len(result) > 0:
-            return result
+    try:
+        response = ya_dict.lookup(word, CODES[language], get_lang_code(user_lang))
+        result = to_list(json.loads(response))
+
+    except Exception as e:
+        logger.warning("Yandex dictionary exception: " + str(e))
+    if len(result) > 0:
+        return result
 
     try:
         w = parser.fetch(word.lower(), language=language)
     except Exception as e:
         logger.warning("Wiktionary exception: " + str(e))
+        MEM_CACHE[language + '_' + user_lang + '_' + word] = result
         return result
     if len(w) > 0:
         result = process_wiktionary(w)
         if len(result) > 0:
             return result
-        elif len(word) <= 100 :
+        elif len(word) <= 500 :
             try:
                 tr = translate_client.translate(
                     word,
-                    target_language=user_lang)
+                    target_language=get_lang_code(user_lang))
                 result.append(tr['translatedText'])
             except Exception as e:
-                print(e)
+                logger.error(e)
+    MEM_CACHE[language + '_' + user_lang + '_' + word] = result
     return result
 
 

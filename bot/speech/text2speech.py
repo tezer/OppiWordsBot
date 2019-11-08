@@ -5,12 +5,15 @@ Note: ssml must be well-formed according to:
 """
 import io
 import os
-
+from expiringdict import ExpiringDict
+from loguru import logger
 from google.cloud.texttospeech_v1.proto.cloud_tts_pb2 import SynthesizeSpeechResponse
 
 import settings
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"]= settings.google_env
 from google.cloud import texttospeech
+
+MEM_CACHE = ExpiringDict(max_len=100, max_age_seconds=1000)
 
 CODES = {'czech': 'cs-CZ',
          'danish': 'da-DK',
@@ -56,13 +59,18 @@ def get_lang_config(lang):
 
 
 def get_voice(word, lang):
+    if word + '_' + lang in MEM_CACHE.keys():
+        logger.debug("Got cached file for " + word + '_' + lang)
+        return io.BytesIO(MEM_CACHE[word + '_' + lang])
     # Set the text input to be synthesized
     synthesis_input = texttospeech.types.SynthesisInput(text=word)
     # Perform the text-to-speech request on the text input with the selected
     # voice parameters and audio file type
     voice = get_lang_config(lang)
     r = client.synthesize_speech(synthesis_input, voice, audio_config)
-    return io.BytesIO(r.audio_content)
+    result = io.BytesIO(r.audio_content)
+    MEM_CACHE[word + '_' + lang] = r.audio_content
+    return result
 #
 # # The response's audio_content is binary.
 # with open('output.mp3', 'wb') as out:
