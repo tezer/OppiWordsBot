@@ -134,7 +134,7 @@ def fetchmany(query, n):
         conn.close()
 
 
-def insert_word(user, language, word, definition, mode, hid, listname, list_hid):
+def insert_word(user, language, word, definition, mode, hid, listname=None, list_hid=None):
     query = "INSERT INTO words(user, language, word, definition, mode, hid, listname, list_hid) " \
             "VALUES(%s,%s,%s,%s,%s,%s, %s, %s)"
     args = (user, language, word, definition, mode, hid, listname, list_hid)
