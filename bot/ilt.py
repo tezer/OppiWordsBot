@@ -29,6 +29,9 @@ def level_up(session):
     if session.list_hid_word is not None:
         listname = session.list_hid_word[0]
         list_hid = session.list_hid_word[1]
+    else:
+        listname = None
+        list_hid = None
     db.insert_word(session.get_user_id(), session.active_lang(),
                               session.get_current_word()[0],
                               session.get_current_definition(),
