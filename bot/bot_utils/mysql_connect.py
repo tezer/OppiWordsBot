@@ -10,7 +10,6 @@ from bot.app import core
 from loguru import logger
 
 conf = core.db_conf
-logger.info(conf)
 
 
 def fetchone(query, args):
@@ -509,6 +508,7 @@ def add_sentence_translation(translation, sent_hid, lang):
     return hid
 
 def add_text_word(word, sent_hid, lang, user,  list_name):
+    logger.debug("{} {}", word, type(word))
     hid = get_hid(word, lang, str(user),  list_name)
     query = "INSERT INTO  text_words(hid, sent_hid) " \
                 "VALUES(%s, %s)"
