@@ -1,6 +1,6 @@
 from aiogram import types
 from bot.app.core import bot, authorize, get_session, RESTART
-from bot.bot_utils.bot_utils import to_one_row_keyboard, get_hint
+from bot.bot_utils.bot_utils import to_one_row_keyboard, to_vertical_keyboard, get_hint
 from bot.ilt import sort_words, tasks, level_up
 from bot.bot_utils import spaced_repetition as sr, mysql_connect
 from bot.app.learn import reading
@@ -19,10 +19,23 @@ async def start_learning_message(message):
     if message.text == '/learn':
         session.status = '/learn'
     await message.reply("OK, let's learn some " + session.active_lang())
-    kb = to_one_row_keyboard(["10", "20", "30", "40", "All"],
-                             data=[10, 20, 30, 40, 1000],
-                             action=["start_learning"] * 5)
-    await bot.send_message(session.get_user_id(), "How many words should I offer to you this time?",
+    hids = sr.get_items_to_learn(
+        (session.get_user_id(), session.active_lang()), upper_recall_limit=0.5)
+
+    lists = mysql_connect.get_list_names(message.from_user.id)
+    keys = ['Learn all words (use /stop to finish learning)']
+    data = [-1]
+    actions = ["start_learning"]
+    await bot.send_message(session.get_user_id(), "You have {} words to learn.\n".format(len(hids)))
+    if len(lists) > 0:
+        keys.extend(lists)
+        data.extend(list(range(len(lists))))
+        actions.extend(["learn_list"] * len(lists))
+        await bot.send_message(session.get_user_id(), "You have {} lists to learn.\n"
+                               .format(len(lists)))
+
+    kb = to_vertical_keyboard(keys, data=data, action=actions)
+    await bot.send_message(session.get_user_id(), "What do you want to learn now?",
                            reply_markup=kb)
 
 
@@ -35,7 +48,7 @@ async def learning(query: types.CallbackQuery, callback_data: dict):
     session, isValid = await authorize(query.from_user.id, with_lang=True)
     if not isValid:
         return
-    if n > 0:  # 10, 20, 30, 40, 1000
+    if n == -1:
         hids = list()
         if session.status == '/test':
             hids = sr.get_items_to_learn(
@@ -65,8 +78,6 @@ async def learning(query: types.CallbackQuery, callback_data: dict):
         await start_learning(query, callback_data, session)
 
 
-
-
 # Get reply from the user and filter the data: set number and shuffle
 async def start_learning(query: types.CallbackQuery, callback_data: dict, session):
     n = int(callback_data['data'])
@@ -79,7 +90,6 @@ async def start_learning(query: types.CallbackQuery, callback_data: dict, sessio
     session.words_to_learn = words
     await bot.send_message(session.get_user_id(), "Check if you remember these words")
     await do_learning(session)
-
 
 
 # The learning loop, reading task 1
