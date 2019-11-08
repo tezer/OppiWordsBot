@@ -7,7 +7,8 @@ from bot.bot_utils import mysql_connect
 from bot.bot_utils import bot_utils
 from bot.app.core import authorize, bot, get_session
 import os
-os.environ["POLYGLOT_DATA_PATH"]="/media/taras/data/OppiAI/FIN/polyglot"
+import settings
+os.environ["POLYGLOT_DATA_PATH"]=settings.polyglot_env
 from polyglot.text import Text
 from text_experiment.text_methodology import text_processor
 
