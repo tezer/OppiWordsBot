@@ -12,6 +12,43 @@ from loguru import logger
 conf = core.db_conf
 
 
+
+def insertone(query, args):
+    try:
+        conn = mysql.connector.connect(host=conf['host'],
+                                       database=conf['database'],
+                                       user=conf['user'],
+                                       password=conf['password'])
+        cursor = conn.cursor()
+        cursor.execute(query, args)
+        conn.commit()
+    except Error as error:
+        logger.error("received error message {}".format(error))
+        print('insertone', error)
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def updateone(query, args):
+    try:
+        conn = mysql.connector.connect(host=conf['host'],
+                                       database=conf['database'],
+                                       user=conf['user'],
+                                       password=conf['password'])
+        cursor = conn.cursor()
+        cursor.execute(query, args)
+        conn.commit()
+    except Error as error:
+        print('updateone', error)
+        logger.error("{} received error message {}".format(query, error))
+    finally:
+        cursor.close()
+        conn.close()
+    return None
+
+
 def fetchone(query, args):
     logger.info(conf)
     row = tuple()
@@ -35,28 +72,14 @@ def fetchone(query, args):
 
 def fetch_by_hids(user_id, hids):
     result = list()
+    for hid in hids:
+        query = "SELECT word, definition, mode, hid FROM words WHERE user=%s AND hid=%s"
+        args = (user_id, hid)
+        row = fetchone(query, args)
+        if row is not None:
+            result.append(row)
+    return result
 
-    try:
-        conn = mysql.connector.connect(host=conf['host'],
-                                       database=conf['database'],
-                                       user=conf['user'],
-                                       password=conf['password'])
-        cursor = conn.cursor(buffered=True)
-
-        for hid in hids:
-            query = "SELECT word, definition, mode, hid FROM words WHERE user=%s AND hid=%s"
-            cursor.execute(query, (user_id, hid))
-            row = cursor.fetchone()
-            if row is not None:
-                result.append(row)
-
-    except Error as e:
-        print("fetch_by_hids: ", e)
-
-    finally:
-        cursor.close()
-        conn.close()
-        return result
 
 def deleteone(query, args):
     res = True
@@ -132,27 +155,13 @@ def fetchmany(query, n):
         cursor.close()
         conn.close()
 
-
+#WORDS =========================================================================
 def insert_word(user, language, word, definition, mode, hid, listname=None, list_hid=None):
     query = "INSERT INTO words(user, language, word, definition, mode, hid, listname, list_hid) " \
             "VALUES(%s,%s,%s,%s,%s,%s, %s, %s)"
     args = (user, language, word, definition, mode, hid, listname, list_hid)
 
-    try:
-        conn = mysql.connector.connect(host=conf['host'],
-                                       database=conf['database'],
-                                       user=conf['user'],
-                                       password=conf['password'])
-        cursor = conn.cursor(buffered=True)
-        cursor.execute(query, args)
-
-        conn.commit()
-    except Error as error:
-        print('insert_word', error)
-        logger.error("{} received error message {}".format(user, error))
-    finally:
-        cursor.close()
-        conn.close()
+    insertone(query, args)
 
 
 def insert_words(words):
@@ -175,119 +184,23 @@ def insert_words(words):
         conn.close()
 
 
-def unblock_user(user_id):
-    query = "UPDATE users SET blocked = 0 WHERE user_id = %s"
-    try:
-        conn = mysql.connector.connect(host=conf['host'],
-                                       database=conf['database'],
-                                       user=conf['user'],
-                                       password=conf['password'])
-        cursor = conn.cursor()
-        cursor.execute(query, (user_id,))
-        conn.commit()
-    except Error as error:
-        print('unblock_user', error)
-        logger.error("{} received error message {}".format(user_id, error))
-    finally:
-        cursor.close()
-        conn.close()
-
-
-def check_exists(user_id):
-    res = False
-
-    try:
-        conn = mysql.connector.connect(host=conf['host'],
-                                       database=conf['database'],
-                                       user=conf['user'],
-                                       password=conf['password'])
-        cursor = conn.cursor(buffered=True)
-
-        query = "SELECT blocked FROM users WHERE user_id=%s"
-        cursor.execute(query, (user_id,))
-        result = cursor.fetchone()
-
-    except Error as e:
-        print("check_exists: ", e)
-        logger.error("{} received error message {}".format(user_id, e))
-    finally:
-        cursor.close()
-        conn.close()
-        if result is not None:
-            res = True
-            if result[0] == 1:
-                unblock_user(user_id)
-        return res
-
-
-def update_user(user_id, first_name, last_name, language_code):
-    exist = check_exists(user_id)
-    if exist:
-        return
-    query = "INSERT INTO users(user_id, first_name, last_name, language_code) " \
-            "VALUES(%s,%s,%s,%s)"
-    args = (user_id, first_name, last_name, language_code)
-
-    try:
-        conn = mysql.connector.connect(host=conf['host'],
-                                       database=conf['database'],
-                                       user=conf['user'],
-                                       password=conf['password'])
-        cursor = conn.cursor()
-        cursor.execute(query, args)
-        conn.commit()
-    except Error as error:
-        print('update_user', error)
-        logger.error("{} received error message {}".format(user_id, error))
-    finally:
-        cursor.close()
-        conn.close()
-
-
 def add_sr_item(hid, defaultModel, lastTime, user, language):
     query = "INSERT INTO spaced_repetition (hid, model, last_date, user, language) " \
             "VALUES(%s,%s,%s,%s,%s)"
     args = (hid, defaultModel, lastTime, user, language)
-
-    try:
-        conn = mysql.connector.connect(host=conf['host'],
-                                       database=conf['database'],
-                                       user=conf['user'],
-                                       password=conf['password'])
-        cursor = conn.cursor()
-        cursor.execute(query, args)
-        conn.commit()
-    except Error as error:
-        logger.error("{} received error message {}".format(user, error))
-        print('add_sr_item', error)
-
-    finally:
-        cursor.close()
-        conn.close()
+    insertone(query, args)
 
 
 def update_sr_item(hid, model, lastTime):
     query = "UPDATE spaced_repetition SET model = %s, last_date = %s WHERE hid = %s"
-    try:
-        conn = mysql.connector.connect(host=conf['host'],
-                                       database=conf['database'],
-                                       user=conf['user'],
-                                       password=conf['password'])
-        cursor = conn.cursor()
-        cursor.execute(query, (model, lastTime, hid))
-        conn.commit()
-    except Error as error:
-        print('update_sr_item', error)
-        logger.error("{} received error message {}".format(hid, error))
-    finally:
-        cursor.close()
-        conn.close()
+    args = (model, lastTime, hid)
+    updateone(query, args)
 
 
 def get_hid(word, lang, user, list_name):
     return hashlib.md5((word + lang + user + list_name).encode('utf-8')).hexdigest()
 
-
+#LISTS =====================================================================================
 def add_list(user, word_list, lang, list_name):
     data = list()
     logger.debug("Adding {} words to list_name {} for user {}"
@@ -318,26 +231,10 @@ def add_list(user, word_list, lang, list_name):
 
 
 def get_list(user_id, language, list_name):
-    result = list()
-
-    try:
-        conn = mysql.connector.connect(host=conf['host'],
-                                       database=conf['database'],
-                                       user=conf['user'],
-                                       password=conf['password'])
-        cursor = conn.cursor(buffered=True)
-
-        query = "SELECT listname, hid, word FROM word_lists WHERE user=%s AND language=%s AND listname=%s"
-        cursor.execute(query, (user_id, language, list_name))
-        result = cursor.fetchall()
-
-    except Error as e:
-        print("fetch_word_list: ", e)
-        logger.error("{} received error message {}".format(user_id, e))
-    finally:
-        cursor.close()
-        conn.close()
-        return result
+    query = "SELECT listname, hid, word FROM word_lists WHERE user=%s AND language=%s AND listname=%s"
+    args =  (user_id, language, list_name)
+    result = fetchall(query, args)
+    return result
 
 
 def delete_from_list(hid):
@@ -347,48 +244,51 @@ def delete_from_list(hid):
 
 
 def lists_to_add(user, lang):
-    result = list()
+    query = "SELECT listname FROM word_lists WHERE user=%s AND language=%s"
+    args = (user, lang)
+    result = fetchall(query, args)
+    return result
 
-    try:
-        conn = mysql.connector.connect(host=conf['host'],
-                                       database=conf['database'],
-                                       user=conf['user'],
-                                       password=conf['password'])
-        cursor = conn.cursor(buffered=True)
 
-        query = "SELECT listname FROM word_lists WHERE user=%s AND language=%s"
-        cursor.execute(query, (user, lang))
-        result = cursor.fetchall()
 
-    except Error as e:
-        print("lists_to_add: ", e)
-        logger.error("{} received error message {}".format(user, e))
-
-    finally:
-        cursor.close()
-        conn.close()
-        return result
-
+#USER MANAGEMENT =====================================================================
 
 def update_blocked(user_id):
     query = "UPDATE users SET blocked = 1 WHERE user_id = %s"
-    try:
-        conn = mysql.connector.connect(host=conf['host'],
-                                       database=conf['database'],
-                                       user=conf['user'],
-                                       password=conf['password'])
-        cursor = conn.cursor()
-        cursor.execute(query, (user_id,))
-        conn.commit()
-    except Error as error:
-        print('update_blocked', error)
-        logger.error("{} received error message {}".format(user_id, error))
-    finally:
-        cursor.close()
-        conn.close()
+    args = (user_id,)
+    updateone(query, args)
     return None
 
 
+
+def unblock_user(user_id):
+    query = "UPDATE users SET blocked = 0 WHERE user_id = %s"
+    args = (user_id,)
+    updateone(query, args)
+
+
+def check_exists(user_id):
+    res = False
+    query = "SELECT blocked FROM users WHERE user_id=%s"
+    args = (user_id,)
+    result = fetchone(query, args)
+    if result is not None:
+        res = True
+        if result[0] == 1:
+            unblock_user(user_id)
+    return res
+
+
+def update_user(user_id, first_name, last_name, language_code):
+    exist = check_exists(user_id)
+    if exist:
+        return
+    query = "INSERT INTO users(user_id, first_name, last_name, language_code) " \
+            "VALUES(%s,%s,%s,%s)"
+    args = (user_id, first_name, last_name, language_code)
+    insertone(query, args)
+
+# SUBSCRIPTION =====================================================================
 def add_months(sourcedate, months):
     month = sourcedate.month - 1 + months
     year = sourcedate.year + month // 12
@@ -404,42 +304,6 @@ def get_subscription_dates(user):
         return None
     else:
         return date
-
-
-def insertone(query, args):
-    try:
-        conn = mysql.connector.connect(host=conf['host'],
-                                       database=conf['database'],
-                                       user=conf['user'],
-                                       password=conf['password'])
-        cursor = conn.cursor()
-        cursor.execute(query, args)
-        conn.commit()
-    except Error as error:
-        logger.error("received error message {}".format(error))
-        print('insertone', error)
-
-    finally:
-        cursor.close()
-        conn.close()
-
-
-def updateone(query, args):
-    try:
-        conn = mysql.connector.connect(host=conf['host'],
-                                       database=conf['database'],
-                                       user=conf['user'],
-                                       password=conf['password'])
-        cursor = conn.cursor()
-        cursor.execute(query, args)
-        conn.commit()
-    except Error as error:
-        print('updateone', error)
-        logger.error("{} received error message {}".format(query, error))
-    finally:
-        cursor.close()
-        conn.close()
-    return None
 
 
 def set_premium(user, number_of_month):
