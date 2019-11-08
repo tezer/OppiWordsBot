@@ -104,20 +104,25 @@ async def do_learning1(session):
             return
         if word[2] == 0:
             # Do reading exercises
+            logger.debug("{} started level {}", session.get_user_id(), word[2])
             keyboard = to_one_row_keyboard(["I remember", "Show meaning"],
                                            data=[0, 1],
                                            action=["I_remember", "show"])
             hint = get_hint(word[1])
             await bot.send_message(session.get_user_id(), '*' + word[0] + "*\n" + hint, reply_markup=keyboard)
         elif word[2] == 2:
+            logger.debug("{} started level {}", session.get_user_id(), word[2])
             if session.subscribed:
+                logger.debug("{} is subscribed", session.get_user_id())
                 session.status = tasks[2]
                 await bot.send_message(session.get_user_id(), "*SAY* this word: *" + word[1] + "*")
             else:
                 level_up(session)
                 await do_learning(session)
         elif word[2] == 3:
+            logger.debug("{} started level {}", session.get_user_id(), word[2])
             if session.subscribed:
+                logger.debug("{} is subscribed", session.get_user_id())
                 session.status = tasks[2]
                 await bot.send_message(session.get_user_id(), "*LISTEN* and *SAY* this word: *{}*\n{}".
                                        format(word[0], word[1]))
@@ -131,6 +136,7 @@ async def do_learning1(session):
                 await do_learning(session)
 
         elif word[2] == 1:
+            logger.debug("{} started level {}", session.get_user_id(), word[2])
             session.status = tasks[1]
             await bot.send_message(session.get_user_id(),
                                    "*WRITE* the correct word for the definition:\n*" + word[1] + "*")
