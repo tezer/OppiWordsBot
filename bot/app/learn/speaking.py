@@ -31,8 +31,8 @@ async def voice_message(message: types.Message):
     if transcript.lower() != word.lower():
         word, transcript = compare(word.lower(), transcript.lower())
         print(word, transcript)
-        await bot.send_message(message.from_user.id, "Correct word: {}\n"
-                                                     "Transcript:     {}".format(word, transcript),
+        await bot.send_message(message.from_user.id, "Correct : {}\n"
+                                                     "You said: {}".format(word, transcript),
                                parse_mode=types.ParseMode.HTML)
     else:
         level_up(session)
