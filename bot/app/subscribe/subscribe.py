@@ -14,13 +14,7 @@ def get_price(months):
 async def subscribe_command(message: types.Message):
     #TODO Check if the user already has subscription
     #TODO If the user has subscription notify them and use this date to calculate the and date
-    dates = bd.get_subscription_dates(message.from_user.id)
-    if dates is not None:
-        expires_on = datetime.datetime.strptime(str(dates[1]), "%Y-%m-%d")
-        if datetime.date.today() <= expires_on.date():
-            await bot.send_message(message.chat.id,
-                                   'You current subscription expires on {}'
-                                   .format(expires_on.date()))
+    await check_expiration_day(message)
     await bot.send_message(message.chat.id,
                            "*This is a test subscription*"
                            "\nReal cards won't work here, *no money will be debited from your account*."
@@ -48,6 +42,16 @@ async def subscribe_command(message: types.Message):
                            payload='1')
 
 
+async def check_expiration_day(message):
+    dates = bd.get_subscription_dates(message.from_user.id)
+    if dates is not None:
+        expires_on = datetime.datetime.strptime(str(dates[1]), "%Y-%m-%d")
+        if datetime.date.today() <= expires_on.date():
+            await bot.send_message(message.chat.id,
+                                   'You current subscription expires on {}'
+                                   .format(expires_on.date()))
+
+
 async def checkout(pre_checkout_query: types.PreCheckoutQuery):
     await bot.answer_pre_checkout_query(pre_checkout_query.id, ok=True,
                                         error_message="Sorry, something went wrong. "
@@ -60,3 +64,4 @@ async def got_payment(message: types.Message):
                            parse_mode='Markdown')
 
     bd.set_premium(message.from_user.id, message.successful_payment.invoice_payload)
+    await check_expiration_day(message)
