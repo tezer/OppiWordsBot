@@ -114,7 +114,7 @@ async def add_text(message: types.Message):
 
     session.status = None
     hid = mysql_connect.add_text(session.active_lang(), message.text)
-    mysql_connect.add_user_text(user_id, hid)
+    mysql_connect.add_user_text(user_id, hid, text_name)
     await add_sentences(text, session, hid)
     await bot.send_message(session.get_user_id(), (
         "The text name is _{}_.\nThe words are ready to be added to your dictionary. "

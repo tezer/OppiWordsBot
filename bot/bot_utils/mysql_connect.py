@@ -360,11 +360,11 @@ def add_text(language, text):
     return hid
 
 
-def add_user_text(user, hid):
+def add_user_text(user, hid, list_name):
 
-    query = "INSERT INTO user_texts (user, text_hid) " \
-                "VALUES(%s,%s)"
-    args = (user, hid)
+    query = "INSERT INTO user_texts (user, text_hid, list_name) " \
+                "VALUES(%s,%s,%s)"
+    args = (user, hid, list_name)
     insertone(query, args)
 
 def add_sentence(text, start, end, text_hid):
@@ -395,6 +395,7 @@ def add_text_word(word, sent_hid, lang, user,  list_name):
     args = (hid, list_name, user, lang, word)
     insertone(query, args)
 
+#Get sentences with translations by hid's of words from the list
 def get_context(list_hid):
     translation = ''
     context = ''
@@ -419,6 +420,9 @@ def get_context(list_hid):
         context = text[start_end_text_hid[0]:start_end_text_hid[1]]
     return translation, context
 
+#SENTENCES ============================================
+def fetch_sentences(user, list_name):
+    pass
 
 def test(c):
     global conf
