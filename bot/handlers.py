@@ -20,13 +20,17 @@ from bot.app.core import dp, user_state
 #
 # help - get help
 # start - start the bot and get help
+# subscribe - activate paid features of the bot and check your subscription status
 # setlanguage - specify a language you want to learn. You can switch between languages or add new ones any time
+# addtext - add a text which you want to learn
 # addwords - add words to learn
 # wordlist - add a list of words (you will have to add definitions after adding the list)
 # learn - learn the words you added
 # test - test the words you learned
 # show - show all added words in alphabetical order
 # delete - delete a word form your dictionary
+# settings - specify your language
+# stop - cancel everything and restart
 #
 
 

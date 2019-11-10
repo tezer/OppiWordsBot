@@ -14,10 +14,12 @@ help_text = 'Welcome!\n' \
             '  The bot will try to show word definitions in your user language set in Telegram if possible.\n' \
             '  You can change your user language with /settings command\n' \
             '2. Then /addwords to get exercises.\n' \
-            '  Or you can add many words with /wordlist command.\n' \
+            '  Or you can add many words with /addtext or /wordlist command.\n' \
             '3. Then type /learn to start training.\n' \
             '  - If you already learned some words, type /test\n' \
             '  - You can delete words with a /delete command\n\n' \
+            '*/subscribe* to activate premium features (voice recognition, automatic translations ' \
+            'and text-to-speech\n\n' \
             'To see the words that you already added:\n' \
             ' /show - shows all added words in alphabetical order\n' \
             ' /show _date_ - shows all added words starting from oldest to newly added\n' \

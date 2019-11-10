@@ -329,7 +329,7 @@ def set_premium(user, number_of_month):
         dates = get_subscription_dates(user)
         end_date = add_months(dates[1], n)
         data = (start_date, end_date, user)
-        query = 'UPDATE subscribed SET start_date = %s, end_date=%s WHERE user_id = %s'
+        query = 'UPDATE subscribed SET start_date = %s, end_date=%s WHERE user = %s'
         updateone(query, data)
     else:
         end_date = add_months(start_date, n)
