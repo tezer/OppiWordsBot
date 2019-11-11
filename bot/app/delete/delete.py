@@ -57,7 +57,8 @@ async def delete_command(message: types.Message):
     session.status = "delete"
     if message.text == "/delete list":
         await delete_list(session)
-    await message.reply('Write the word you want to delete')
+    else:
+        await message.reply('Write the word you want to delete')
 
 
 async def deleting_word(message):
