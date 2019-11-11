@@ -37,10 +37,14 @@ async def do_unscramble(session, keys, data, sentence, revealed, message):
         if revealed.strip() == session.unscramble_sentence[0].strip():
             await bot.send_message(session.get_user_id(), "Excellent!")
         else:
+            k = bot_utils.to_one_row_keyboard(['Restart', 'Next'],
+                                              [0, 1],
+                                              ['restart_unscramble', 'next_unscramble'])
             res = bot_utils.compare(revealed.strip(), session.unscramble_sentence[0].strip())
             await bot.send_message(session.get_user_id(), "A bit wrong.\nIt is:\n"
                                                         "{}\nyuor answer:\n{}"
-                                   .format(res[1], res[0]), parse_mode=types.ParseMode.HTML)
+                                   .format(res[1], res[0]), parse_mode=types.ParseMode.HTML,
+                                   reply_markup=k)
     actions = ['unscramble'] * len(data)
     session.unscramble_keys = keys
     session.unscramble_data = data
