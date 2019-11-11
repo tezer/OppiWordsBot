@@ -120,7 +120,7 @@ def fetchall(query, args):
         rows = cursor.fetchall()
     except Error as e:
         print('fetchall', e)
-
+        logger.error(e)
     finally:
         cursor.close()
         conn.close()
