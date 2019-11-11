@@ -12,7 +12,6 @@ from loguru import logger
 conf = core.db_conf
 
 
-
 def insertone(query, args):
     try:
         conn = mysql.connector.connect(host=conf['host'],
@@ -99,6 +98,7 @@ def deleteone(query, args):
         conn.close()
         return res
 
+
 def delete_by_hid(hid):
     query = "DELETE FROM words WHERE hid = %s"
     args = (hid,)
@@ -154,7 +154,8 @@ def fetchmany(query, n):
         cursor.close()
         conn.close()
 
-#WORDS =========================================================================
+
+# WORDS =========================================================================
 def insert_word(user, language, word, definition, mode, hid, listname=None, list_hid=None):
     query = "INSERT INTO words(user, language, word, definition, mode, hid, listname, list_hid) " \
             "VALUES(%s,%s,%s,%s,%s,%s, %s, %s)"
@@ -199,13 +200,14 @@ def update_sr_item(hid, model, lastTime):
 def get_hid(word, lang, user, list_name):
     return hashlib.md5((word + lang + user + list_name).encode('utf-8')).hexdigest()
 
-#LISTS =====================================================================================
+
+# LISTS =====================================================================================
 def add_list(user, word_list, lang, list_name):
     data = list()
     logger.debug("Adding {} words to list_name {} for user {}"
                  .format(len(word_list), list_name, user))
     for word in word_list:
-        hid = get_hid(word, lang, user,  list_name)
+        hid = get_hid(word, lang, user, list_name)
         args = (hid, list_name, user, lang, word)
         data.append(args)
 
@@ -231,7 +233,7 @@ def add_list(user, word_list, lang, list_name):
 
 def get_list(user_id, language, list_name):
     query = "SELECT listname, hid, word FROM word_lists WHERE user=%s AND language=%s AND listname=%s"
-    args =  (user_id, language, list_name)
+    args = (user_id, language, list_name)
     result = fetchall(query, args)
     return result
 
@@ -248,6 +250,7 @@ def lists_to_add(user, lang):
     result = fetchall(query, args)
     return result
 
+
 def get_list_names(user):
     query = "select DISTINCT listname FROM words WHERE listname <> '' AND user=%s"
     args = (user,)
@@ -256,21 +259,22 @@ def get_list_names(user):
         result.append(l[0])
     return result
 
-def get_hids_for_list(user,  list_name):
+
+def get_hids_for_list(user, list_name):
     query = 'SELECT hid FROM words WHERE user=%s AND listname=%s'
-    args = (user,  list_name)
+    args = (user, list_name)
     hids = fetchall(query, args)
     result = list(x[0] for x in hids)
     return result
 
-#USER MANAGEMENT =====================================================================
+
+# USER MANAGEMENT =====================================================================
 
 def update_blocked(user_id):
     query = "UPDATE users SET blocked = 1 WHERE user_id = %s"
     args = (user_id,)
     updateone(query, args)
     return None
-
 
 
 def unblock_user(user_id):
@@ -299,6 +303,7 @@ def update_user(user_id, first_name, last_name, language_code):
             "VALUES(%s,%s,%s,%s)"
     args = (user_id, first_name, last_name, language_code)
     insertone(query, args)
+
 
 # SUBSCRIPTION =====================================================================
 def add_months(sourcedate, months):
@@ -349,58 +354,62 @@ def check_subscribed(user):
     end_date = datetime.datetime.strptime(str(d[1]), "%Y-%m-%d")
     return datetime.date.today() <= end_date.date()
 
-#TEXTS ============================================================
+
+# TEXTS ============================================================
 def add_text(language, text):
     hid = hashlib.md5(text.encode('utf-8')).hexdigest()
 
     query = "INSERT INTO texts (hid, language, text) " \
-                "VALUES(%s,%s,%s)"
+            "VALUES(%s,%s,%s)"
     args = (hid, language, text)
     insertone(query, args)
     return hid
 
 
 def add_user_text(user, hid, list_name):
-
     query = "INSERT INTO user_texts (user, text_hid, list_name) " \
-                "VALUES(%s,%s,%s)"
+            "VALUES(%s,%s,%s)"
     args = (user, hid, list_name)
     insertone(query, args)
+
 
 def add_sentence(text, start, end, text_hid):
     hid = hashlib.md5((text).encode('utf-8')).hexdigest()
     query = "INSERT INTO sentences (hid, start, end, text_hid) " \
-                "VALUES(%s, %s, %s, %s)"
+            "VALUES(%s, %s, %s, %s)"
     args = (hid, start, end, text_hid)
     insertone(query, args)
     return hid
 
+
 def add_sentence_translation(translation, sent_hid, lang):
     hid = hashlib.md5((translation).encode('utf-8')).hexdigest()
     query = "INSERT INTO translations (hid, sent_hid, language, translation) " \
-                "VALUES(%s, %s, %s, %s)"
+            "VALUES(%s, %s, %s, %s)"
     args = (hid, sent_hid, lang, translation)
     insertone(query, args)
     return hid
 
-def add_text_word(word, sent_hid, lang, user,  list_name):
+
+def add_text_word(word, sent_hid, lang, user, list_name):
     logger.debug("{} {}", word, type(word))
-    hid = get_hid(word, lang, str(user),  list_name)
+    hid = get_hid(word, lang, str(user), list_name)
     query = "INSERT INTO  text_words(hid, sent_hid) " \
-                "VALUES(%s, %s)"
-    args = (hid,sent_hid)
+            "VALUES(%s, %s)"
+    args = (hid, sent_hid)
     insertone(query, args)
     query = "INSERT IGNORE INTO word_lists (hid, listname, user, LANGUAGE, word ) " \
-                "VALUES(%s,%s,%s,%s,%s)"
+            "VALUES(%s,%s,%s,%s,%s)"
     args = (hid, list_name, user, lang, word)
     insertone(query, args)
 
-#Get sentences with translations by hid's of words from the list
+
+# Get sentences with translations by hid's of words from the list
 def get_context(list_hid):
     translation = ''
     context = ''
     query = 'SELECT sent_hid FROM text_words WHERE hid=%s'
-    args = (list_hid, )
+    args = (list_hid,)
     sent_hid = fetchone(query, args)
     if sent_hid is None or len(sent_hid) == 0:
         return ''
@@ -420,7 +429,8 @@ def get_context(list_hid):
         context = text[start_end_text_hid[0]:start_end_text_hid[1]]
     return translation, context
 
-#SENTENCES ============================================
+
+# SENTENCES ============================================
 # 0. sentence, 1. translation, 2. mode, 3. hid
 def fetch_sentences(user, list_name):
     result = list()
@@ -428,7 +438,7 @@ def fetch_sentences(user, list_name):
     args = (user, list_name)
     text_hid = fetchone(query, args)
     query = 'SELECT hid, start, end FROM sentences WHERE text_hid=%s'
-    args=text_hid
+    args = text_hid
     hid_start_end = fetchall(query, args)
     query = 'SELECT text FROM texts WHERE hid=%s'
     args = text_hid
@@ -444,7 +454,7 @@ def fetch_sentences(user, list_name):
 def get_words_for_sentence(hid):
     result = list()
     query = 'SELECT hid FROM text_words WHERE sent_hid=%s'
-    args = (hid, )
+    args = (hid,)
     hids = fetchall(query, args)
     for h in hids:
         query = 'SELECT word FROM words WHERE hid=%s'
@@ -452,6 +462,7 @@ def get_words_for_sentence(hid):
         res = fetchone(query, args)
         result.append(res[0])
     return result
+
 
 def test(c):
     global conf

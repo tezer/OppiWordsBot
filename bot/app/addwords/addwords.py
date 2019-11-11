@@ -35,7 +35,6 @@ async def addwords_message(message):
         await message.reply("Type in words in *" + session.active_lang().title() + "*")
 
 
-
 async def skip_list_action(query: types.CallbackQuery, callback_data: dict):
     session, isValid = await authorize(query.from_user.id)
     if not isValid:

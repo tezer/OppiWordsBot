@@ -19,7 +19,7 @@ class Session:
         self.definitions = list()
         self.list_hid_word = None  # ""(list_name, hid)
         self.subscribed = False
-        #SENTENCES
+        # SENTENCES
         self.unscramble_keys = None
         self.unscramble_data = None
         self.unscramble_revealed = None
@@ -72,7 +72,7 @@ class Session:
         return word[0]
 
     def has_more_errors(self):
-         return len(self.read_error_storage) > 0
+        return len(self.read_error_storage) > 0
 
     def get_next_error(self):
         return self.read_error_storage[0][0], self.read_error_storage[0][1]

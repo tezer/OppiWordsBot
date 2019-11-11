@@ -5,11 +5,12 @@ import json
 from bot.bot_utils import mysql_connect as db
 
 oneHour = timedelta(hours=1)
-defaultModel = (3., 3., 4.) # alpha, beta, and half-life in hours
+defaultModel = (3., 3., 4.)  # alpha, beta, and half-life in hours
+
 
 def add_item(user_language, word_meaning, mode):
-    s = str(user_language[0]) + str(user_language[1])\
-        +  str(word_meaning[0]) + str(word_meaning[1]) + str(mode)
+    s = str(user_language[0]) + str(user_language[1]) \
+        + str(word_meaning[0]) + str(word_meaning[1]) + str(mode)
     s = s.encode('utf-8')
     hid = hashlib.md5(s).hexdigest()
     db.add_sr_item(hid, json.dumps(defaultModel), None, user_language[0], user_language[1])
@@ -33,12 +34,13 @@ def update_item(hid, result):
     return True
 
 
-def get_items_to_learn(user_language, upper_recall_limit = 0.5, n = -1):
+def get_items_to_learn(user_language, upper_recall_limit=0.5, n=-1):
     result = list()
     now = datetime.now()
     tmp = dict()
     if (user_language[1] is not None):
-         words =  db.fetchall("SELECT hid, model, last_date FROM spaced_repetition WHERE user=%s and language=%s", (user_language[0], user_language[1]))
+        words = db.fetchall("SELECT hid, model, last_date FROM spaced_repetition WHERE user=%s and language=%s",
+                            (user_language[0], user_language[1]))
     else:
         words = db.fetchall("SELECT hid, model, last_date FROM spaced_repetition WHERE user=%s", (user_language[0],))
     for word in words:
@@ -65,4 +67,3 @@ def get_items_to_learn(user_language, upper_recall_limit = 0.5, n = -1):
             if recall == r:
                 result.append(hid)
     return result
-

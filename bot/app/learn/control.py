@@ -80,10 +80,10 @@ async def learning(query: types.CallbackQuery, callback_data: dict):
     if n >= 0:
         lists = mysql_connect.get_list_names(query.from_user.id)
         list_name = lists[int(callback_data['data'])]
-        logger.info("{} learns {}", query.from_user.id,  list_name)
-        hids = mysql_connect.get_hids_for_list(query.from_user.id,  list_name)
+        logger.info("{} learns {}", query.from_user.id, list_name)
+        hids = mysql_connect.get_hids_for_list(query.from_user.id, list_name)
         hids_all = sr.get_items_to_learn(
-                (session.get_user_id(), session.active_lang()), upper_recall_limit=0.5, n=n)
+            (session.get_user_id(), session.active_lang()), upper_recall_limit=0.5, n=n)
         hids = list(set(hids) & set(hids_all))
 
         if len(hids) == 0:
@@ -171,9 +171,8 @@ async def do_learning1(session):
             session.status = tasks[1]
             await bot.send_message(session.get_user_id(),
                                    "*WRITE* the correct word for the definition:\n*" + word[1] + "*")
-        #SENTENCES
-        #Unscramble
+        # SENTENCES
+        # Unscramble
         elif word[2] == 10:
             logger.debug("{} started level {}", session.get_user_id(), word[2])
             await syntaxis.unscramble(session, word)
-

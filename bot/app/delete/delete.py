@@ -60,4 +60,3 @@ async def keep_action(query: types.CallbackQuery, callback_data: dict):
     logger.info(str(session.get_user_id()) + ' is keeping word ' + session.hid_cash)
     session.hid_cash = ""
     await bot.send_message(session.get_user_id(), "OK, let's keep it")
-

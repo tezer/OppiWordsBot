@@ -67,6 +67,7 @@ async def settings_message(message: types.Message):
 async def set_user_language_message(message: types.Message):
     await generic.set_user_language_message(message)
 
+
 # SUBSCRIBE =========================================================
 
 # TODO: one week free; specify number of months; discounted 1 year subscription
@@ -75,18 +76,22 @@ async def set_user_language_message(message: types.Message):
 async def start_message(message: types.Message):
     await subscribe.subscribe_command(message)
 
+
 @dp.pre_checkout_query_handler(lambda query: True)
 async def checkout(pre_checkout_query: types.PreCheckoutQuery):
     await subscribe.checkout(pre_checkout_query)
+
 
 @dp.message_handler(content_types=ContentTypes.SUCCESSFUL_PAYMENT)
 async def got_payment(message: types.Message):
     await subscribe.got_payment(message)
 
+
 # SHOW WORDS ========================================================
 @dp.message_handler(commands=['show'])
 async def show_command(message: types.Message):
     await show.show_command(message)
+
 
 # ADDING TEXT========================================================
 @dp.message_handler(commands=['addtext'])
@@ -104,6 +109,7 @@ async def add_text(message: types.Message):
 async def wordlist_command(message: types.Message):
     await wordlist.wordlist_command(message)
 
+
 @dp.callback_query_handler(posts_cb.filter(action=["topn"]))
 async def topn_action(query: types.CallbackQuery, callback_data: dict):
     await wordlist.topn_action(query, callback_data)
@@ -113,9 +119,11 @@ async def topn_action(query: types.CallbackQuery, callback_data: dict):
 async def smart_action(query: types.CallbackQuery, callback_data: dict):
     await wordlist.smart_action(query, callback_data)
 
+
 @dp.message_handler(lambda message: user_state(message.from_user.id, "topn"))
 async def adding_word_to_list(message):
     await wordlist.adding_word_to_list(message)
+
 
 async def adding_list_words(message, query, list_name):
     await wordlist.adding_list_words(message, query, list_name)
@@ -141,6 +149,7 @@ async def deleting_word(message):
 @dp.callback_query_handler(posts_cb.filter(action=["delete"]))
 async def delete_action(query: types.CallbackQuery, callback_data: dict):
     await delete.delete_action(query, callback_data)
+
 
 @dp.callback_query_handler(posts_cb.filter(action=["keep"]))
 async def keep_action(query: types.CallbackQuery, callback_data: dict):
@@ -189,16 +198,19 @@ async def i_remember(query: types.CallbackQuery, callback_data: dict):
 async def callback_show_action(query: types.CallbackQuery, callback_data: dict):
     await reading.callback_show_action(query, callback_data)
 
+
 # Forgot and I knew that!
 @dp.callback_query_handler(posts_cb.filter(action=["forgot", "i_knew"]))
 async def callback_forgot_action(query: types.CallbackQuery, callback_data: dict):
     await reading.callback_forgot_action(query, callback_data)
 
+
 @dp.callback_query_handler(posts_cb.filter(action=["mc_wrong"]))
 async def callback_mc_action(query: types.CallbackQuery, callback_data: dict):
     await reading.callback_mc_action(query, callback_data)
 
-#SENTENCES =======================================================================
+
+# SENTENCES =======================================================================
 @dp.callback_query_handler(posts_cb.filter(action=["unscramble"]))
 async def unscramble_message(query: types.CallbackQuery, callback_data: dict):
     await syntaxis.unscramble_message(query, callback_data)
@@ -210,6 +222,7 @@ async def unscramble_message(query: types.CallbackQuery, callback_data: dict):
 async def voice_message(message: types.Message):
     await speaking.voice_message(message)
 
+
 # ==========================================================================================
 # Selecting a language to learn
 
@@ -218,7 +231,7 @@ async def setlanguage_command_message(message: types.Message):
     await setlanguage.setlanguage_command_message(message)
 
 
-#TODO Make sure I need it. It might be reduntant
+# TODO Make sure I need it. It might be reduntant
 @dp.callback_query_handler(posts_cb.filter(action=["setlanguage"]))
 async def setlanguage_action(query: types.CallbackQuery, callback_data: dict):
     await setlanguage.setlanguage_action(query, callback_data)
@@ -237,9 +250,11 @@ async def setlanguage_message(message):
 async def addwords_message(message):
     await addwords.addwords_message(message)
 
+
 @dp.callback_query_handler(posts_cb.filter(action=["skip_list"]))
 async def skip_list_action(query: types.CallbackQuery, callback_data: dict):
     await addwords.skip_list_action(query, callback_data)
+
 
 # Getting a new word typed in by a user and getting definitions
 @dp.callback_query_handler(posts_cb.filter(action=["wiktionary_search"]))
@@ -250,6 +265,7 @@ async def wiktionary_search_action(query: types.CallbackQuery, callback_data: di
 @dp.message_handler(lambda message: user_state(message.from_user.id, "/addwords"))
 async def wiktionary_search(message):
     await addwords.wiktionary_search(message)
+
 
 # Adding selected definition
 @dp.callback_query_handler(posts_cb.filter(action=["meaning"]))
@@ -282,11 +298,12 @@ async def finish_adding_meanings_action(query: types.CallbackQuery, callback_dat
 async def unknow_query_handler(query: types.CallbackQuery):
     await generic.unknow_query_handler(query)
 
+
 @dp.message_handler()
 async def text_message(message):
     await generic.text_message(message)
 
-if __name__ == '__main__':
 
+if __name__ == '__main__':
     # print(sys.argv[1:])
     executor.start_polling(dp, skip_updates=True)

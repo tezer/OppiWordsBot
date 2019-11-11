@@ -115,7 +115,6 @@ async def callback_show_action(query: types.CallbackQuery, callback_data: dict):
         await bot.send_message(query.from_user.id, string, reply_markup=kb)
 
 
-
 async def callback_mc_action(query: types.CallbackQuery, callback_data: dict):
     logger.debug('Got this callback data: %r', callback_data)
     await query.answer("Wrong.")

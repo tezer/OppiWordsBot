@@ -22,7 +22,6 @@ async def wordlist_command(message: types.Message):
     await bot.send_message(session.get_user_id(), "What type of lists would you like?", reply_markup=k)
 
 
-
 async def topn_action(query: types.CallbackQuery, callback_data: dict):
     session, isValid = await authorize(query.from_user.id, with_lang=True)
     if not isValid:
@@ -34,7 +33,6 @@ async def topn_action(query: types.CallbackQuery, callback_data: dict):
     await m.edit_text("Type _0:100_ if you want to add top 100 most frequent words for {}"
                       "\nor _50:100_ if you want to skip top 50 words. You can specify any range in the format _start:end_"
                       "\nThe words don't have definitions. You will add them afterwards. ".format(lang))
-
 
 
 async def smart_action(query: types.CallbackQuery, callback_data: dict):

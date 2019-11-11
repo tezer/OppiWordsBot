@@ -8,6 +8,7 @@ from pathlib import Path
 
 from bot.bot_utils import user_stat
 from settings import bot_token, db_conf
+
 logger.add("oppiwordsbot_{time}.log")
 
 TOKEN = bot_token[sys.argv[1:][0]]
@@ -23,6 +24,7 @@ with open('bot/app/lang.list') as f:
     LANGS = f.readlines()
 LANGS = [x.replace('\n', '').lower() for x in LANGS]
 
+
 def load_data(name):
     data_file = Path(name)
     if data_file.is_file():
@@ -34,6 +36,7 @@ def load_data(name):
 
 
 sessions = load_data("sessions.pkl")  # user_id: session
+
 
 async def get_session(user_id):
     if user_id in sessions.keys():
@@ -58,6 +61,3 @@ def user_state(user_id, state):
     if user_id not in sessions.keys():
         return False
     return sessions[user_id].status == state
-
-
-

@@ -8,6 +8,7 @@ from bot.app.core import bot
 from aiogram import types
 from aiogram.utils.exceptions import BotBlocked as Blocked
 
+
 async def send_notifications_to_users(message: types.Message):
     user_id = message.from_user.id
     if user_id != admin:

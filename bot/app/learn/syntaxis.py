@@ -22,7 +22,6 @@ async def unscramble_message(query, callback_data):
     await do_unscramble(session, new_keys, new_data, session.unscramble_sentence, revealed, m)
 
 
-
 async def do_unscramble(session, keys, data, sentence, revealed, message):
     actions = ['unscramble'] * len(data)
     k = bot_utils.to_vertical_keyboard(keys, data, actions)
@@ -35,11 +34,11 @@ async def do_unscramble(session, keys, data, sentence, revealed, message):
 
 async def unscramble(session, sentence):
     m = await bot.send_message(session.get_user_id(),
-                           "Put the words in correct order")
+                               "Put the words in correct order")
     tokens = sentence[0].split(' ')
     keys = list()
     data = list()
-    action=list()
+    action = list()
     for i in range(len(tokens)):
         token = tokens[i].strip()
         if len(token) == 0:

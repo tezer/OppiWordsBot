@@ -43,7 +43,7 @@ async def start_message(message: types.Message):
         await bot.send_message(message.from_user.id,
                                "Your user language is not set. It means that all word definitions will be in English. Set your Telegram user language and /start the bot again.")
     db.update_user(message.from_user.id, message.from_user.first_name, message.from_user.last_name,
-                              message.from_user.language_code)
+                   message.from_user.language_code)
     sessions[message.from_user.id] = s
     await message.reply(help_text)
     await bot.send_photo(message.from_user.id, types.InputFile('bot/menu1.1.png'))
@@ -86,6 +86,7 @@ async def set_user_language_message(message: types.Message):
     with open('sessions.pkl', 'wb') as f:
         pickle.dump(sessions, f)
 
+
 async def stop_message(message: types.Message):
     logger.info(str(message.from_user.id) + ' /stop command')
     session, isValid = await authorize(message.from_user.id, with_lang=True)
@@ -95,11 +96,12 @@ async def stop_message(message: types.Message):
     session.words_to_learn = list()
     session.read_error_storage = list()
     session.current_word = 0
-    session.hid_cash=str()
-    session.words_to_add=None
+    session.hid_cash = str()
+    session.words_to_add = None
     session.definitions = list()
     session.list_hid_word = None  # ""(list_name, hid)
     await message.reply("You session is restarted.")
+
 
 async def text_message(message):
     logger.debug(str(message.from_user.id)
@@ -121,11 +123,8 @@ async def text_message(message):
     k = to_vertical_keyboard(buttons, action=actions, data=data)
     await message.reply("What would you like to do with this word?", reply_markup=k)
 
+
 async def unknow_query_handler(query: types.CallbackQuery):
     logger.info('Got this callback data: ', query.data)
     logger.info('Got this query.as_json: ', query.as_json())
     await query.answer("Don't know what to do))")
-
-
-
-
