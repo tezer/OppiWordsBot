@@ -2,7 +2,8 @@ import random
 
 from bot.app.core import bot, authorize
 from bot.bot_utils import bot_utils
-
+from loguru import logger
+from aiogram import types
 
 async def unscramble_message(query, callback_data):
     session, isValid = await authorize(query.from_user.id)
@@ -22,14 +23,39 @@ async def unscramble_message(query, callback_data):
     await do_unscramble(session, new_keys, new_data, session.unscramble_sentence, revealed, m)
 
 
+async def restart_unscramble_message(query, callback_data):
+    logger.info("{} restarts unscramble")
+    session, isValid = await authorize(query.from_user.id)
+    if not isValid:
+        return
+    await unscramble(session, session.unscramble_sentence)
+
 async def do_unscramble(session, keys, data, sentence, revealed, message):
+    logger.debug("{}: Keys = {}, revealed = {}", session.get_user_id(),
+                 len(keys), revealed)
+    if len(keys) == 0:
+        if revealed.strip() == session.unscramble_sentence[0].strip():
+            await bot.send_message(session.get_user_id(), "Excellent!")
+        else:
+            res = bot_utils.compare(revealed.strip(), session.unscramble_sentence[0].strip())
+            await bot.send_message(session.get_user_id(), "A bit wrong.\nIt is:\n"
+                                                        "{}\nyuor answer:\n{}"
+                                   .format(res[1], res[0]), parse_mode=types.ParseMode.HTML)
     actions = ['unscramble'] * len(data)
-    k = bot_utils.to_vertical_keyboard(keys, data, actions)
-    await message.edit_text("*" + sentence[1] + "*" + "\n" + revealed, reply_markup=k)
     session.unscramble_keys = keys
     session.unscramble_data = data
     session.unscramble_revealed = revealed
     session.unscramble_sentence = sentence
+
+    k = keys.copy()
+    k.append("RESTART")
+    a = actions.copy()
+    a.append("restart_unscramble")
+    d = data.copy()
+    d.append('-1')
+    k = bot_utils.to_vertical_keyboard(k, d, a)
+    await message.edit_text("*" + sentence[1] + "*" + "\n" + revealed, reply_markup=k)
+
 
 
 async def unscramble(session, sentence):
@@ -49,4 +75,6 @@ async def unscramble(session, sentence):
     c = list(zip(keys, data))
     random.shuffle(c)
     keys, data = zip(*c)
-    await do_unscramble(session, keys, data, sentence, "", m)
+    k = list(keys)
+    d = list(data)
+    await do_unscramble(session, k, d, sentence, "", m)
