@@ -3,7 +3,7 @@ from bot.app.core import bot, authorize, get_session, RESTART
 from bot.bot_utils.bot_utils import to_one_row_keyboard, to_vertical_keyboard, get_hint
 from bot.ilt import sort_words, tasks, level_up
 from bot.bot_utils import spaced_repetition as sr, mysql_connect
-from bot.app.learn import reading
+from bot.app.learn import reading, syntaxis
 from loguru import logger
 
 from bot.speech import text2speech
@@ -39,6 +39,17 @@ async def start_learning_message(message):
                            reply_markup=kb)
 
 
+async def learn_sentences(user, list_name, session):
+    await bot.send_message(user, "You've leaned all the words from list _{}_. "
+                                 "Now let's do some grammar exercises.".format(list_name))
+    # 0. word, 1. definition, 2. mode, 3. hid
+    # 0. sentence, 1. translation, 2. mode, 3. hid
+    sentences = mysql_connect.fetch_sentences(session.get_user_id(), list_name)
+    session.words_to_learn = sentences
+    session.current_word = 0
+    await start_learning(session)
+
+
 async def learning(query: types.CallbackQuery, callback_data: dict):
     await query.answer("Let's learn!")
     logger.debug(query)
@@ -65,32 +76,37 @@ async def learning(query: types.CallbackQuery, callback_data: dict):
                 await bot.send_message(session.get_user_id(), 'Add more words with /addwords command or')
                 await bot.send_message(session.get_user_id(), 'or /test words you learned before.')
             return True
+    sentences = False
     if n >= 0:
         lists = mysql_connect.get_list_names(query.from_user.id)
         list_name = lists[int(callback_data['data'])]
         logger.info("{} learns {}", query.from_user.id,  list_name)
         hids = mysql_connect.get_hids_for_list(query.from_user.id,  list_name)
-    words = mysql_connect.fetch_by_hids(session.get_user_id(), hids)
-    session.words_to_learn = words
-    session.current_word = 0
+        hids_all = sr.get_items_to_learn(
+                (session.get_user_id(), session.active_lang()), upper_recall_limit=0.5, n=n)
+        hids = list(set(hids) & set(hids_all))
 
-    if not session.has_more_words_to_learn():
-        # Case 2: doing reading errors
-        await bot.send_message(session.get_user_id(), "Let's revise some words")
-        await reading.do_reading_errors(query, callback_data)
-    else:
-        # Case 1: reading exercises
-        await start_learning(query, callback_data, session)
+        if len(hids) == 0:
+            await learn_sentences(query.from_user.id, list_name, session)
+            sentences = True
+
+    if not sentences:
+        words = mysql_connect.fetch_by_hids(session.get_user_id(), hids)
+        session.words_to_learn = words
+        session.current_word = 0
+
+        if not session.has_more_words_to_learn():
+            # Case 2: doing reading errors
+            await bot.send_message(session.get_user_id(), "Let's revise some words")
+            await reading.do_reading_errors(query, callback_data)
+        else:
+            # Case 1: reading exercises
+            await start_learning(session)
 
 
 # Get reply from the user and filter the data: set number and shuffle
-async def start_learning(query: types.CallbackQuery, callback_data: dict, session):
-    n = int(callback_data['data'])
+async def start_learning(session):
     words = session.words_to_learn
-    if n > len(words):
-        await bot.send_message(session.get_user_id(), "You have only *" + str(len(words)) + "* words for this session")
-    if n < len(words):
-        words = words[:n]
     words = sort_words(words)
     session.words_to_learn = words
     await bot.send_message(session.get_user_id(), "Check if you remember these words")
@@ -155,3 +171,9 @@ async def do_learning1(session):
             session.status = tasks[1]
             await bot.send_message(session.get_user_id(),
                                    "*WRITE* the correct word for the definition:\n*" + word[1] + "*")
+        #SENTENCES
+        #Unscramble
+        elif word[2] == 10:
+            logger.debug("{} started level {}", session.get_user_id(), word[2])
+            await syntaxis.unscrumble(session, word)
+

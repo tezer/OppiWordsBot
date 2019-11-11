@@ -19,6 +19,11 @@ class Session:
         self.definitions = list()
         self.list_hid_word = None  # ""(list_name, hid)
         self.subscribed = False
+        #SENTENCES
+        self.unscramble_keys = None
+        self.unscramble_data = None
+        self.unscramble_revieled = None
+        self.unscramble_sentence = None
 
     def active_lang(self):
         for l, active in self.languages.items():

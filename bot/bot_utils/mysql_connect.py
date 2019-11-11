@@ -421,8 +421,37 @@ def get_context(list_hid):
     return translation, context
 
 #SENTENCES ============================================
+# 0. sentence, 1. translation, 2. mode, 3. hid
 def fetch_sentences(user, list_name):
-    pass
+    result = list()
+    query = 'SELECT text_hid FROM user_texts WHERE user=%s AND list_name=%s'
+    args = (user, list_name)
+    text_hid = fetchone(query, args)
+    query = 'SELECT hid, start, end FROM sentences WHERE text_hid=%s'
+    args=text_hid
+    hid_start_end = fetchall(query, args)
+    query = 'SELECT text FROM texts WHERE hid=%s'
+    args = text_hid
+    text = fetchone(query, args)[0]
+    for i in hid_start_end:
+        sentence = text[i[1]:i[2]]
+        query = 'SELECT translation FROM translations WHERE sent_hid=%s';
+        translation = fetchone(query, (i[0],))[0]
+        result.append((sentence, translation, 10, i[0]))
+    return result
+
+
+def get_words_for_sentence(hid):
+    result = list()
+    query = 'SELECT hid FROM text_words WHERE sent_hid=%s'
+    args = (hid, )
+    hids = fetchall(query, args)
+    for h in hids:
+        query = 'SELECT word FROM words WHERE hid=%s'
+        args = h
+        res = fetchone(query, args)
+        result.append(res[0])
+    return result
 
 def test(c):
     global conf

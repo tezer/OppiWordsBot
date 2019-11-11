@@ -14,7 +14,7 @@ from bot.app.admin import admin
 from bot.app.addtext import addtext
 from bot.app.wordlist import wordlist
 from bot.app.addwords import addwords
-from bot.app.learn import reading, speaking, writing, control
+from bot.app.learn import reading, speaking, writing, control, syntaxis
 from bot.app.core import dp, user_state
 
 #
@@ -197,6 +197,11 @@ async def callback_forgot_action(query: types.CallbackQuery, callback_data: dict
 @dp.callback_query_handler(posts_cb.filter(action=["mc_wrong"]))
 async def callback_mc_action(query: types.CallbackQuery, callback_data: dict):
     await reading.callback_mc_action(query, callback_data)
+
+#SENTENCES =======================================================================
+@dp.callback_query_handler(posts_cb.filter(action=["unscramble"]))
+async def unscramble_message(query: types.CallbackQuery, callback_data: dict):
+    await syntaxis.unscramble_message(query, callback_data)
 
 
 # VOICE processing ===============================================================

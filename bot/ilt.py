@@ -9,6 +9,7 @@ tasks[0] = 'word_recognition'
 tasks[3] = 'pronounce'
 tasks[2] = 'say_word'
 tasks[1] = 'type_in'
+tasks[10] = 'unscrumble'
 
 
 @logger.catch
