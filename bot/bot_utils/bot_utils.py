@@ -108,8 +108,8 @@ def get_definitions(language, user_lang, word):
 
     except Exception as e:
         logger.warning("Yandex dictionary exception: " + str(e))
-    if len(result) > 0:
-        return result
+    # if len(result) > 0:
+    #     return result
 
     try:
         w = parser.fetch(word.lower(), language=language)
@@ -118,10 +118,10 @@ def get_definitions(language, user_lang, word):
         MEM_CACHE[language + '_' + user_lang + '_' + word] = result
         return result
     if len(w) > 0:
-        result = process_wiktionary(w)
-        if len(result) > 0:
-            return result
-        elif len(word) <= 500 :
+        res = process_wiktionary(w)
+        if len(res) > 0:
+            result.extend(res)
+        if len(word) <= 500 :
             try:
                 tr = translate_client.translate(
                     word,
