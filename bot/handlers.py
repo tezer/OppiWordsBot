@@ -221,6 +221,11 @@ async def restart_unscramble_message(query: types.CallbackQuery, callback_data: 
     await syntaxis.restart_unscramble_message(query, callback_data)
 
 
+@dp.callback_query_handler(posts_cb.filter(action=["next_unscramble"]))
+async def next_unscramble_message(query: types.CallbackQuery):
+    await syntaxis.next_unscramble_message(query)
+
+
 # VOICE processing ===============================================================
 
 @dp.message_handler(content_types=ContentTypes.VOICE)

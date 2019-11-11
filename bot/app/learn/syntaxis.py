@@ -1,6 +1,7 @@
 import random
 
 from bot.app.core import bot, authorize
+from bot.app.learn import control
 from bot.bot_utils import bot_utils
 from loguru import logger
 from aiogram import types
@@ -30,12 +31,33 @@ async def restart_unscramble_message(query, callback_data):
         return
     await unscramble(session, session.unscramble_sentence)
 
+
+
+async def next_unscramble_message(query):
+    logger.info("{} starts next unscramble")
+    session, isValid = await authorize(query.from_user.id)
+    if not isValid:
+        return
+    await next_unscramble(session)
+
+
+async def next_unscramble(session):
+    #TODO save progress over sentences
+    session.delete_current_word()
+    session.unscramble_keys = None
+    session.unscramble_data = None
+    session.unscramble_revealed = None
+    session.unscramble_sentence = None
+    await control.do_learning(session)
+
+
 async def do_unscramble(session, keys, data, sentence, revealed, message):
     logger.debug("{}: Keys = {}, revealed = {}", session.get_user_id(),
                  len(keys), revealed)
-    if len(keys) == 0:
+    if len(keys) == 0 and len(revealed) > 0:
         if revealed.strip() == session.unscramble_sentence[0].strip():
             await bot.send_message(session.get_user_id(), "Excellent!")
+            await next_unscramble(session)
         else:
             k = bot_utils.to_one_row_keyboard(['Restart', 'Next'],
                                               [0, 1],
@@ -45,6 +67,7 @@ async def do_unscramble(session, keys, data, sentence, revealed, message):
                                                         "{}\nyuor answer:\n{}"
                                    .format(res[1], res[0]), parse_mode=types.ParseMode.HTML,
                                    reply_markup=k)
+        return
     actions = ['unscramble'] * len(data)
     session.unscramble_keys = keys
     session.unscramble_data = data
