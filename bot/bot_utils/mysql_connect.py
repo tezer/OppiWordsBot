@@ -268,6 +268,20 @@ def get_hids_for_list(user, list_name):
     return result
 
 
+def del_list_keep_words(user, list_name):
+    query = "UPDATE words SET listname=NULL WHERE user=%s AND listname=%s"
+    args = (user, list_name)
+    updateone(query, args)
+
+
+def del_list_del_words(user, list_name):
+    query = 'SELECT hid FROM words WHERE user=%s AND listname=%s'
+    args = (user, list_name)
+    hids = fetchall(query, args)
+    for hid in hids:
+        delete_by_hid(hid[0])
+
+
 # USER MANAGEMENT =====================================================================
 
 def update_blocked(user_id):

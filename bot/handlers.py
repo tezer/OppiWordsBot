@@ -151,9 +151,29 @@ async def delete_action(query: types.CallbackQuery, callback_data: dict):
     await delete.delete_action(query, callback_data)
 
 
+@dp.callback_query_handler(posts_cb.filter(action=["delete_list"]))
+async def delete_list_action(query: types.CallbackQuery, callback_data: dict):
+    await delete.delete_list_action(query, callback_data)
+
+
+@dp.callback_query_handler(posts_cb.filter(action=["del_list_keep_words"]))
+async def del_list_keep_words_action(query: types.CallbackQuery, callback_data: dict):
+    await delete.del_list_keep_words(query, callback_data)
+
+
+@dp.callback_query_handler(posts_cb.filter(action=["del_list_del_words"]))
+async def del_list_del_words_action(query: types.CallbackQuery, callback_data: dict):
+    await delete.del_list_del_words_action(query, callback_data)
+
+
 @dp.callback_query_handler(posts_cb.filter(action=["keep"]))
 async def keep_action(query: types.CallbackQuery, callback_data: dict):
     await delete.keep_action(query, callback_data)
+
+
+@dp.callback_query_handler(posts_cb.filter(action=["keep_list"]))
+async def keep_list_action(query: types.CallbackQuery, callback_data: dict):
+    await delete.keep_list_action(query)
 
 
 # ==========================================================================================
