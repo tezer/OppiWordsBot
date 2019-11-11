@@ -6,6 +6,7 @@ from aiogram import types
 from bot.bot_utils import mysql_connect
 from bot.app.core import authorize, bot
 
+
 async def show_command(message: types.Message):
     logger.info(str(message.from_user.id) + ' ' + str(message.text))
 
@@ -51,4 +52,3 @@ async def show_command(message: types.Message):
                                parse_mode=types.ParseMode.HTML, disable_notification=True)
         time.sleep(.1)
     await bot.send_message(session.get_user_id(), "Total: {} words".format(len(words)))
-

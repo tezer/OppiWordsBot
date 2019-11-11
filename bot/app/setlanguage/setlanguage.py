@@ -4,6 +4,7 @@ from loguru import logger
 from bot.app.core import authorize, bot, LANGS, sessions
 from aiogram import types
 
+
 async def setlanguage_command_message(message: types.Message):
     logger.debug(message)
     session, isValid = await authorize(message.from_user.id)
