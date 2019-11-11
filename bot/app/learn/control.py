@@ -175,5 +175,5 @@ async def do_learning1(session):
         #Unscramble
         elif word[2] == 10:
             logger.debug("{} started level {}", session.get_user_id(), word[2])
-            await syntaxis.unscrumble(session, word)
+            await syntaxis.unscramble(session, word)
 

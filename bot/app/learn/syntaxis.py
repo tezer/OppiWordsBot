@@ -33,7 +33,7 @@ async def do_unscramble(session, keys, data, sentence, revealed, message):
     session.unscramble_sentence = sentence
 
 
-async def unscrumble(session, sentence):
+async def unscramble(session, sentence):
     m = await bot.send_message(session.get_user_id(),
                            "Put the words in correct order")
     tokens = sentence[0].split(' ')
