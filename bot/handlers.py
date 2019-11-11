@@ -233,6 +233,9 @@ async def voice_message(message: types.Message):
     await speaking.voice_message(message)
 
 
+@dp.callback_query_handler(posts_cb.filter(action=['voice_skip']))
+async def voice_skip_action(query: types.CallbackQuery):
+    await speaking.voice_skip_action(query)
 # ==========================================================================================
 # Selecting a language to learn
 
