@@ -22,7 +22,7 @@ class Session:
         #SENTENCES
         self.unscramble_keys = None
         self.unscramble_data = None
-        self.unscramble_revieled = None
+        self.unscramble_revealed = None
         self.unscramble_sentence = None
 
     def active_lang(self):
