@@ -94,14 +94,24 @@ def get_words_and_phrases(text, text_language, user_language):
     return sentences
 
 
+def get_offset(offset, w, sentence_text):
+    return sentence_text.find(w, offset)
+
+
 async def add_sentences(text, session, hid):
     for s in text.sentences:
         sentence_text = text.get_string(s.start, s.end)
         sent_hid = mysql_connect.add_sentence(sentence_text, s.start, s.end, hid)
         mysql_connect.add_sentence_translation(s.translation[0], sent_hid, session.language_code)
+        offset = 0
         for w in s.words:
+            w_offset = get_offset(offset, w, sentence_text)
+
             mysql_connect.add_text_word(w, sent_hid, session.active_lang(), session.user_id,
-                                        text.name)
+                                       text.name, s.start + w_offset)
+            if ' ' not in w:
+                offset = w_offset
+
 
 
 async def add_text(message: types.Message):

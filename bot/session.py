@@ -4,14 +4,15 @@ from fuzzywuzzy import fuzz
 class Session:
 
     def __init__(self, userd_id, first_name=None, last_name=None, language_code=None):
+        #GENERAL settings
         self.language_code = language_code
         self.last_name = last_name
         self.first_name = first_name
         self.user_id = userd_id
-        self.status = str()
         self.languages = dict()  # language: True/False - True is active now
+        #LEARNING
+        self.status = str()
         self.words_to_learn = list()  # (word, definition, mode, hid)]
-        # ((word, definition, mode, hid), [similar words])
         self.read_error_storage = list()
         self.current_word = 0
         self.hid_cash = str()
@@ -24,6 +25,8 @@ class Session:
         self.unscramble_data = None
         self.unscramble_revealed = None
         self.unscramble_sentence = None
+        #ILT
+        self.current_level = 0
 
     def active_lang(self):
         for l, active in self.languages.items():

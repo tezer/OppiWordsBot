@@ -117,6 +117,7 @@ async def adding_list_words(message, query, list_name):
         list_name = session.list_hid_word[0]
         mysql_connect.delete_from_list(hid)
     session.status = '/addwords'
+    # listname, hid, word, offset
     word_list = mysql_connect.get_list(
         session.get_user_id(), session.active_lang(), list_name)
     if len(word_list) == 0 and list_name is not None:
@@ -128,7 +129,8 @@ async def adding_list_words(message, query, list_name):
         logger.error("{}, list_name is None".format(session.get_user_id()))
         return
     list_hid = word_list[0][1]
-    translation_context = mysql_connect.get_context(list_hid)
+    offset = word_list[0][3]
+    translation_context = mysql_connect.get_context(list_hid, offset)
     translation = ''
     word = word_list[0][2]
     context = '<b>' + word + '</b>'

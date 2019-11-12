@@ -232,8 +232,15 @@ def add_list(user, word_list, lang, list_name):
 
 
 def get_list(user_id, language, list_name):
-    query = "SELECT listname, hid, word FROM word_lists WHERE user=%s AND language=%s AND listname=%s"
+    query = "SELECT listname, hid, word, offset FROM word_lists WHERE user=%s AND language=%s AND listname=%s ORDER BY offset "
     args = (user_id, language, list_name)
+    result = fetchall(query, args)
+    return result
+
+
+def get_list_words(user_id, list_name):
+    query = "SELECT word, definition, mode, hid FROM words WHERE mode=0 AND user=%s AND listname=%s"
+    args = (user_id, list_name)
     result = fetchall(query, args)
     return result
 
@@ -280,6 +287,9 @@ def del_list_del_words(user, list_name):
     hids = fetchall(query, args)
     for hid in hids:
         delete_by_hid(hid[0])
+    query = 'DELETE FROM word_lists WHERE user=%s AND listname=%s'
+    args = (user, list_name)
+    deleteone(query, args)
 
 
 # USER MANAGEMENT =====================================================================
@@ -405,25 +415,26 @@ def add_sentence_translation(translation, sent_hid, lang):
     return hid
 
 
-def add_text_word(word, sent_hid, lang, user, list_name):
+def add_text_word(word, sent_hid, lang, user, list_name, text_offset):
     logger.debug("{} {}", word, type(word))
     hid = get_hid(word, lang, str(user), list_name)
-    query = "INSERT INTO  text_words(hid, sent_hid) " \
-            "VALUES(%s, %s)"
-    args = (hid, sent_hid)
+    query = "INSERT INTO  text_words(hid, sent_hid, offset) " \
+            "VALUES(%s, %s, %s)"
+    args = (hid, sent_hid, text_offset)
     insertone(query, args)
-    query = "INSERT IGNORE INTO word_lists (hid, listname, user, LANGUAGE, word ) " \
-            "VALUES(%s,%s,%s,%s,%s)"
-    args = (hid, list_name, user, lang, word)
+    query = "INSERT IGNORE INTO word_lists " \
+            "(hid, listname, user, LANGUAGE, word, offset ) " \
+            "VALUES(%s,%s,%s,%s,%s,%s)"
+    args = (hid, list_name, user, lang, word, text_offset)
     insertone(query, args)
 
 
 # Get sentences with translations by hid's of words from the list
-def get_context(list_hid):
+def get_context(list_hid, offset):
     translation = ''
     context = ''
-    query = 'SELECT sent_hid FROM text_words WHERE hid=%s'
-    args = (list_hid,)
+    query = 'SELECT sent_hid FROM text_words WHERE hid=%s AND offset=%s'
+    args = (list_hid, offset)
     sent_hid = fetchone(query, args)
     if sent_hid is None or len(sent_hid) == 0:
         return ''
@@ -442,6 +453,15 @@ def get_context(list_hid):
     if text is not None and len(text) >= start_end_text_hid[1]:
         context = text[start_end_text_hid[0]:start_end_text_hid[1]]
     return translation, context
+
+
+def get_text(user, listname):
+    query = 'SELECT text_hid FROM user_texts WHERE user=%s AND list_name=%s'
+    args = (user, listname)
+    text_hid = fetchone(query, args)
+    query = 'SELECT text FROM texts WHERE hid=%s'
+    text = fetchone(query, text_hid)[0]
+    return text
 
 
 # SENTENCES ============================================

@@ -3,7 +3,7 @@ from bot.app.core import bot, authorize, get_session, RESTART
 from bot.bot_utils.bot_utils import to_one_row_keyboard, to_vertical_keyboard, get_hint
 from bot.ilt import sort_words, tasks, level_up
 from bot.bot_utils import spaced_repetition as sr, mysql_connect
-from bot.app.learn import reading, syntaxis
+from bot.app.learn import reading, syntaxis, texts
 from loguru import logger
 
 from bot.speech import text2speech
@@ -50,6 +50,14 @@ async def learn_sentences(user, list_name, session):
     await start_learning(session)
 
 
+async def learn_text(user, list_name, session):
+    await bot.send_message(user, "You've leaned all the words and sentences from list _{}_. "
+                                 "Now let's do some text.".format(list_name))
+    session.words_to_learn = mysql_connect.get_list_words(user, list_name)
+    text = mysql_connect.get_text(user, list_name)
+    await texts.do_text(session, text)
+
+
 async def learning(query: types.CallbackQuery, callback_data: dict):
     await query.answer("Let's learn!")
     logger.debug(query)
@@ -77,7 +85,7 @@ async def learning(query: types.CallbackQuery, callback_data: dict):
                 await bot.send_message(session.get_user_id(), 'or /test words you learned before.')
             return True
     sentences = False
-    if n >= 0:
+    if n >= 0: #One of the lists selected
         lists = mysql_connect.get_list_names(query.from_user.id)
         list_name = lists[int(callback_data['data'])]
         logger.info("{} learns {}", query.from_user.id, list_name)
@@ -86,9 +94,11 @@ async def learning(query: types.CallbackQuery, callback_data: dict):
             (session.get_user_id(), session.active_lang()), upper_recall_limit=0.5, n=n)
         hids = list(set(hids) & set(hids_all))
 
-        if len(hids) == 0:
+        if len(hids) == 0 and session.current_level < 10: #No words to learn AND sentences were not learned yet
             await learn_sentences(query.from_user.id, list_name, session)
             sentences = True
+        elif session.current_level < 20: #No text was learned
+            await learn_text(query.from_user.id, list_name, session)
 
     if not sentences:
         words = mysql_connect.fetch_by_hids(session.get_user_id(), hids)
@@ -135,6 +145,7 @@ async def do_learning1(session):
             return
         if word[2] == 0:
             # Do reading exercises
+            session.current_level = word[2]
             logger.debug("{} started level {}", session.get_user_id(), word[2])
             keyboard = to_one_row_keyboard(["I remember", "Show meaning"],
                                            data=[0, 1],
@@ -142,6 +153,7 @@ async def do_learning1(session):
             hint = get_hint(word[1])
             await bot.send_message(session.get_user_id(), '*' + word[0] + "*\n" + hint, reply_markup=keyboard)
         elif word[2] == 2:
+            session.current_level = word[2]
             logger.debug("{} started level {}", session.get_user_id(), word[2])
             if session.subscribed:
                 logger.debug("{} is subscribed", session.get_user_id())
@@ -151,6 +163,7 @@ async def do_learning1(session):
                 level_up(session)
                 await do_learning(session)
         elif word[2] == 3:
+            session.current_level = word[2]
             logger.debug("{} started level {}", session.get_user_id(), word[2])
             if session.subscribed:
                 logger.debug("{} is subscribed", session.get_user_id())
@@ -167,6 +180,7 @@ async def do_learning1(session):
                 await do_learning(session)
 
         elif word[2] == 1:
+            session.current_level = word[2]
             logger.debug("{} started level {}", session.get_user_id(), word[2])
             session.status = tasks[1]
             await bot.send_message(session.get_user_id(),
@@ -174,5 +188,6 @@ async def do_learning1(session):
         # SENTENCES
         # Unscramble
         elif word[2] == 10:
+            session.current_level = word[2]
             logger.debug("{} started level {}", session.get_user_id(), word[2])
             await syntaxis.unscramble(session, word)

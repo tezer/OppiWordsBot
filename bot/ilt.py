@@ -2,13 +2,14 @@ from loguru import logger
 from bot.bot_utils import spaced_repetition as sr, mysql_connect as db
 from collections import OrderedDict
 
-task_transitions = {0: 3, 3: 2, 2: 1}
+task_transitions = {0: 3, 3: 2, 2: 1, 1: 10, 10: 20}
 tasks = OrderedDict()
 tasks[0] = 'word_recognition'
 tasks[3] = 'pronounce'
 tasks[2] = 'say_word'
 tasks[1] = 'type_in'
 tasks[10] = 'unscramble'
+tasks[20] = 'text_writing_up'
 
 
 @logger.catch
