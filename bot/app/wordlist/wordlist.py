@@ -130,15 +130,18 @@ async def adding_list_words(message, query, list_name):
         return
     list_hid = word_list[0][1]
     offset = word_list[0][3]
-    translation_context = mysql_connect.get_context(list_hid, offset)
     translation = ''
     word = word_list[0][2]
     context = '<b>' + word + '</b>'
+    translation_context = mysql_connect.get_translation_context(list_hid, offset)
     if translation_context is not None and len(translation_context) > 0:
         if len(translation_context[0]) > 0:
             translation = '\n' + translation_context[0]
         if len(translation_context) > 1:
-            context = re.sub(r'\b' + word + r'\b', '<b>' + word + '</b>', translation_context[1])
+            context = re.sub(r'\b' + word + r'\b',
+                             '<b>' + word + '</b>',
+                             translation_context[1],
+                             flags=re.I)
 
     m = await bot.send_message(session.get_user_id(),
                                "{} words to add from list <i>{}</i>{}\n{}".format(

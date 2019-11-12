@@ -18,7 +18,6 @@ class Session:
         self.hid_cash = str()
         self.words_to_add = None
         self.definitions = list()
-        self.list_hid_word = None  # ""(list_name, hid)
         self.subscribed = False
         # SENTENCES
         self.unscramble_keys = None

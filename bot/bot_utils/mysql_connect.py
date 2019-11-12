@@ -156,7 +156,14 @@ def fetchmany(query, n):
 
 
 # WORDS =========================================================================
-def insert_word(user, language, word, definition, mode, hid, listname=None, list_hid=None):
+def level_up_word(old_hid, mode, hid):
+    query = 'SELECT user, language, word, definition, listname, list_hid FROM words WHERE hid=%s'
+    args = (old_hid,)
+    res = fetchone(query, args)
+    insert_word(res[0], res[1],res[2], res[3], mode, hid, res[4], res[5])
+
+
+def insert_word(user, language, word, definition, mode, hid, listname, list_hid):
     query = "INSERT INTO words(user, language, word, definition, mode, hid, listname, list_hid) " \
             "VALUES(%s,%s,%s,%s,%s,%s, %s, %s)"
     args = (user, language, word, definition, mode, hid, listname, list_hid)
@@ -429,10 +436,32 @@ def add_text_word(word, sent_hid, lang, user, list_name, text_offset):
     insertone(query, args)
 
 
+def get_context_by_hid(hid):
+    result = list()
+    query = 'SELECT list_hid FROM words WHERE hid=%s'
+    args = (hid, )
+    list_hid =fetchone(query, args)
+    query = 'SELECT sent_hid FROM text_words WHERE hid=%s'
+    sent_hids = fetchall(query, list_hid)
+    for hid in sent_hids:
+        result.append(get_context(hid))
+    return result
+
+
+def get_context(sent_hid):
+    query = 'SELECT start, end, text_hid FROM sentences WHERE hid=%s'
+    start_end_text_hid = fetchone(query, sent_hid)
+    query = 'SELECT text FROM texts WHERE hid=%s'
+    args = (start_end_text_hid[2],)
+    text = fetchone(query, args)[0]
+    if text is not None and len(text) >= start_end_text_hid[1]:
+        context = text[start_end_text_hid[0]:start_end_text_hid[1]]
+        return context
+
+
 # Get sentences with translations by hid's of words from the list
-def get_context(list_hid, offset):
+def get_translation_context(list_hid, offset):
     translation = ''
-    context = ''
     query = 'SELECT sent_hid FROM text_words WHERE hid=%s AND offset=%s'
     args = (list_hid, offset)
     sent_hid = fetchone(query, args)
@@ -444,14 +473,7 @@ def get_context(list_hid, offset):
     if len(res) > 0:
         translation = res[0]
 
-    query = 'SELECT start, end, text_hid FROM sentences WHERE hid=%s'
-    start_end_text_hid = fetchone(query, sent_hid)
-
-    query = 'SELECT text FROM texts WHERE hid=%s'
-    args = (start_end_text_hid[2],)
-    text = fetchone(query, args)[0]
-    if text is not None and len(text) >= start_end_text_hid[1]:
-        context = text[start_end_text_hid[0]:start_end_text_hid[1]]
+    context = get_context(sent_hid)
     return translation, context
 
 

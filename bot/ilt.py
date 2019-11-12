@@ -28,18 +28,7 @@ def level_up(session):
                           (session.get_current_word()[0],
                            session.get_current_definition()),
                           task_transitions[session.get_current_mode()])
-    if session.list_hid_word is not None:
-        listname = session.list_hid_word[0]
-        list_hid = session.list_hid_word[1]
-    else:
-        listname = None
-        list_hid = None
-    db.insert_word(session.get_user_id(), session.active_lang(),
-                   session.get_current_word()[0],
-                   session.get_current_definition(),
-                   task_transitions[session.get_current_mode()],
-                   new_hid, listname, list_hid
-                   )
+    db.level_up_word(hid, task_transitions[session.get_current_mode()], new_hid)
     session.level_up_current_word(new_hid, task_transitions[session.get_current_mode()])
     session.delete_current_word()
 

@@ -1,3 +1,5 @@
+import re
+
 from aiogram import types
 from bot.app.core import bot, authorize, get_session, RESTART
 from bot.bot_utils.bot_utils import to_one_row_keyboard, to_vertical_keyboard, get_hint
@@ -67,14 +69,13 @@ async def learning(query: types.CallbackQuery, callback_data: dict):
     session, isValid = await authorize(query.from_user.id, with_lang=True)
     if not isValid:
         return
+    upper_recall_limit = 0.5
+    if session.status == '/test':
+        upper_recall_limit = 1.0
     if n == -1:
-        hids = list()
-        if session.status == '/test':
-            hids = sr.get_items_to_learn(
-                (session.get_user_id(), session.active_lang()), upper_recall_limit=1.0, n=n)
-        if session.status == '/learn':
-            hids = sr.get_items_to_learn(
-                (session.get_user_id(), session.active_lang()), upper_recall_limit=0.5, n=n)
+        hids = sr.get_items_to_learn(
+                (session.get_user_id(), session.active_lang()),
+            upper_recall_limit=upper_recall_limit, n=n)
         if len(hids) == 0:
             if session.status == '/test':
                 await bot.send_message(session.get_user_id(),
@@ -91,14 +92,15 @@ async def learning(query: types.CallbackQuery, callback_data: dict):
         logger.info("{} learns {}", query.from_user.id, list_name)
         hids = mysql_connect.get_hids_for_list(query.from_user.id, list_name)
         hids_all = sr.get_items_to_learn(
-            (session.get_user_id(), session.active_lang()), upper_recall_limit=0.5, n=n)
+            (session.get_user_id(), session.active_lang()),
+            upper_recall_limit=upper_recall_limit, n=n)
         hids = list(set(hids) & set(hids_all))
 
         if len(hids) == 0 and session.current_level < 10: #No words to learn AND sentences were not learned yet
             await learn_sentences(query.from_user.id, list_name, session)
             sentences = True
-        elif session.current_level < 20: #No text was learned
-            await learn_text(query.from_user.id, list_name, session)
+        # elif session.current_level < 20: #No text was learned
+        #     await learn_text(query.from_user.id, list_name, session)
 
     if not sentences:
         words = mysql_connect.fetch_by_hids(session.get_user_id(), hids)
@@ -151,7 +153,20 @@ async def do_learning1(session):
                                            data=[0, 1],
                                            action=["I_remember", "show"])
             hint = get_hint(word[1])
-            await bot.send_message(session.get_user_id(), '*' + word[0] + "*\n" + hint, reply_markup=keyboard)
+
+            contexts = mysql_connect.get_context_by_hid(word[3])
+            word_context = ''
+            if contexts is not None:
+                for context in contexts:
+                    word_context += re.sub(r'\b' + word[0] + r'\b',
+                                           '<b>' + word[0] + '</b>',
+                                           context,
+                                           flags=re.I)
+                    word_context += '\n'
+            if len(word_context) == 0:
+                word_context = '<b>' + word[0] + '</b>'
+            await bot.send_message(session.get_user_id(), word_context + "\n" + hint,
+                                   reply_markup=keyboard, parse_mode=types.ParseMode.HTML)
         elif word[2] == 2:
             session.current_level = word[2]
             logger.debug("{} started level {}", session.get_user_id(), word[2])
