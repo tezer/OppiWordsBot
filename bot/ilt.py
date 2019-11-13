@@ -43,6 +43,19 @@ def add_event(user, language, hid, object_type, task_type, result):
     db.insertone(query, args)
 
 
+def get_objects(period, user, language, object_type, task_type, result):
+    query = 'SELECT hid FROM study_log WHERE ' \
+            'created_at > date_sub(now(), interval {})' \
+            ' AND user = %s' \
+            ' AND language = %s' \
+            ' AND object_type = %s' \
+            ' AND task_type = %s' \
+            ' AND result = {}'.format(period, result)
+    args = (user, language, object_type, task_type)
+    objs = db.fetchall(query, args)
+    objs = set(x[0] for x in objs)
+    return objs
+
 def sort_words(words):
     result = list()
     for i in tasks.keys():

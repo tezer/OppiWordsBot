@@ -1,6 +1,8 @@
 import re
 
 from aiogram import types
+
+from bot import ilt
 from bot.app.core import bot, authorize, get_session, RESTART
 from bot.bot_utils.bot_utils import to_one_row_keyboard, to_vertical_keyboard, get_hint
 from bot.ilt import sort_words, tasks, level_up
@@ -41,13 +43,20 @@ async def start_learning_message(message):
                            reply_markup=kb)
 
 
-async def learn_sentences(user, list_name, session):
+async def learn_sentences(user, list_name, session, hids):
     await bot.send_message(user, "You've leaned all the words from list _{}_. "
                                  "Now let's do some grammar exercises.".format(list_name))
     # 0. word, 1. definition, 2. mode, 3. hid
     # 0. sentence, 1. translation, 2. mode, 3. hid
     sentences = mysql_connect.fetch_sentences(session.get_user_id(), list_name)
-    session.words_to_learn = sentences
+    sent_to_learn = list()
+    if hids is not None:
+        for s in sentences:
+            if s[3] in hids:
+                sent_to_learn.append(s)
+    else:
+        sent_to_learn = sentences
+    session.words_to_learn = sent_to_learn
     session.current_word = 0
     await start_learning(session)
 
@@ -98,10 +107,13 @@ async def learning(query: types.CallbackQuery, callback_data: dict):
 
         if len(hids) == 0 and session.current_level < 10:  # No words to learn AND sentences were not learned yet
             sentences = True
-            await learn_sentences(query.from_user.id, list_name, session)
+            await learn_sentences(query.from_user.id, list_name, session, None)
         elif len(hids) == 0 and session.current_level >= 10:  # No words to learn AND sentences were learned before
-            ilt.objects_older_then
-            sentences = True
+            sentence_hids = ilt.get_objects('1 day', session.get_user_id(),
+                                            session.active_lang(), "SENTENCE", 10, '<1')
+            if len(sentence_hids) > 0:
+                sentences = True
+                await learn_sentences(query.from_user.id, list_name, session, sentence_hids)
         # elif session.current_level < 20: #No text was learned
         #     await learn_text(query.from_user.id, list_name, session)
 
