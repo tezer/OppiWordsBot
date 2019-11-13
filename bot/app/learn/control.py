@@ -72,9 +72,9 @@ async def learning(query: types.CallbackQuery, callback_data: dict):
     upper_recall_limit = 0.5
     if session.status == '/test':
         upper_recall_limit = 1.0
-    if n == -1: #General vocabulary selected
+    if n == -1:  # General vocabulary selected
         hids = sr.get_items_to_learn(
-                (session.get_user_id(), session.active_lang()),
+            (session.get_user_id(), session.active_lang()),
             upper_recall_limit=upper_recall_limit, n=n)
         if len(hids) == 0:
             if session.status == '/test':
@@ -86,7 +86,7 @@ async def learning(query: types.CallbackQuery, callback_data: dict):
                 await bot.send_message(session.get_user_id(), 'or /test words you learned before.')
             return True
     sentences = False
-    if n >= 0: #One of the lists selected
+    if n >= 0:  # One of the lists selected
         lists = mysql_connect.get_list_names(query.from_user.id)
         list_name = lists[int(callback_data['data'])]
         logger.info("{} learns {}", query.from_user.id, list_name)
@@ -96,8 +96,11 @@ async def learning(query: types.CallbackQuery, callback_data: dict):
             upper_recall_limit=upper_recall_limit, n=n)
         hids = list(set(hids) & set(hids_all))
 
-        if len(hids) == 0 and session.current_level < 10: #No words to learn AND sentences were not learned yet
+        if len(hids) == 0 and session.current_level < 10:  # No words to learn AND sentences were not learned yet
+            sentences = True
             await learn_sentences(query.from_user.id, list_name, session)
+        elif len(hids) == 0 and session.current_level >= 10:  # No words to learn AND sentences were learned before
+            ilt.objects_older_then
             sentences = True
         # elif session.current_level < 20: #No text was learned
         #     await learn_text(query.from_user.id, list_name, session)

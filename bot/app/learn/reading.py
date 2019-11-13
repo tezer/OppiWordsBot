@@ -68,7 +68,7 @@ async def i_remember(query: types.CallbackQuery, callback_data: dict):
     if not isValid:
         return
     level_up(session)
-    add_event(query.from_user.id, session.get_current_hid(), 'LEXEME', 0, 1)
+    add_event(query.from_user.id, session.active_lang(), session.get_current_hid(), 'LEXEME', 0, 1)
     n = len(session.words_to_learn) - session.current_word
     if n > 0:
         await query.answer(str(n) + " to go")
@@ -87,7 +87,7 @@ async def callback_forgot_action(query: types.CallbackQuery, callback_data: dict
         await bot.send_message(session.get_user_id(), RESTART)
         return
     sr.update_item(hid, float(callback_data['data']))
-    add_event(query.from_user.id, session.get_current_hid(), 'LEXEME', 0, 0)
+    add_event(query.from_user.id, session.active_lang(), session.get_current_hid(), 'LEXEME', 0, 0)
     session.delete_current_word()
     n = len(session.words_to_learn) - session.current_word
     if n > 0:

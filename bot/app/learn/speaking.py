@@ -33,14 +33,14 @@ async def voice_message(message: types.Message):
         word, transcript = compare(word.lower(), transcript.lower())
         logger.debug(word, transcript)
         #TODO use Levenshtain distance
-        add_event(message.from_user.id, session.get_current_hid(), 'LEXEME', 2, 0)
+        add_event(message.from_user.id, session.active_lang(), session.get_current_hid(), 'LEXEME', 2, 0)
         await bot.send_message(message.from_user.id, "Correct : {}\n"
                                                      "You said: {}".format(word, transcript),
                                parse_mode=types.ParseMode.HTML,
                                reply_markup=k)
     else:
         level_up(session)
-        add_event(message.from_user.id, session.get_current_hid(), 'LEXEME', 2, 1)
+        add_event(message.from_user.id, session.active_lang(), session.get_current_hid(), 'LEXEME', 2, 1)
         await bot.send_message(message.from_user.id, "Excellent!")
     await do_learning(session)
 

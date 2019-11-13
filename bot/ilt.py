@@ -34,12 +34,12 @@ def level_up(session):
     session.delete_current_word()
 
 
-def add_event(user, hid, object_type, task_type, result):
+def add_event(user, language, hid, object_type, task_type, result):
     if object_type not in types:
         logger.error("Unsupported object type", object_type)
-    query = "INSERT INTO study_log (user, hid, object_type, task_type, result) " \
-            "VALUES(%s,%s,%s,%s,%s)"
-    args = (user, hid, object_type, task_type, result)
+    query = "INSERT INTO study_log (user, language, hid, object_type, task_type, result) " \
+            "VALUES(%s,%s,%s,%s,%s, %s)"
+    args = (user, language, hid, object_type, task_type, result)
     db.insertone(query, args)
 
 
