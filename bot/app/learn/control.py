@@ -64,9 +64,8 @@ async def learn_sentences(user, list_name, session, hids):
 async def learn_text(user, list_name, session):
     await bot.send_message(user, "You've leaned all the words and sentences from list _{}_. "
                                  "Now let's do some text.".format(list_name))
-    session.words_to_learn = mysql_connect.get_list_words(user, list_name)
-    text = mysql_connect.get_text(user, list_name)
-    await texts.do_text(session, text)
+
+    await texts.text_summarization(user, list_name, session)
 
 
 async def learning(query: types.CallbackQuery, callback_data: dict):
@@ -103,19 +102,19 @@ async def learning(query: types.CallbackQuery, callback_data: dict):
         hids_all = sr.get_items_to_learn(
             (session.get_user_id(), session.active_lang()),
             upper_recall_limit=upper_recall_limit, n=n)
-        hids = list(set(hids) & set(hids_all))
-
-        if len(hids) == 0 and session.current_level < 10:  # No words to learn AND sentences were not learned yet
-            sentences = True
-            await learn_sentences(query.from_user.id, list_name, session, None)
-        elif len(hids) == 0 and session.current_level >= 10:  # No words to learn AND sentences were learned before
-            sentence_hids = ilt.get_objects('1 day', session.get_user_id(),
-                                            session.active_lang(), "SENTENCE", 10, '<1')
+        # hids = list(set(hids) & set(hids_all))
+        hids = list() #FIXME NOW delete after testing!!!
+        if len(hids) == 0:
+            sentence_hids = mysql_connect.get_sentence_hids(query.from_user.id, list_name)
+            sentence_hids = ilt.get_objects(sentence_hids, '1 day', session.get_user_id(),
+                                            session.active_lang(), "SENTENCE", 10)
             if len(sentence_hids) > 0:
+                session.current_level = 10 #Syntax learning
                 sentences = True
                 await learn_sentences(query.from_user.id, list_name, session, sentence_hids)
-        # elif session.current_level < 20: #No text was learned
-        #     await learn_text(query.from_user.id, list_name, session)
+            else:
+                session.current_level = 20 #Text learning
+                await learn_text(query.from_user.id, list_name, session)
 
     if not sentences:
         words = mysql_connect.fetch_by_hids(session.get_user_id(), hids)

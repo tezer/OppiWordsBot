@@ -487,6 +487,15 @@ def get_text(user, listname):
 
 
 # SENTENCES ============================================
+def get_sentence_hids(user, list_name):
+    query = 'SELECT text_hid FROM user_texts WHERE user=%s AND list_name=%s'
+    args = (user, list_name)
+    text_hid = fetchone(query, args)
+    query = 'SELECT hid FROM sentences WHERE text_hid=%s'
+    args = text_hid
+    hids = fetchall(query, args)
+    return list(x[0] for x in hids)
+
 # 0. sentence, 1. translation, 2. mode, 3. hid
 def fetch_sentences(user, list_name):
     result = list()
@@ -499,6 +508,7 @@ def fetch_sentences(user, list_name):
     query = 'SELECT text FROM texts WHERE hid=%s'
     args = text_hid
     text = fetchone(query, args)[0]
+    hid_start_end = sorted(hid_start_end, key=lambda x: x[1])
     for i in hid_start_end:
         sentence = text[i[1]:i[2]]
         query = 'SELECT translation FROM translations WHERE sent_hid=%s';
