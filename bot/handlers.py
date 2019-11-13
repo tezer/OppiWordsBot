@@ -14,7 +14,7 @@ from bot.app.admin import admin
 from bot.app.addtext import addtext
 from bot.app.wordlist import wordlist
 from bot.app.addwords import addwords
-from bot.app.learn import reading, speaking, writing, control, syntaxis
+from bot.app.learn import reading, speaking, writing, control, syntaxis, texts
 from bot.app.core import dp, user_state
 
 #
@@ -102,6 +102,11 @@ async def add_text_command(message: types.Message):
 @dp.message_handler(lambda message: user_state(message.from_user.id, "text_added"))
 async def add_text(message: types.Message):
     await addtext.add_text(message)
+
+# LEARNING TEXT ====================================================
+@dp.message_handler(lambda message: user_state(message.from_user.id, "summarization"))
+async def summarization_message(message: types.Message):
+    await texts.summarization_message(message)
 
 
 # ADDING LIST ======================================================
