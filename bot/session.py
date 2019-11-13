@@ -10,6 +10,7 @@ class Session:
         self.first_name = first_name
         self.user_id = userd_id
         self.languages = dict()  # language: True/False - True is active now
+        self.subscribed = False
         #LEARNING
         self.status = str()
         self.words_to_learn = list()  # (word, definition, mode, hid)]
@@ -18,7 +19,6 @@ class Session:
         self.hid_cash = str()
         self.words_to_add = None
         self.definitions = list()
-        self.subscribed = False
         # SENTENCES
         self.unscramble_keys = None
         self.unscramble_data = None
