@@ -51,3 +51,4 @@ async def voice_skip_action(query):
         return
     level_up(session)
     await bot.send_message(query.from_user.id, "Skipping.")
+    await do_learning(session)
