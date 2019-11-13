@@ -4,7 +4,7 @@ from aiogram import types
 
 from bot.app.learn.control import do_learning
 from bot.bot_utils.bot_utils import compare, to_one_row_keyboard
-from bot.ilt import level_up
+from bot.ilt import level_up, add_event
 from bot.speech import speech2text
 
 
@@ -31,13 +31,16 @@ async def voice_message(message: types.Message):
     k = to_one_row_keyboard(['Next'], [0], ['voice_skip'])
     if transcript.lower() != word.lower():
         word, transcript = compare(word.lower(), transcript.lower())
-        print(word, transcript)
+        logger.debug(word, transcript)
+        #TODO use Levenshtain distance
+        add_event(message.from_user.id, session.get_current_hid(), 'LEXEME', 2, 0)
         await bot.send_message(message.from_user.id, "Correct : {}\n"
                                                      "You said: {}".format(word, transcript),
                                parse_mode=types.ParseMode.HTML,
                                reply_markup=k)
     else:
         level_up(session)
+        add_event(message.from_user.id, session.get_current_hid(), 'LEXEME', 2, 1)
         await bot.send_message(message.from_user.id, "Excellent!")
     await do_learning(session)
 

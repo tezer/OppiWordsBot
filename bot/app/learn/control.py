@@ -72,7 +72,7 @@ async def learning(query: types.CallbackQuery, callback_data: dict):
     upper_recall_limit = 0.5
     if session.status == '/test':
         upper_recall_limit = 1.0
-    if n == -1:
+    if n == -1: #General vocabulary selected
         hids = sr.get_items_to_learn(
                 (session.get_user_id(), session.active_lang()),
             upper_recall_limit=upper_recall_limit, n=n)

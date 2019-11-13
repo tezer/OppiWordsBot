@@ -11,6 +11,7 @@ tasks[1] = 'type_in'
 tasks[10] = 'unscramble'
 tasks[20] = 'text_writing_up'
 
+types = {'LEXEME', 'SENTENCE', 'TEXT'}
 
 @logger.catch
 def level_up(session):
@@ -31,6 +32,15 @@ def level_up(session):
     db.level_up_word(hid, task_transitions[session.get_current_mode()], new_hid)
     session.level_up_current_word(new_hid, task_transitions[session.get_current_mode()])
     session.delete_current_word()
+
+
+def add_event(user, hid, object_type, task_type, result):
+    if object_type not in types:
+        logger.error("Unsupported object type", object_type)
+    query = "INSERT INTO study_log (user, hid, object_type, task_type, result) " \
+            "VALUES(%s,%s,%s,%s,%s)"
+    args = (user, hid, object_type, task_type, result)
+    db.insertone(query, args)
 
 
 def sort_words(words):

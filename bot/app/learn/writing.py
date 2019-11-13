@@ -5,6 +5,7 @@ from bot.bot_utils import spaced_repetition as sr
 from bot.app.core import authorize, bot, RESTART
 from bot.app.learn.control import do_learning1
 from bot.bot_utils.bot_utils import compare
+from bot.ilt import add_event
 
 
 async def type_in_message(message):
@@ -21,6 +22,7 @@ async def type_in_message(message):
     if str(word).lower() == str(message.text).lower():
         # TODO do next word state, when it is available by task_transitions table
         sr.update_item(session.get_current_hid(), 1)
+        add_event(message.from_user.id, session.get_current_hid(), 'LEXEME', 1, 1)
         session.delete_current_word()
         n = len(session.words_to_learn) - session.current_word
         if n > 0:
@@ -32,6 +34,8 @@ async def type_in_message(message):
     else:
         sr.update_item(session.get_current_hid(), 0)
         w1, w2 = compare(str(word).lower(), str(message.text).lower())
+        #TODO add Levenshtain distance instead of '0'
+        add_event(message.from_user.id, session.get_current_hid(), 'LEXEME', 1, 0)
         await bot.send_message(session.get_user_id(), "Wrong.\n"
                                                       "It should be: {}\n"
                                                       "you wrote:    {}".format(w1, w2),

@@ -6,6 +6,9 @@ from bot.bot_utils import bot_utils
 from loguru import logger
 from aiogram import types
 
+from bot.ilt import add_event
+
+
 async def unscramble_message(query, callback_data):
     session, isValid = await authorize(query.from_user.id)
     if not isValid:
@@ -56,6 +59,7 @@ async def do_unscramble(session, keys, data, sentence, revealed, message):
                  len(keys), revealed)
     if len(keys) == 0 and len(revealed) > 0:
         if revealed.strip() == session.unscramble_sentence[0].strip():
+            add_event(message.from_user.id, session.get_current_hid(), 'SENTENCE', 10, 1)
             await bot.send_message(session.get_user_id(), "Excellent!")
             await next_unscramble(session)
         else:
@@ -63,6 +67,8 @@ async def do_unscramble(session, keys, data, sentence, revealed, message):
                                               [0, 1],
                                               ['restart_unscramble', 'next_unscramble'])
             res = bot_utils.compare(revealed.strip(), session.unscramble_sentence[0].strip())
+            #TODO use Levenshtian distance
+            add_event(message.from_user.id, session.get_current_hid(), 'SENTENCE', 10, 0)
             await bot.send_message(session.get_user_id(), "A bit wrong.\nIt is:\n"
                                                         "{}\nyuor answer:\n{}"
                                    .format(res[1], res[0]), parse_mode=types.ParseMode.HTML,
