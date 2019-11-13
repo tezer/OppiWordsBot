@@ -68,7 +68,7 @@ async def do_unscramble(session, keys, data, sentence, revealed, message):
                                               ['restart_unscramble', 'next_unscramble'])
             res = bot_utils.compare(revealed.strip(), session.unscramble_sentence[0].strip())
             #TODO use Levenshtian distance
-            add_event(message.from_user.id, session.active_lang(), session.get_current_hid(), 'SENTENCE', 10, 0)
+            add_event(session.get_user_id(), session.active_lang(), session.get_current_hid(), 'SENTENCE', 10, 0)
             await bot.send_message(session.get_user_id(), "A bit wrong.\nIt is:\n"
                                                         "{}\nyuor answer:\n{}"
                                    .format(res[1], res[0]), parse_mode=types.ParseMode.HTML,
