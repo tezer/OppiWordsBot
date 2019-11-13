@@ -37,7 +37,7 @@ async def restart_unscramble_message(query, callback_data):
 
 
 async def next_unscramble_message(query):
-    logger.info("{} starts next unscramble")
+    logger.info("{} starts next unscramble", query.from_user.id)
     session, isValid = await authorize(query.from_user.id)
     if not isValid:
         return
