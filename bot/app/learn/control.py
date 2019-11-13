@@ -108,9 +108,9 @@ async def learning(query: types.CallbackQuery, callback_data: dict):
             sentence_hids = mysql_connect.get_sentence_hids(query.from_user.id, list_name)
             sentence_hids = ilt.get_objects(sentence_hids, '1 day', session.get_user_id(),
                                             session.active_lang(), "SENTENCE", 10)
+            sentences = True
             if len(sentence_hids) > 0:
                 session.current_level = 10 #Syntax learning
-                sentences = True
                 await learn_sentences(query.from_user.id, list_name, session, sentence_hids)
             else:
                 session.current_level = 20 #Text learning
