@@ -98,12 +98,29 @@ async def learning(query: types.CallbackQuery, callback_data: dict):
         lists = mysql_connect.get_list_names(query.from_user.id)
         list_name = lists[int(callback_data['data'])]
         logger.info("{} learns {}", query.from_user.id, list_name)
+        text_hid = mysql_connect.fetchone('SELECT text_hid FROM user_texts WHERE user=%s AND list_name=%s',
+                                      (session.get_user_id(), list_name))
+        summary = mysql_connect.fetchone('SELECT summary FROM text_summary WHERE user=%s AND hid=%s',
+                                      (session.get_user_id(), text_hid[0]))
+        if summary is not None:
+            # (word, definition, mode, hid)]
+            session.words_to_learn = list()
+            session.words_to_learn.append((summary[0], list_name, 20, text_hid[0]))
+            k = to_one_row_keyboard(['Words', 'Summary'], [0, 1],
+                                    ['text_words', 'text_summary'])
+            await bot.send_message(session.get_user_id(),
+                             'You created a summary for text _{}_.\n'
+                             'Would you like to learn words or continue with your summary?'
+                             .format(list_name),
+                             reply_markup=k)
+            return
+
         hids = mysql_connect.get_hids_for_list(query.from_user.id, list_name)
         hids_all = sr.get_items_to_learn(
             (session.get_user_id(), session.active_lang()),
             upper_recall_limit=upper_recall_limit, n=n)
-        # hids = list(set(hids) & set(hids_all))
-        hids = list() #FIXME NOW delete after testing!!!
+        hids = list(set(hids) & set(hids_all))
+        # hids = list() #FIXME NOW delete after testing!!!
         if len(hids) == 0:
             sentence_hids = mysql_connect.get_sentence_hids(query.from_user.id, list_name)
             sentence_hids = ilt.get_objects(sentence_hids, '1 day', session.get_user_id(),

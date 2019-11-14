@@ -14,7 +14,7 @@ from bot.app.admin import admin
 from bot.app.addtext import addtext
 from bot.app.wordlist import wordlist
 from bot.app.addwords import addwords
-from bot.app.learn import reading, speaking, writing, control, syntaxis, texts
+from bot.app.learn import reading, speaking, writing, control, syntaxis, texts, summary
 from bot.app.core import dp, user_state
 
 #
@@ -103,10 +103,21 @@ async def add_text_command(message: types.Message):
 async def add_text(message: types.Message):
     await addtext.add_text(message)
 
+
 # LEARNING TEXT ====================================================
 @dp.message_handler(lambda message: user_state(message.from_user.id, "summarization"))
 async def summarization_message(message: types.Message):
     await texts.summarization_message(message)
+
+
+@dp.callback_query_handler(posts_cb.filter(action=["text_summary"]))
+async def do_text_summary_action(query: types.CallbackQuery):
+    await summary.do_text_summary_action(query)
+
+
+@dp.callback_query_handler(posts_cb.filter(action=["text_words"]))
+async def do_text_summary_action(query: types.CallbackQuery):
+    await summary.do_text_words_action(query)
 
 
 # ADDING LIST ======================================================
@@ -261,6 +272,8 @@ async def voice_message(message: types.Message):
 @dp.callback_query_handler(posts_cb.filter(action=['voice_skip']))
 async def voice_skip_action(query: types.CallbackQuery):
     await speaking.voice_skip_action(query)
+
+
 # ==========================================================================================
 # Selecting a language to learn
 
