@@ -32,7 +32,7 @@ async def do_text_words_action(query):
     hids = mysql_connect.get_hids_for_list(query.from_user.id, list_name)
     hids_all = sr.get_items_to_learn(
             (session.get_user_id(), session.active_lang()),
-            upper_recall_limit=1)
+            upper_recall_limit=0.5)
     hids = list(set(hids) & set(hids_all))
     words = mysql_connect.fetch_by_hids(session.get_user_id(), hids)
     session.words_to_learn = words
