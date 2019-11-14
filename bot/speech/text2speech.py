@@ -39,7 +39,8 @@ configs = dict()
 
 # Select the type of audio file you want returned
 audio_config = texttospeech.types.AudioConfig(
-    audio_encoding=texttospeech.enums.AudioEncoding.MP3)
+    audio_encoding=texttospeech.enums.AudioEncoding.MP3,
+speaking_rate=0.75)
 
 
 # Instantiates a client
