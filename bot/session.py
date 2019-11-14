@@ -24,6 +24,8 @@ class Session:
         self.unscramble_data = None
         self.unscramble_revealed = None
         self.unscramble_sentence = None
+        # TEXTS
+        self.list_name = None
         #ILT
         self.current_level = 0
 

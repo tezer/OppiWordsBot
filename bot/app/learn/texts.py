@@ -22,6 +22,7 @@ async def text_summarization(user, list_name, session):
                                  "Rewrite each paragraph to make it shorter and simpler, "
                                  "keep only the most important information.\n"
                                  "To skip a paragraph just type a dot (.) and hit _Enter_.")
+    session.list_name = list_name
     sentences = mysql_connect.fetch_sentences(user, list_name)
     paragraphs = list()
     para = str()
@@ -45,11 +46,16 @@ async def check_summary(session):
         if len(t) < 2:
             continue
         summary += para[1] + '\n'
-    session.words_to_learn = list
+    session.words_to_learn = list()
     session.current_word = 0
     session.status = str()
     await bot.send_message(session.get_user_id(), "All done! Here is your summary:\n{}"
                            .format(summary))
+    text_hid = mysql_connect.fetchone('SELECT text_hid FROM user_texts WHERE user=%s AND list_name=%s',
+                                      (session.get_user_id(), session.list_name))
+    args = (session.get_user_id(), text_hid[0], summary)
+    mysql_connect.insertone('INSERT INTO text_summary (user, hid, summary)'
+                            ' VALUES(%s,%s,%s)', args)
     voice = text2speech.get_voice(summary, session.active_lang())
     await bot.send_audio(chat_id=session.get_user_id(),
                                      audio=voice,
