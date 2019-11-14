@@ -185,17 +185,7 @@ async def do_learning1(session):
                                            action=["I_remember", "show"])
             hint = get_hint(word[1])
 
-            contexts = mysql_connect.get_context_by_hid(word[3])
-            word_context = ''
-            if contexts is not None:
-                for context in contexts:
-                    word_context += re.sub(r'\b' + word[0] + r'\b',
-                                           '<b>' + word[0] + '</b>',
-                                           context,
-                                           flags=re.I)
-                    word_context += '\n'
-            if len(word_context) == 0:
-                word_context = '<b>' + word[0] + '</b>'
+            word_context = await get_context(word, True)
             await bot.send_message(session.get_user_id(), word_context + "\n" + hint,
                                    reply_markup=keyboard, parse_mode=types.ParseMode.HTML)
         elif word[2] == 2:
@@ -204,7 +194,15 @@ async def do_learning1(session):
             if session.subscribed:
                 logger.debug("{} is subscribed", session.get_user_id())
                 session.status = tasks[2]
-                await bot.send_message(session.get_user_id(), "*SAY* this word: *" + word[1] + "*")
+                word_context = await get_context(word, False)
+                word_context = re.sub(r'\b' + word[0] + r'\b',
+                                      ' ... ',
+                                      word_context,
+                                      flags=re.I)
+                await bot.send_message(session.get_user_id(),
+                                       "<b>SAY</b> this word: <b>" + word[1] + "</b>\n"
+                                       + word_context,
+                                    parse_mode=types.ParseMode.HTML)
             else:
                 level_up(session)
                 await do_learning(session)
@@ -214,7 +212,8 @@ async def do_learning1(session):
             if session.subscribed:
                 logger.debug("{} is subscribed", session.get_user_id())
                 session.status = tasks[2]
-                await bot.send_message(session.get_user_id(), "*LISTEN* and *SAY* this word: *{}*\n{}".
+                await bot.send_message(session.get_user_id(),
+                                       "*LISTEN* and *SAY* this word: *{}*\n{}".
                                        format(word[0], word[1]))
                 voice = text2speech.get_voice(word[0], session.active_lang())
                 await bot.send_audio(chat_id=session.get_user_id(),
@@ -229,11 +228,34 @@ async def do_learning1(session):
             session.current_level = word[2]
             logger.debug("{} started level {}", session.get_user_id(), word[2])
             session.status = tasks[1]
+            word_context = await get_context(word, False)
+            word_context = re.sub(r'\b' + word[0] + r'\b',
+                                   ' ... ',
+                                   word_context,
+                                   flags=re.I)
             await bot.send_message(session.get_user_id(),
-                                   "*WRITE* the correct word for the definition:\n*" + word[1] + "*")
+                                   "<b>WRITE</b> the correct word for the definition:\n"
+                                   "<b>" + word[1] + "</b>\n" + word_context,
+                                   parse_mode=types.ParseMode.HTML)
         # SENTENCES
         # Unscramble
         elif word[2] == 10:
             session.current_level = word[2]
             logger.debug("{} started level {}", session.get_user_id(), word[2])
             await syntaxis.unscramble(session, word)
+
+
+async def get_context(word, zero_context):
+    contexts = mysql_connect.get_context_by_hid(word[3])
+    word_context = ''
+    if contexts is not None:
+        for context in contexts:
+            word_context += re.sub(r'\b' + word[0] + r'\b',
+                                   '<b>' + word[0] + '</b>',
+                                   context,
+                                   flags=re.I)
+            word_context += '\n'
+    if len(word_context) == 0:
+        if zero_context:
+            word_context = '<b>' + word[0] + '</b>'
+    return word_context

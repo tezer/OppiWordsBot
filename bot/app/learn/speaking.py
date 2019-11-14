@@ -30,25 +30,28 @@ async def voice_message(message: types.Message):
     word = session.get_current_word()[0]
     task_type = session.get_current_word()[2]
 
-    if task_type == 2:
-        k = to_one_row_keyboard(['Next'], [0], ['voice_skip'])
 
     if transcript.lower() != word.lower():
         word, transcript = compare(word.lower(), transcript.lower())
         logger.debug(word, transcript)
         #TODO use Levenshtain distance
         # FIXME: here can be sentence or a summary, not only lexeme
-        if task_type == 2:
+        if task_type in [2, 3]:
             add_event(message.from_user.id,
                       session.active_lang(),
                       session.get_current_hid(),
-                      'LEXEME', 2, 0)
-        await bot.send_message(message.from_user.id, "Correct : {}\n"
-                                                     "You said: {}".format(word, transcript),
-                               parse_mode=types.ParseMode.HTML,
-                               reply_markup=k)
+                      'LEXEME', task_type, 0)
+            k = to_one_row_keyboard(['Next'], [0], ['voice_skip'])
+            await bot.send_message(message.from_user.id, "Correct : {}\n"
+                                                         "You said: {}".format(word, transcript),
+                                   parse_mode=types.ParseMode.HTML,
+                                   reply_markup=k)
+        else:
+            await bot.send_message(message.from_user.id, "Correct : {}\n"
+                                                         "You said: {}".format(word, transcript),
+                                   parse_mode=types.ParseMode.HTML)
     else:
-        if task_type == 2:
+        if task_type in [2, 3]:
             level_up(session)
             add_event(message.from_user.id, session.active_lang(), session.get_current_hid(), 'LEXEME', 2, 1)
         await bot.send_message(message.from_user.id, "Excellent!")
