@@ -23,6 +23,7 @@ async def do_text_summary_action(query):
 
 
 async def do_text_words_action(query):
+    # FIXME: duplicates code from conrol.py learning
     logger.info("{} received do_text_words query", query.from_user.id)
     session, isValid = await authorize(query.from_user.id)
     if not isValid:
