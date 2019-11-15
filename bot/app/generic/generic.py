@@ -102,6 +102,8 @@ async def set_user_language_message(message: types.Message):
     session.language_code = message.text.lower()
     await bot.send_message(user_id, "The language is set to {}".format(str(session.language_code).title()))
     session.language_code = message.text.lower()
+    mysql_connect.updateone('UPDATE users SET language_code = %s WHERE user_id = %s',
+                            (session.language_code, user_id))
     with open('sessions.pkl', 'wb') as f:
         pickle.dump(sessions, f)
     session.def_sources = list()
