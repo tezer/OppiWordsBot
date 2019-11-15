@@ -20,6 +20,7 @@ class Session:
         self.hid_cash = str()
         self.words_to_add = None
         self.definitions = list()
+        self.list_hid_word = None
         # SENTENCES
         self.unscramble_keys = None
         self.unscramble_data = None
