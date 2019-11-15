@@ -4,6 +4,9 @@ from wiktionaryparser import WiktionaryParser
 from aiogram import types
 from aiogram.utils.callback_data import CallbackData
 from expiringdict import ExpiringDict
+
+from bot.app.core import bot
+from bot.bot_utils import mysql_connect
 from bot.bot_utils.yandex_dictionary import YandexDictionary
 import settings
 import os
@@ -94,42 +97,56 @@ def get_lang_code(user_lang):
 
 
 
-def get_definitions(language, user_lang, word):
-    if language + '_' + user_lang + '_' + word in MEM_CACHE.keys():
-        logger.debug("Reading translations from cache for " + language + '_' + user_lang + '_' + word)
-        return MEM_CACHE[language + '_' + user_lang + '_' + word]
+async def get_definitions(language, user_lang, word, user):
     result = list()
+    sources = mysql_connect.fetchall('SELECT source FROM def_sources WHERE user=%s', (user, ))
+    sources = set(x[0] for x in sources)
     if user_lang is None:
         user_lang = 'english'
-
-    try:
-        response = ya_dict.lookup(word, CODES[language], get_lang_code(user_lang))
-        result = to_list(json.loads(response))
-
-    except Exception as e:
-        logger.warning("Yandex dictionary exception: " + str(e))
-    # if len(result) > 0:
-    #     return result
-
-    try:
-        w = parser.fetch(word.lower(), language=language)
-    except Exception as e:
-        logger.warning("Wiktionary exception: " + str(e))
-        MEM_CACHE[language + '_' + user_lang + '_' + word] = result
-        return result
-    if len(w) > 0:
-        res = process_wiktionary(w)
-        if len(res) > 0:
-            result.extend(res)
-        if len(word) <= 500 :
+    # See list of available sources in generic.py
+    if 'Yandex Dictionary' in sources:
+        if 'Yandex Dictionary_' + language + '_' + word in MEM_CACHE.keys():
+            result = MEM_CACHE['Yandex Dictionary_' + user_lang + language + '_' + word]
+        else:
             try:
-                tr = translate_client.translate(
-                    word,
-                    target_language=get_lang_code(user_lang))
-                result.append(tr['translatedText'])
+                response = ya_dict.lookup(word, CODES[language], get_lang_code(user_lang))
+                result = to_list(json.loads(response))
+                MEM_CACHE['Yandex Dictionary_' + language + '_' + word] = result
+
             except Exception as e:
-                logger.error(e)
-    MEM_CACHE[language + '_' + user_lang + '_' + word] = result
+                logger.warning("Yandex dictionary exception: " + str(e))
+
+    if 'Wiktionary' in sources:
+        if 'Wiktionary_' + language + '_' + word in MEM_CACHE.keys():
+            result.extend(MEM_CACHE['Wiktionary_' + language + '_' + word])
+        else:
+            try:
+                w = parser.fetch(word.lower(), language=language)
+            except Exception as e:
+                logger.warning("Wiktionary exception: " + str(e))
+
+            if w is not None and len(w) > 0:
+                res = process_wiktionary(w)
+                if len(res) > 0:
+                    result.extend(res)
+                    MEM_CACHE['Wiktionary_' + language + '_' + word] = res
+    if 'Google Translate' in sources:
+        if 'Google Translate_' + language + '_' + word in MEM_CACHE.keys():
+            result.extend(MEM_CACHE['Google Translate_' + user_lang + language + '_' + word])
+        else:
+            subscribed = mysql_connect.check_subscribed(user)
+            limit = 50
+            if subscribed:
+                limit = 500
+            if len(word) <= limit :
+                try:
+                    tr = translate_client.translate(
+                        word,
+                        target_language=get_lang_code(user_lang))
+                    result.append(tr['translatedText'])
+                    MEM_CACHE['Google Translate_' + language + '_' + word] = tr['translatedText']
+                except Exception as e:
+                    logger.error(e)
     return result
 
 

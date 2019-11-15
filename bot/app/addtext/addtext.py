@@ -69,15 +69,19 @@ class BotText(object):
         return str(self.text)[start:end]
 
 
-def get_words_and_phrases(text, text_language, user_language):
+async def get_words_and_phrases(text, text_language, user_language, user):
     sentences = list()
     processor = TextPreprocessor(CODES[text_language])
     # TODO save to cache the processors
     t = Text(text)
+    subscribed = mysql_connect.check_subscribed(user)
+    if not subscribed:
+        await bot.send_message(user, "/subscribe to get translations for your text sentences")
+
     for s in t.sentences:
         sent = BotSentence(s.start, s.end)
         # TODO paid feature
-        translation = bot_utils.get_definitions(text_language, user_language, s.string)
+        translation = await bot_utils.get_definitions(text_language, user_language, s.string, user)
         sent.translation = translation
         key_words = processor.key_words(s.string)
         for kw in key_words:
@@ -120,7 +124,10 @@ async def add_text(message: types.Message):
     session = await get_session(user_id)
     if session is None:
         return
-    sentences = get_words_and_phrases(message.text, session.active_lang(), session.language_code)
+    sentences = await get_words_and_phrases(message.text,
+                                            session.active_lang(),
+                                            session.language_code,
+                                            user_id)
     text_name = str(message.text).split('\n')[0][:30]
     text = BotText(message.text)
     text.sentences = sentences

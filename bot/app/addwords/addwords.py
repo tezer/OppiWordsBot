@@ -59,7 +59,10 @@ async def wiktionary_search(message):
     if not isValid:
         return
     begin = time.time()
-    definitions = get_definitions(session.active_lang(), session.language_code, message.text)
+    definitions = await get_definitions(session.active_lang(),
+                                        session.language_code,
+                                        message.text,
+                                        message.from_user.id)
     logger.info(str(session.get_user_id()) + " Received response from dictionaries "
                 + str(time.time() - begin))
     logger.debug(str(session.get_user_id())
