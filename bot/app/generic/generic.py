@@ -166,6 +166,9 @@ async def def_source_finish_action(query):
        await bot.edit_message_text("You didn't select any dictionary.\n"
                                    "{} is set as default".format(DEFINITION_SOURCES[0]), chat_id=session.get_user_id(),
                                         message_id=query.message.message_id)
+       session.def_sources.append(DEFINITION_SOURCES[0])
+       mysql_connect.insertone('INSERT INTO def_sources (user, source) '
+                            'VALUES(%s, %s)', (user_id, DEFINITION_SOURCES[0]))
     else:
         await bot.edit_message_text('OK, settings are saved', chat_id=session.get_user_id(),
                                         message_id=query.message.message_id)
