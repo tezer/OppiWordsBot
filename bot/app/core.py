@@ -1,5 +1,6 @@
 import sys
 
+from expiringdict import ExpiringDict
 from loguru import logger
 from aiogram import Bot, Dispatcher, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
@@ -24,18 +25,19 @@ with open('bot/app/lang.list') as f:
     LANGS = f.readlines()
 LANGS = [x.replace('\n', '').lower() for x in LANGS]
 
+#
+# def load_data(name):
+#     data_file = Path(name)
+#     if data_file.is_file():
+#         with open(name, 'rb') as f:
+#             data_new = pickle.load(f)
+#     else:
+#         data_new = dict()
+#     return data_new
 
-def load_data(name):
-    data_file = Path(name)
-    if data_file.is_file():
-        with open(name, 'rb') as f:
-            data_new = pickle.load(f)
-    else:
-        data_new = dict()
-    return data_new
 
-
-sessions = load_data("sessions.pkl")  # user_id: session
+# sessions = load_data("sessions.pkl")  # user_id: session
+sessions = ExpiringDict(max_len=100, max_age_seconds=60 * 60 * 24)
 
 
 async def get_session(user_id):

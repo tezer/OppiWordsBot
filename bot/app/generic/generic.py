@@ -37,18 +37,36 @@ async def start_message(message: types.Message):
         await bot.send_message(message.from_user.id,
                                "*A T T E N T I O N !*\nThis is a testing bot. Do not use it for learning words!")
     logger.info(str(message.from_user.id) + ' /start command')
-    s = Session(message.from_user.id, message.from_user.first_name, message.from_user.last_name,
-                message.from_user.language_code)
-    s.subscribed = db.check_subscribed(message.from_user.id)
-    logger.info("{} subsctibtion status is {}", message.from_user.id, s.subscribed)
-    if message.from_user.language_code is None:
-        await bot.send_message(message.from_user.id,
-                               "Your user language is not set. It means that all word definitions will be in English. Set your Telegram user language and /start the bot again.")
-    db.update_user(message.from_user.id, message.from_user.first_name, message.from_user.last_name,
-                   message.from_user.language_code)
+    s = await create_session(message)
     sessions[message.from_user.id] = s
-    await message.reply(help_text)
-    await bot.send_photo(message.from_user.id, types.InputFile('bot/menu1.1.png'))
+    await message.reply("OK, now you can /addwords to get exercises.\n"
+                        "Or you can add many words with /wordlist command.\n"
+                        "Use /addtext to work with texts\n"
+                        "Then type /learn to start training.\n\n"
+                        "/subscribe to activate *premium features* "
+                        "(voice recognition, automatic translations and text-to-speech)\n\n"
+                        "Use /help if you need help")
+    # await bot.send_photo(message.from_user.id, types.InputFile('bot/menu1.1.png'))
+
+
+async def create_session(message):
+    languages = db.fetchone("SELECT language_code, learning_language FROM users WHERE user_id = %s",
+                                (message.from_user.id, ))
+    if languages is None or languages[0] is None:
+        languages = ('english', languages[1])
+        await bot.send_message(message.from_user.id, 'Please, run /settings to specify your language')
+
+    if languages[1] is None:
+        await bot.send_message(message.from_user.id, 'Please, run /setlanguage to specify the language you want to learn')
+        languages = (languages[0], 'english')
+
+    s = Session(message.from_user.id, message.from_user.first_name,
+                message.from_user.last_name,
+                languages[0])
+    s.subscribed = db.check_subscribed(message.from_user.id)
+    s.set_active_language(languages[1])
+    logger.info("{} subscription status is {}", message.from_user.id, s.subscribed)
+    return s
 
 
 async def help_message(message: types.Message):
