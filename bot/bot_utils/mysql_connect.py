@@ -120,6 +120,7 @@ def fetchall(query, args):
         rows = cursor.fetchall()
     except Error as e:
         print('fetchall', e)
+        logger.error("query = {}; args = {}", query, args)
         logger.error(e)
     finally:
         cursor.close()
@@ -491,6 +492,9 @@ def get_sentence_hids(user, list_name):
     query = 'SELECT text_hid FROM user_texts WHERE user=%s AND list_name=%s'
     args = (user, list_name)
     text_hid = fetchone(query, args)
+    if text_hid is None or text_hid[0] is None:
+        logger.error("user {} listname {} has no text {}", user, list_name, text_hid)
+        return list()
     query = 'SELECT hid FROM sentences WHERE text_hid=%s'
     args = text_hid
     hids = fetchall(query, args)
@@ -502,6 +506,9 @@ def fetch_sentences(user, list_name):
     query = 'SELECT text_hid FROM user_texts WHERE user=%s AND list_name=%s'
     args = (user, list_name)
     text_hid = fetchone(query, args)
+    if text_hid is None:
+        logger.error("user {} listname {} has no text {}", user, list_name, text_hid)
+        return result
     query = 'SELECT hid, start, end FROM sentences WHERE text_hid=%s'
     args = text_hid
     hid_start_end = fetchall(query, args)

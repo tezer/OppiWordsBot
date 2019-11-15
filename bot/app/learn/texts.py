@@ -18,12 +18,17 @@ async def para_summarization(session):
 
 
 async def text_summarization(user, list_name, session):
-    await bot.send_message(user, "Now let's summarize the text.\n"
+    session.list_name = list_name
+    sentences = mysql_connect.fetch_sentences(user, list_name)
+    if len(sentences) == 0:
+        await bot.send_message(user, "Sorry, the text is missing. /learn something else or /addtext")
+        return
+    await bot.send_message(user, "You've leaned all the words and sentences from list _{}_. "
+                                 "Now let's do some text.".format(list_name))
+    await bot.send_message(user, "First, let's summarize the text.\n"
                                  "Rewrite each paragraph to make it shorter and simpler, "
                                  "keep only the most important information.\n"
                                  "To skip a paragraph just type a dot (.) and hit _Enter_.")
-    session.list_name = list_name
-    sentences = mysql_connect.fetch_sentences(user, list_name)
     paragraphs = list()
     para = str()
     for sentence in sentences:

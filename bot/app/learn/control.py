@@ -61,13 +61,6 @@ async def learn_sentences(user, list_name, session, hids):
     await start_learning(session)
 
 
-async def learn_text(user, list_name, session):
-    await bot.send_message(user, "You've leaned all the words and sentences from list _{}_. "
-                                 "Now let's do some text.".format(list_name))
-
-    await texts.text_summarization(user, list_name, session)
-
-
 async def learning(query: types.CallbackQuery, callback_data: dict):
     await query.answer("Let's learn!")
     logger.debug(query)
@@ -83,7 +76,7 @@ async def learning(query: types.CallbackQuery, callback_data: dict):
     if n == -1:  # General vocabulary selected
         hids = sr.get_items_to_learn(
             (session.get_user_id(), session.active_lang()),
-            upper_recall_limit=upper_recall_limit, n=n)
+            upper_recall_limit=upper_recall_limit)
         if len(hids) == 0:
             if session.status == '/test':
                 await bot.send_message(session.get_user_id(),
@@ -100,38 +93,44 @@ async def learning(query: types.CallbackQuery, callback_data: dict):
         logger.info("{} learns {}", query.from_user.id, list_name)
         text_hid = mysql_connect.fetchone('SELECT text_hid FROM user_texts WHERE user=%s AND list_name=%s',
                                       (session.get_user_id(), list_name))
-        summary = mysql_connect.fetchone('SELECT summary FROM text_summary WHERE user=%s AND hid=%s',
-                                      (session.get_user_id(), text_hid[0]))
-        if summary is not None:
-            # (word, definition, mode, hid)]
-            session.words_to_learn = list()
-            session.words_to_learn.append((summary[0], list_name, 20, text_hid[0]))
-            k = to_one_row_keyboard(['Words', 'Summary'], [0, 1],
-                                    ['text_words', 'text_summary'])
-            await bot.send_message(session.get_user_id(),
-                             'You created a summary for text _{}_.\n'
-                             'Would you like to learn words or continue with your summary?'
-                             .format(list_name),
-                             reply_markup=k)
-            return
+        if text_hid is not None:
+
+            summary = mysql_connect.fetchone('SELECT summary FROM text_summary WHERE user=%s AND hid=%s',
+                                          (session.get_user_id(), text_hid[0]))
+            if summary is not None:
+                # (word, definition, mode, hid)]
+                session.words_to_learn = list()
+                session.words_to_learn.append((summary[0], list_name, 20, text_hid[0]))
+                k = to_one_row_keyboard(['Words', 'Summary'], [0, 1],
+                                        ['text_words', 'text_summary'])
+                await bot.send_message(session.get_user_id(),
+                                 'You created a summary for text _{}_.\n'
+                                 'Would you like to learn words or continue with your summary?'
+                                 .format(list_name),
+                                 reply_markup=k)
+                return
 
         hids = mysql_connect.get_hids_for_list(query.from_user.id, list_name)
+        logger.info("{} has {} words from list {}", query.from_user.id, len(hids), list_name)
         hids_all = sr.get_items_to_learn(
             (session.get_user_id(), session.active_lang()),
-            upper_recall_limit=upper_recall_limit, n=n)
+            upper_recall_limit=upper_recall_limit)
+        logger.info("{} has {} words to learn", query.from_user.id, len(hids_all))
         hids = list(set(hids) & set(hids_all))
+        logger.info("{} has {} words from list {} to learn", query.from_user.id, len(hids), list_name)
         # hids = list() #FIXME NOW delete after testing!!!
         if len(hids) == 0:
             sentence_hids = mysql_connect.get_sentence_hids(query.from_user.id, list_name)
             sentence_hids = ilt.get_objects(sentence_hids, '1 day', session.get_user_id(),
                                             session.active_lang(), "SENTENCE", 10)
+            logger.info("{} has {} sentences from list {} to learn", query.from_user.id, len(sentence_hids), list_name)
             sentences = True
             if len(sentence_hids) > 0:
                 session.current_level = 10 #Syntax learning
                 await learn_sentences(query.from_user.id, list_name, session, sentence_hids)
             else:
                 session.current_level = 20 #Text learning
-                await learn_text(query.from_user.id, list_name, session)
+                await texts.text_summarization(query.from_user.id, list_name, session)
 
     if not sentences:
         words = mysql_connect.fetch_by_hids(session.get_user_id(), hids)
