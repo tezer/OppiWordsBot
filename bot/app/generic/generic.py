@@ -7,7 +7,9 @@ from aiogram import types
 from bot.app.core import authorize, bot, sessions, get_session, LANGS
 from bot.bot_utils.bot_utils import to_vertical_keyboard
 from bot.session import Session
-from bot.bot_utils import mysql_connect as db
+from bot.bot_utils import mysql_connect as db, mysql_connect, bot_utils
+
+DEFINITION_SOURCES = ['Wiktionary', 'Yandex Dictionary', 'Google Translate']
 
 help_text = 'Welcome!\n' \
             '1. Select language to learn with /setlanguage.\n' \
@@ -56,6 +58,23 @@ async def help_message(message: types.Message):
     await bot.send_message(message.from_user.id, "*If you have questions, you can ask them at https://t.me/OppiWords*")
 
 
+async def stop_message(message: types.Message):
+    logger.info(str(message.from_user.id) + ' /stop command')
+    session, isValid = await authorize(message.from_user.id, with_lang=True)
+    if not isValid:
+        return
+    session.status = str()
+    session.words_to_learn = list()
+    session.read_error_storage = list()
+    session.current_word = 0
+    session.hid_cash = str()
+    session.words_to_add = None
+    session.definitions = list()
+    session.list_hid_word = None  # ""(list_name, hid)
+    await message.reply("You session is restarted.")
+
+# SETTINGS ==================================================================
+# TODO definition sources: Wiktionary, Yandex Dictionary, Google Translate
 async def settings_message(message: types.Message):
     logger.info(str(message.from_user.id) + ' /settings command')
     session, isValid = await authorize(message.from_user.id, with_lang=True)
@@ -85,24 +104,73 @@ async def set_user_language_message(message: types.Message):
     session.language_code = message.text.lower()
     with open('sessions.pkl', 'wb') as f:
         pickle.dump(sessions, f)
+    session.def_sources = list()
+    k = await source_keyb(list())
+    is_supported = session.language_code in bot_utils.CODES.keys()
+    s = 'but will give definitions in your language'
+    if not is_supported:
+        s = 'and unfortunately does not support ' + session.language_code.title()
+    await bot.send_message(user_id, "Select what dictionaries you would like to use\n"
+                                    "*Wiktionary* _(default)_ supports many languages, but definitions are only in English\n"
+                                    "*Yandex Dictionary* is less accurate, {}\n"
+                                    "*Google Translate* may be inaccurate for single words, but is often the only way to get a translation for a phrase"
+                           .format(s),
+                           reply_markup=k)
 
 
-async def stop_message(message: types.Message):
-    logger.info(str(message.from_user.id) + ' /stop command')
-    session, isValid = await authorize(message.from_user.id, with_lang=True)
-    if not isValid:
+async def source_keyb(used_sources):
+    data = list()
+    buttons = list()
+    for i in range(len(DEFINITION_SOURCES)):
+        if DEFINITION_SOURCES[i] in used_sources:
+            continue
+        data.append(i)
+        buttons.append(DEFINITION_SOURCES[i])
+    actions = ['def_source'] * len(data)
+    buttons.append("FINISH")
+    data.append(-1)
+    actions.append('def_source_finish')
+    k = to_vertical_keyboard(buttons, data, actions)
+    return k
+
+
+async def def_source_action(query, callback_data):
+    user_id = query.from_user.id
+    logger.info(str(user_id) + ' def_source_action received')
+    session = await get_session(user_id)
+    if session is None:
         return
-    session.status = str()
-    session.words_to_learn = list()
-    session.read_error_storage = list()
-    session.current_word = 0
-    session.hid_cash = str()
-    session.words_to_add = None
-    session.definitions = list()
-    session.list_hid_word = None  # ""(list_name, hid)
-    await message.reply("You session is restarted.")
+    def_source = DEFINITION_SOURCES[int(callback_data['data'])]
+    logger.debug(str(user_id) + ' selected ' + def_source)
+    session.def_sources.append(def_source)
+    mysql_connect.insertone('INSERT INTO def_sources (user, source) '
+                            'VALUES(%s, %s)', (user_id, def_source))
+    k = await source_keyb(session.def_sources)
+    await bot.edit_message_reply_markup(session.get_user_id(),
+                                        query.message.message_id,
+                                        reply_markup=k)
+
+async def def_source_finish_action(query):
+    user_id = query.from_user.id
+    logger.info(str(user_id) + ' def_source_action_finish received')
+    session = await get_session(user_id)
+    if session is None:
+        return
+    for s in DEFINITION_SOURCES:
+        if s not in session.def_sources:
+            mysql_connect.deleteone('DELETE FROM def_sources WHERE user=%s AND source=%s',
+                                    (user_id, s))
+    if len(session.def_sources) == 0:
+       await bot.edit_message_text("You didn't select any dictionary.\n"
+                                   "{} is set as default".format(DEFINITION_SOURCES[0]), chat_id=session.get_user_id(),
+                                        message_id=query.message.message_id)
+    else:
+        await bot.edit_message_text('OK, settings are saved', chat_id=session.get_user_id(),
+                                        message_id=query.message.message_id)
 
 
+
+# UNKNOWN ==================================================================
 async def text_message(message):
     logger.debug(str(message.from_user.id)
                  + " Received message unknown message")

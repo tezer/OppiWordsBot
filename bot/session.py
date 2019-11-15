@@ -5,12 +5,13 @@ class Session:
 
     def __init__(self, userd_id, first_name=None, last_name=None, language_code=None):
         #GENERAL settings
-        self.language_code = language_code
+        self.language_code = language_code#TODO update through /settings
         self.last_name = last_name
         self.first_name = first_name
         self.user_id = userd_id
-        self.languages = dict()  # language: True/False - True is active now
+        self.languages = dict()  # language: True/False - True is active now TODO: keep just on in db
         self.subscribed = False
+        self.def_sources = list()
         #LEARNING
         self.status = str()
         self.words_to_learn = list()  # (word, definition, mode, hid)]

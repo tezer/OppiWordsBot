@@ -57,7 +57,7 @@ async def help_message(message: types.Message):
 async def stop_message(message: types.Message):
     await generic.stop_message(message)
 
-
+# SETTINGS =========================================================
 @dp.message_handler(commands=['settings'])
 async def settings_message(message: types.Message):
     await generic.settings_message(message)
@@ -66,6 +66,16 @@ async def settings_message(message: types.Message):
 @dp.message_handler(lambda message: user_state(message.from_user.id, message.message_id))
 async def set_user_language_message(message: types.Message):
     await generic.set_user_language_message(message)
+
+
+@dp.callback_query_handler(posts_cb.filter(action=["def_source"]))
+async def def_source_action(query: types.CallbackQuery, callback_data: dict):
+    await generic.def_source_action(query, callback_data)
+
+
+@dp.callback_query_handler(posts_cb.filter(action=["def_source_finish"]))
+async def def_source_finish_action(query: types.CallbackQuery):
+    await generic.def_source_finish_action(query)
 
 
 # SUBSCRIBE =========================================================
