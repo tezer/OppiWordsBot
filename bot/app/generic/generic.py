@@ -216,6 +216,6 @@ async def text_message(message):
 
 
 async def unknow_query_handler(query: types.CallbackQuery):
-    logger.info('Got this callback data: ', query.data)
-    logger.info('Got this query.as_json: ', query.as_json())
+    logger.info('Got this callback data: {}', query.data)
+    logger.info('Got this query.as_json: {}', query.as_json())
     await query.answer("Don't know what to do))")
