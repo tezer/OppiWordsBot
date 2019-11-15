@@ -4,6 +4,8 @@ from loguru import logger
 from bot.app.core import authorize, bot, LANGS, sessions
 from aiogram import types
 
+from bot.bot_utils import mysql_connect
+
 
 async def setlanguage_command_message(message: types.Message):
     logger.debug(message)
@@ -29,8 +31,6 @@ async def setlanguage_action(query: types.CallbackQuery, callback_data: dict):
 
 
 async def setlanguage_message(message):
-    logger.debug("Received message")
-    logger.debug(message)
     session, isValid = await authorize(message.from_user.id)
     if not isValid:
         return
@@ -50,6 +50,8 @@ async def setlanguage_message(message):
             await message.reply("Sorry, can't recognize the language name. Make sure it's correct and is *in English* "
                                 "(e.g. instead of _Deutsch_ use _German_).")
             return
+        mysql_connect.updateone('UPDATE users SET learning_language = %s WHERE user_id = %s',
+                                (language_name.lower(), message.from_user.id))
         await message.reply("Language is set to *" + language_name.title() + "*")
         await bot.send_message(message.from_user.id, "Now you can /addwords to /learn")
         logger.info(str(message.chat.id) + " learns " + language_name)
