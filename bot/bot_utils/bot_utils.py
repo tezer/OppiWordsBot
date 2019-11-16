@@ -130,7 +130,7 @@ async def get_definitions(language, user_lang, word, user):
                 if len(res) > 0:
                     result.extend(res)
                     MEM_CACHE['Wiktionary_' + language + '_' + word] = res
-    if 'Google Translate' in sources:
+    if 'Google Translate' in sources or ' ' in word:
         if 'Google Translate_' + language + '_' + word in MEM_CACHE.keys():
             result.extend(MEM_CACHE['Google Translate_' + user_lang + language + '_' + word])
         else:
