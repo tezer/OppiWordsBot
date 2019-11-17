@@ -23,7 +23,7 @@ async def subscribe_command(message: types.Message):
     #                        " `4242 4242 4242 4242`, use any address and "
     #                        "card date (_any date later than today_), as well as any 3-digit security code"
     #                        "\n\nThis is your demo invoice:", parse_mode='Markdown')
-    logger.info("{} started reads about subscription")
+    logger.info("{} started reads about subscription", message.chat.id)
     await bot.send_message(message.chat.id,
                            'Some features of our bot are based on paid services, it means that we have '
                            'to charge for the access to them.'
@@ -61,7 +61,7 @@ async def checkout(pre_checkout_query: types.PreCheckoutQuery):
 
 
 async def got_payment(message: types.Message):
-    logger.info("{} paid for the subscription")
+    logger.info("{} paid for the subscription", message.from_user.id)
     await bot.send_message(message.chat.id,
                            'Thank you for your payment! Now you can use your premium features.',
                            parse_mode='Markdown')
