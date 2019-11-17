@@ -141,7 +141,7 @@ async def do_text_summary_action(query: types.CallbackQuery):
 
 
 @dp.callback_query_handler(posts_cb.filter(action=["text_words"]))
-async def do_text_summary_action(query: types.CallbackQuery):
+async def do_text_words_action(query: types.CallbackQuery):
     logger.info("{} ", query.from_user.id)
     await summary.do_text_words_action(query)
 
