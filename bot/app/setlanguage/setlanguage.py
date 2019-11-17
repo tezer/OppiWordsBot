@@ -57,6 +57,4 @@ async def setlanguage_message(message):
         logger.info(str(message.chat.id) + " learns " + language_name)
         session.set_active_language(language_name.lower())
         logger.debug(session.active_lang())
-        with open('sessions.pkl', 'wb') as f:
-            pickle.dump(sessions, f)
         session.status = None

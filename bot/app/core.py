@@ -4,10 +4,9 @@ from expiringdict import ExpiringDict
 from loguru import logger
 from aiogram import Bot, Dispatcher, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
-import pickle
-from pathlib import Path
-
+from bot.bot_utils import mysql_connect
 from bot.bot_utils import user_stat
+from bot.usersession import UserSession
 from settings import bot_token, db_conf
 
 logger.add("oppiwordsbot_{time}.log")
@@ -25,18 +24,7 @@ with open('bot/app/lang.list') as f:
     LANGS = f.readlines()
 LANGS = [x.replace('\n', '').lower() for x in LANGS]
 
-#
-# def load_data(name):
-#     data_file = Path(name)
-#     if data_file.is_file():
-#         with open(name, 'rb') as f:
-#             data_new = pickle.load(f)
-#     else:
-#         data_new = dict()
-#     return data_new
 
-
-# sessions = load_data("sessions.pkl")  # user_id: session
 sessions = ExpiringDict(max_len=100, max_age_seconds=60 * 60 * 24)
 
 
@@ -44,8 +32,8 @@ async def get_session(user_id):
     if user_id in sessions.keys():
         return sessions[user_id]
     else:
-        await bot.send_message(user_id, "You should /start the bot before learning")
-        return None
+        s = await create_user_session(user_id)
+        return s
 
 
 async def authorize(user_id, with_lang=False):
@@ -63,3 +51,31 @@ def user_state(user_id, state):
     if user_id not in sessions.keys():
         return False
     return sessions[user_id].status == state
+
+
+
+async def create_user_session(user):
+    user_data = mysql_connect.fetchone("SELECT language_code, learning_language, first_name, last_name "
+                            "FROM users WHERE user_id = %s",
+                                (user, ))
+    if user_data is None:
+        logger.info("{} has now session in db")
+        await bot.send_message(user, "You should /start the bot before learning")
+        return
+
+    if user_data[0] is None:
+        user_data = ('english', user_data[1])
+        await bot.send_message(user, 'Please, run /settings to specify your language')
+
+    if user_data[1] is None:
+        await bot.send_message(user, 'Please, run /setlanguage to specify the language you want to learn')
+        user_data = (user_data[0], 'english')
+
+    s = UserSession(user, user_data[2],
+                    user_data[3],
+                    user_data[0])
+    s.subscribed = mysql_connect.check_subscribed(user)
+    s.set_active_language(user_data[1])
+    logger.info("{} session is ready, subscription status is {}", user, s.subscribed)
+    sessions[user] = s
+    return s

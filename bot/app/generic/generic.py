@@ -1,13 +1,11 @@
-import pickle
 import sys
 
 from loguru import logger
 from aiogram import types
 
-from bot.app.core import authorize, bot, sessions, get_session, LANGS
+from bot.app.core import authorize, bot, sessions, get_session, LANGS, create_user_session
 from bot.bot_utils.bot_utils import to_vertical_keyboard
-from bot.session import Session
-from bot.bot_utils import mysql_connect as db, mysql_connect, bot_utils
+from bot.bot_utils import mysql_connect, bot_utils
 
 DEFINITION_SOURCES = ['Wiktionary', 'Yandex Dictionary', 'Google Translate']
 
@@ -37,7 +35,7 @@ async def start_message(message: types.Message):
         await bot.send_message(message.from_user.id,
                                "*A T T E N T I O N !*\nThis is a testing bot. Do not use it for learning words!")
     logger.info(str(message.from_user.id) + ' /start command')
-    s = await create_session(message)
+    s = await create_user_session(message.from_user.id)
     sessions[message.from_user.id] = s
     await message.reply("OK, now you can /addwords to get exercises.\n"
                         "Or you can add many words with /wordlist command.\n"
@@ -46,27 +44,7 @@ async def start_message(message: types.Message):
                         "/subscribe to activate *premium features* "
                         "(voice recognition, automatic translations and text-to-speech)\n\n"
                         "Use /help if you need help")
-    # await bot.send_photo(message.from_user.id, types.InputFile('bot/menu1.1.png'))
 
-
-async def create_session(message):
-    languages = db.fetchone("SELECT language_code, learning_language FROM users WHERE user_id = %s",
-                                (message.from_user.id, ))
-    if languages is None or languages[0] is None:
-        languages = ('english', languages[1])
-        await bot.send_message(message.from_user.id, 'Please, run /settings to specify your language')
-
-    if languages[1] is None:
-        await bot.send_message(message.from_user.id, 'Please, run /setlanguage to specify the language you want to learn')
-        languages = (languages[0], 'english')
-
-    s = Session(message.from_user.id, message.from_user.first_name,
-                message.from_user.last_name,
-                languages[0])
-    s.subscribed = db.check_subscribed(message.from_user.id)
-    s.set_active_language(languages[1])
-    logger.info("{} subscription status is {}", message.from_user.id, s.subscribed)
-    return s
 
 
 async def help_message(message: types.Message):
@@ -122,8 +100,6 @@ async def set_user_language_message(message: types.Message):
     session.language_code = message.text.lower()
     mysql_connect.updateone('UPDATE users SET language_code = %s WHERE user_id = %s',
                             (session.language_code, user_id))
-    with open('sessions.pkl', 'wb') as f:
-        pickle.dump(sessions, f)
     session.def_sources = list()
     k = await source_keyb(list())
     is_supported = session.language_code in bot_utils.CODES.keys()

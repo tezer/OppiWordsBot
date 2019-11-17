@@ -1,7 +1,7 @@
 from fuzzywuzzy import fuzz
 
 
-class Session:
+class UserSession:
 
     def __init__(self, userd_id, first_name=None, last_name=None, language_code=None):
         #GENERAL settings
