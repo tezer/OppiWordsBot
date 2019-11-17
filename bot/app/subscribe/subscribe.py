@@ -16,13 +16,13 @@ async def subscribe_command(message: types.Message):
     # TODO Check if the user already has subscription
     # TODO If the user has subscription notify them and use this date to calculate the and date
     await check_expiration_day(message)
-    await bot.send_message(message.chat.id,
-                           "*This is a test subscription*"
-                           "\nReal cards won't work here, *no money will be debited from your account*."
-                           "\nUse this test card number to pay for your subscription:"
-                           " `4242 4242 4242 4242`, use any address and "
-                           "card date (_any date later than today_), as well as any 3-digit security code"
-                           "\n\nThis is your demo invoice:", parse_mode='Markdown')
+    # await bot.send_message(message.chat.id,
+    #                        "*This is a test subscription*"
+    #                        "\nReal cards won't work here, *no money will be debited from your account*."
+    #                        "\nUse this test card number to pay for your subscription:"
+    #                        " `4242 4242 4242 4242`, use any address and "
+    #                        "card date (_any date later than today_), as well as any 3-digit security code"
+    #                        "\n\nThis is your demo invoice:", parse_mode='Markdown')
 
     await bot.send_message(message.chat.id,
                            'Some features of our bot are based on paid services, it means that we have '
