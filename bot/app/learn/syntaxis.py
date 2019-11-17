@@ -73,6 +73,7 @@ async def do_unscramble(session, keys, data, sentence, revealed, message):
                                                         "{}\nyuor answer:\n{}"
                                    .format(res[1], res[0]), parse_mode=types.ParseMode.HTML,
                                    reply_markup=k)
+        await message.edit_text("*" + sentence[1] + "*" + "\n" + revealed)
         return
     actions = ['unscramble'] * len(data)
     session.unscramble_keys = keys
@@ -90,11 +91,26 @@ async def do_unscramble(session, keys, data, sentence, revealed, message):
     await message.edit_text("*" + sentence[1] + "*" + "\n" + revealed, reply_markup=k)
 
 
+def chunk_tokens(tokens, n):
+    result = list()
+    for i in range(0, len(tokens), n):
+        chunks = tokens[i:i + n]
+        line = ""
+        for chunk in chunks:
+            line += chunk + ' '
+        result.append(line)
+    return result
+
 
 async def unscramble(session, sentence):
     m = await bot.send_message(session.get_user_id(),
                                "Put the words in correct order")
     tokens = sentence[0].split(' ')
+    logger.debug("Length of tokens = {}", len(tokens))
+    if len(tokens) > 10:
+        n = len(tokens) // 6
+        tokens = chunk_tokens(tokens, n)
+        logger.debug("Split into {}. New length of tokens = {}", n, len(tokens))
     keys = list()
     data = list()
     action = list()

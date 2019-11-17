@@ -124,6 +124,8 @@ async def learning(query: types.CallbackQuery, callback_data: dict):
             sentence_hids = ilt.get_objects(sentence_hids, '1 day', session.get_user_id(),
                                             session.active_lang(), "SENTENCE", 10)
             logger.info("{} has {} sentences from list {} to learn", query.from_user.id, len(sentence_hids), list_name)
+            await bot.send_message(query.from_user.id, "You have {} sentences from list {} to learn"
+                                   .format(len(sentence_hids), list_name))
             sentences = True
             if len(sentence_hids) > 0:
                 session.current_level = 10 #Syntax learning
@@ -151,7 +153,7 @@ async def start_learning(session):
     words = session.words_to_learn
     words = sort_words(words)
     session.words_to_learn = words
-    await bot.send_message(session.get_user_id(), "Check if you remember these words")
+    # await bot.send_message(session.get_user_id(), "Check if you remember these words")
     await do_learning(session)
 
 
