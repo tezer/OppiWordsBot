@@ -107,6 +107,13 @@ def delete_by_hid(hid):
     res2 = deleteone(query, args)
     return res1 and res2
 
+def delete_by_hids(hids):
+    for hid in hids:
+        res = delete_by_hid(hid)
+        if not res:
+            return hid
+    return None
+
 
 def fetchall(query, args):
     try:
