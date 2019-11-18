@@ -27,10 +27,10 @@ async def start_learning_message(message):
         (session.get_user_id(), session.active_lang()), upper_recall_limit=0.5)
 
     lists = mysql_connect.get_list_names(message.from_user.id)
-    keys = ['Learn all words (use /stop to finish learning)']
+    keys = ['Do all tasks (use /stop to finish learning)']
     data = [-1]
     actions = ["start_learning"]
-    await bot.send_message(session.get_user_id(), "You have {} words to learn.\n".format(len(hids)))
+    await bot.send_message(session.get_user_id(), "You have {} tasks to learn.\n".format(len(hids)))
     if len(lists) > 0:
         keys.extend(lists)
         data.extend(list(range(len(lists))))
@@ -44,7 +44,7 @@ async def start_learning_message(message):
 
 
 async def learn_sentences(user, list_name, session, hids):
-    await bot.send_message(user, "You've leaned all the words from list _{}_. "
+    await bot.send_message(user, "You've done all the tasks from list _{}_. "
                                  "Now let's do some grammar exercises.".format(list_name))
     # 0. word, 1. definition, 2. mode, 3. hid
     # 0. sentence, 1. translation, 2. mode, 3. hid
