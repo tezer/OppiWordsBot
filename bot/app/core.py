@@ -32,7 +32,7 @@ async def get_session(user_id):
     if user_id in sessions.keys():
         return sessions[user_id]
     else:
-        s = await create_user_session(user_id)
+        s = await create_user_session(user_id, None)
         return s
 
 
@@ -56,23 +56,28 @@ def user_state(user_id, state):
 
 
 
-async def create_user_session(user):
+async def create_user_session(user, message):
     user_data = mysql_connect.fetchone("SELECT language_code, learning_language, first_name, last_name "
                             "FROM users WHERE user_id = %s",
                                 (user, ))
     if user_data is None:
         logger.info("{} has no session in db", user)
-        await bot.send_message(user, "You should /start the bot before learning")
-        return
+        if message is not None:
+            user_data = (message.from_user.id, message.from_user.first_name, message.from_user.last_name,
+                         message.from_user.language_code)
+        else:
+            logger.info("{} sending back to /start", user)
+            await bot.send_message(user, "You should /start the bot before learning")
+            return
 
     if user_data[0] is None:
-        user_data = ('english', user_data[1])
+        user_data = ('english', user_data[1], user_data[2], user_data[3])
         await bot.send_message(user, 'Please, run /settings to specify your language')
 
     if user_data[1] is None:
         await bot.send_message(user, 'Please, run /setlanguage to specify the language you want to learn')
-        user_data = (user_data[0], 'english')
-
+        user_data = (user_data[0], 'english', user_data[2], user_data[3])
+    logger.info("{} has data {}", user, user_data)
     s = UserSession(user, user_data[2],
                     user_data[3],
                     user_data[0])
