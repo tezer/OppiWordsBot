@@ -73,6 +73,8 @@ def to_list(response):
     for d in definitions:
         translations = d['tr']
         for t in translations:
+            if 'pos' not in t.keys():
+                continue
             ts = ''
             if 'ts' in t.keys():
                 ts = ' [' + str(t['ts']) + '] '
