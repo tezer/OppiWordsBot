@@ -106,7 +106,8 @@ async def add_sentences(text, session, hid):
     for s in text.sentences:
         sentence_text = text.get_string(s.start, s.end)
         sent_hid = mysql_connect.add_sentence(sentence_text, s.start, s.end, hid)
-        mysql_connect.add_sentence_translation(s.translation[0], sent_hid, session.language_code)
+        if s.translation is None or len(s.translation) > 0:
+            mysql_connect.add_sentence_translation(s.translation[0], sent_hid, session.language_code)
         offset = 0
         for w in s.words:
             w_offset = get_offset(offset, w, sentence_text)

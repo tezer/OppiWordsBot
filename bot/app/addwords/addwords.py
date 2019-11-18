@@ -172,7 +172,7 @@ async def callback_add_meaning_action(query: types.CallbackQuery, callback_data:
 
 async def callback_add_user_definition_action(query: types.CallbackQuery, callback_data: dict):
     logger.debug(
-        'callback_add_user_definition_action Got this callback data: %r', callback_data)
+        'callback_add_user_definition_action Got this callback data: ', callback_data)
     await query.answer()
     session, isValid = await authorize(query.from_user.id)
     if not isValid:
@@ -182,6 +182,11 @@ async def callback_add_user_definition_action(query: types.CallbackQuery, callba
         if session.list_hid_word is not None:
             await wordlist.adding_list_words(None, query, None)
     else:
+        if session.words_to_add is None:
+            logger.error("{} session.words_to_add is None", query.from_user.id)
+            await bot.send_message(query.message.chat.id,
+                                   "Sorry, no definitions found. Make sure you added your definition")
+            return
         session.status = 'adding_user_definition'
         word = session.words_to_add[0]
         await bot.send_message(query.message.chat.id,
