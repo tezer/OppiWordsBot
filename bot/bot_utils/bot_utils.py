@@ -104,7 +104,7 @@ async def get_definitions(language, user_lang, word, user):
     if user_lang is None:
         user_lang = 'english'
     # See list of available sources in generic.py
-    if 'Yandex Dictionary' in sources:
+    if 'Yandex Dictionary' in sources or len(sources) == 0:
         if 'Yandex Dictionary_' + user_lang + language + '_' + word in MEM_CACHE.keys():
             result = MEM_CACHE['Yandex Dictionary_' + user_lang + language + '_' + word]
         else:
