@@ -25,7 +25,7 @@ with open('bot/app/lang.list') as f:
 LANGS = [x.replace('\n', '').lower() for x in LANGS]
 
 
-sessions = ExpiringDict(max_len=100, max_age_seconds=60 * 60 * 24)
+sessions = ExpiringDict(max_len=2000, max_age_seconds=60 * 60 * 24)
 
 
 async def get_session(user_id):
