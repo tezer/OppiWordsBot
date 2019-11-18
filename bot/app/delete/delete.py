@@ -72,7 +72,7 @@ async def deleting_word(message):
                                   (session.get_user_id(), session.active_lang(), message.text))
     session.status = ""
     if data is None:
-        await bot.send_message(session.get_user_id(), 'The words does not exist in you dictionary')
+        await bot.send_message(session.get_user_id(), 'The word does not exist in you dictionary')
         return
     session.hid_cash = list(x[2] for x in data)
     k = to_one_row_keyboard(["Keep", "Delete"], data=[
