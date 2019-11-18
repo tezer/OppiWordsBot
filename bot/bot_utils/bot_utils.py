@@ -105,13 +105,13 @@ async def get_definitions(language, user_lang, word, user):
         user_lang = 'english'
     # See list of available sources in generic.py
     if 'Yandex Dictionary' in sources:
-        if 'Yandex Dictionary_' + language + '_' + word in MEM_CACHE.keys():
+        if 'Yandex Dictionary_' + user_lang + language + '_' + word in MEM_CACHE.keys():
             result = MEM_CACHE['Yandex Dictionary_' + user_lang + language + '_' + word]
         else:
             try:
                 response = ya_dict.lookup(word, CODES[language], get_lang_code(user_lang))
                 result = to_list(json.loads(response))
-                MEM_CACHE['Yandex Dictionary_' + language + '_' + word] = result
+                MEM_CACHE['Yandex Dictionary_' + user_lang + language + '_' + word] = result
 
             except Exception as e:
                 logger.warning("Yandex dictionary exception: " + str(e))
@@ -131,7 +131,7 @@ async def get_definitions(language, user_lang, word, user):
                     result.extend(res)
                     MEM_CACHE['Wiktionary_' + language + '_' + word] = res
     if 'Google Translate' in sources or ' ' in word:
-        if 'Google Translate_' + language + '_' + word in MEM_CACHE.keys():
+        if 'Google Translate_' + user_lang + language + '_' + word in MEM_CACHE.keys():
             result.extend(MEM_CACHE['Google Translate_' + user_lang + language + '_' + word])
         else:
             subscribed = mysql_connect.check_subscribed(user)
@@ -144,7 +144,7 @@ async def get_definitions(language, user_lang, word, user):
                         word,
                         target_language=get_lang_code(user_lang))
                     result.append(tr['translatedText'])
-                    MEM_CACHE['Google Translate_' + language + '_' + word] = tr['translatedText']
+                    MEM_CACHE['Google Translate_' + user_lang + language + '_' + word] = tr['translatedText']
                 except Exception as e:
                     logger.error(e)
     return result
