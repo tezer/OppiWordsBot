@@ -526,9 +526,14 @@ def fetch_sentences(user, list_name):
     text = fetchone(query, args)[0]
     hid_start_end = sorted(hid_start_end, key=lambda x: x[1])
     for i in hid_start_end:
+        if i is None:
+            continue
         sentence = text[i[1]:i[2]]
-        query = 'SELECT translation FROM translations WHERE sent_hid=%s';
-        translation = fetchone(query, (i[0],))[0]
+        query = 'SELECT translation FROM translations WHERE sent_hid=%s'
+        translations = fetchone(query, (i[0],))
+        translation = ''
+        if translations is not None:
+            translation = translations[0]
         result.append((sentence, translation, 10, i[0]))
     return result
 
