@@ -41,6 +41,7 @@ CODES = {'czech': 'cs',
          'swedish': 'sv',
          'turkish': 'tr',
          'ukrainian': 'uk',
+         'japanese': 'ja',
          }
 
 parser = WiktionaryParser()
