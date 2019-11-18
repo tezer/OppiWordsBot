@@ -44,11 +44,13 @@ async def start_learning_message(message):
 
 
 async def learn_sentences(user, list_name, session, hids):
+    sentences = mysql_connect.fetch_sentences(session.get_user_id(), list_name)
+    if len(sentences) == 0:
+        return
     await bot.send_message(user, "You've done all the tasks from list _{}_. "
                                  "Now let's do some grammar exercises.".format(list_name))
     # 0. word, 1. definition, 2. mode, 3. hid
     # 0. sentence, 1. translation, 2. mode, 3. hid
-    sentences = mysql_connect.fetch_sentences(session.get_user_id(), list_name)
     sent_to_learn = list()
     if hids is not None:
         for s in sentences:
