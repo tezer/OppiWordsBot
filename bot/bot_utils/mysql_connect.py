@@ -478,8 +478,10 @@ def get_translation_context(list_hid, offset):
 
     query = 'SELECT translation FROM translations WHERE sent_hid=%s';
     res = fetchone(query, sent_hid)
-    if len(res) > 0:
+    if res is not None and len(res) > 0:
         translation = res[0]
+    else:
+        translation = ''
 
     context = get_context(sent_hid)
     return translation, context
