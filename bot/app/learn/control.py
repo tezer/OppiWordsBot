@@ -65,7 +65,7 @@ async def learning(query: types.CallbackQuery, callback_data: dict):
     await query.answer("Let's learn!")
     logger.debug(query)
     logger.debug(str(query.from_user.id)
-                 + "start_learning  " + str(callback_data))
+                 + " start_learning  " + str(callback_data))
     n = int(callback_data['data'])
     session, isValid = await authorize(query.from_user.id, with_lang=True)
     if not isValid:
