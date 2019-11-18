@@ -31,13 +31,17 @@ async def text_summarization(user, list_name, session):
                                  "To skip a paragraph just type a dot (.) and hit _Enter_.")
     paragraphs = list()
     para = str()
-    for sentence in sentences:
+    for i in range(len(sentences)):
+        sentence = sentences[i]
         if sentence[0].endswith('\n'):
             para += sentence[0]
             paragraphs.append((para, '', 20, 0))
             para = ''
         else:
             para += sentence[0]
+        if i == (len(sentences) - 1) and len(para) > 0:
+            paragraphs.append(para)
+
     session.words_to_learn = paragraphs
     session.current_word = 0
     session.status = "summarization"
