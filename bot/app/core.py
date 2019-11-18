@@ -63,8 +63,13 @@ async def create_user_session(user, message):
     if user_data is None:
         logger.info("{} has no session in db", user)
         if message is not None:
-            user_data = (message.from_user.id, message.from_user.first_name, message.from_user.last_name,
-                         message.from_user.language_code)
+            user_data = (message.from_user.language_code,
+                         None, message.from_user.first_name,
+                         message.from_user.last_name)
+            mysql_connect.update_user(message.from_user.id,
+                                      message.from_user.first_name,
+                                      message.from_user.last_name,
+                                      message.from_user.language_code)
         else:
             logger.info("{} sending back to /start", user)
             await bot.send_message(user, "You should /start the bot before learning")
