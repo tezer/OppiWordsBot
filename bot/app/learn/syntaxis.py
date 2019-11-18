@@ -88,7 +88,10 @@ async def do_unscramble(session, keys, data, sentence, revealed, message):
     d = data.copy()
     d.append('-1')
     k = bot_utils.to_vertical_keyboard(k, d, a)
-    await message.edit_text("*" + sentence[1] + "*" + "\n" + revealed, reply_markup=k)
+    content = sentence[1]
+    if content is None or len(content) == 0:
+        content = "Translation is not available. Please /subscribe to get translations."
+    await message.edit_text("*" + content + "*" + "\n" + revealed, reply_markup=k)
 
 
 def chunk_tokens(tokens, n):
