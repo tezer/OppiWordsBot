@@ -35,7 +35,7 @@ async def start_message(message: types.Message):
         await bot.send_message(message.from_user.id,
                                "*A T T E N T I O N !*\nThis is a testing bot. Do not use it for learning words!")
     logger.info(str(message.from_user.id) + ' /start command')
-    s = await create_user_session(message.from_user.id)
+    s = await create_user_session(message.from_user.id, message)
     sessions[message.from_user.id] = s
     await message.reply("OK, now you can /addwords to get exercises.\n"
                         "Or you can add many words with /wordlist command.\n"
