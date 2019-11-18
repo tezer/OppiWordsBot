@@ -1,0 +1,156 @@
+mysql> describe spaced_repetition;
++------------+--------------+------+-----+-------------------+-------+
+| Field      | Type         | Null | Key | Default           | Extra |
++------------+--------------+------+-----+-------------------+-------+
+| hid        | varchar(255) | NO   | PRI | NULL              |       |
+| model      | varchar(255) | YES  |     | NULL              |       |
+| last_date  | varchar(255) | YES  |     | NULL              |       |
+| created_at | timestamp    | NO   |     | CURRENT_TIMESTAMP |       |
+| user       | varchar(255) | YES  |     | NULL              |       |
+| language   | varchar(255) | YES  |     | NULL              |       |
++------------+--------------+------+-----+-------------------+-------+
+
+
+mysql> describe users;
++---------------+--------------+------+-----+-------------------+-------+
+| Field         | Type         | Null | Key | Default           | Extra |
++---------------+--------------+------+-----+-------------------+-------+
+| user_id       | varchar(255) | NO   | PRI | NULL              |       |
+| first_name    | varchar(255) | YES  |     | NULL              |       |
+| last_name     | varchar(255) | YES  |     | NULL              |       |
+| language_code | varchar(255) | YES  |     | NULL              |       |
+| created_at    | timestamp    | NO   |     | CURRENT_TIMESTAMP |       |
++---------------+--------------+------+-----+-------------------+-------+
+
+
+mysql> describe word_lists;
++----------+--------------+------+-----+---------+-------+
+| Field    | Type         | Null | Key | Default | Extra |
++----------+--------------+------+-----+---------+-------+
+| HID      | char(32)     | NO   | PRI | NULL    |       |
+| LISTNAME | varchar(255) | NO   |     | NULL    |       |
+| USER     | varchar(20)  | NO   |     | NULL    |       |
+| language | varchar(20)  | YES  |     | NULL    |       |
+| word     | varchar(255) | YES  |     | NULL    |       |
+| offset   | int(11)      | NO   |     | NULL    |       |
++----------+--------------+------+-----+---------+-------+
+
+
+mysql> describe words;
+mysql> describe words;
++------------+--------------+------+-----+---------+-------+
+| Field      | Type         | Null | Key | Default | Extra |
++------------+--------------+------+-----+---------+-------+
+| user       | varchar(255) | YES  |     | NULL    |       |
+| language   | varchar(255) | YES  |     | NULL    |       |
+| listname   | varchar(255) | YES  |     | NULL    |       |
+| list_hid   | varchar(255) | YES  |     | 0       |       |
+| word       | tinytext     | YES  |     | NULL    |       |
+| definition | tinytext     | YES  |     | NULL    |       |
+| mode       | tinyint(4)   | YES  |     | NULL    |       |
+| hid        | varchar(255) | NO   | PRI | NULL    |       |
++------------+--------------+------+-----+---------+-------+
+8 rows in set (0.00 sec)
+
+
+mysql> describe subscribed;
++------------+--------------+------+-----+---------+-------+
+| Field      | Type         | Null | Key | Default | Extra |
++------------+--------------+------+-----+---------+-------+
+| user       | varchar(255) | NO   | PRI | NULL    |       |
+| start_date | date         | YES  |     | NULL    |       |
+| end_date   | date         | YES  |     | NULL    |       |
++------------+--------------+------+-----+---------+-------+
+
+
+mysql> describe words;
++------------+--------------+------+-----+---------+-------+
+| Field      | Type         | Null | Key | Default | Extra |
++------------+--------------+------+-----+---------+-------+
+| word       | tinytext     | YES  |     | NULL    |       |
+| definition | tinytext     | YES  |     | NULL    |       |
+| mode       | tinyint(4)   | YES  |     | NULL    |       |
+| hid        | varchar(255) | NO   | PRI | NULL    |       |
+| user       | varchar(255) | YES  |     | NULL    |       |
+| language   | varchar(255) | YES  |     | NULL    |       |
+| listname   | varchar(255) | YES  |     | NULL    |       |
+| list_hid   | varchar(255) | YES  |     | 0       |       |
++------------+--------------+------+-----+---------+-------+
+
+mysql> describe texts;
++----------+--------------+------+-----+---------+-------+
+| Field    | Type         | Null | Key | Default | Extra |
++----------+--------------+------+-----+---------+-------+
+| hid      | char(32)     | NO   | PRI | NULL    |       |
+| text     | text         | YES  |     | NULL    |       |
+| language | varchar(255) | YES  |     | NULL    |       |
++----------+--------------+------+-----+---------+-------+
+3 rows in set (0.00 sec)
+
+mysql> describe user_texts;
++------------+--------------+------+-----+-------------------+-------+
+| Field      | Type         | Null | Key | Default           | Extra |
++------------+--------------+------+-----+-------------------+-------+
+| user       | varchar(255) | NO   | PRI | NULL              |       |
+| text_hid   | char(32)     | NO   | PRI | NULL              |       |
+| list_name  | varchar(255) | YES  |     | NULL              |       |
+| created_at | timestamp    | NO   |     | CURRENT_TIMESTAMP |       |
++------------+--------------+------+-----+-------------------+-------+
+4 rows in set (0.00 sec)
+
+
+mysql> describe translations;
++-------------+--------------+------+-----+---------+-------+
+| Field       | Type         | Null | Key | Default | Extra |
++-------------+--------------+------+-----+---------+-------+
+| hid         | char(32)     | NO   | PRI | NULL    |       |
+| sent_hid    | char(32)     | NO   | PRI | NULL    |       |
+| language    | varchar(255) | YES  |     | NULL    |       |
+| translation | text         | YES  |     | NULL    |       |
++-------------+--------------+------+-----+---------+-------+
+4 rows in set (0.00 sec)
+
+mysql> describe text_words;
++----------+----------+------+-----+---------+-------+
+| Field    | Type     | Null | Key | Default | Extra |
++----------+----------+------+-----+---------+-------+
+| hid      | char(32) | NO   | PRI | NULL    |       |
+| sent_hid | char(32) | NO   | PRI | NULL    |       |
+| offset   | int(11)  | NO   |     | NULL    |       |
++----------+----------+------+-----+---------+-------+
+3 rows in set (0.00 sec)
+
+mysql> describe study_log;
++-------------+--------------+------+-----+-------------------+-------+
+| Field       | Type         | Null | Key | Default           | Extra |
++-------------+--------------+------+-----+-------------------+-------+
+| user        | varchar(20)  | NO   | PRI | NULL              |       |
+| language    | varchar(255) | YES  |     | NULL              |       |
+| hid         | char(32)     | NO   | PRI | NULL              |       |
+| object_type | char(32)     | YES  |     | NULL              |       |
+| task_type   | tinyint(4)   | YES  |     | NULL              |       |
+| result      | float        | YES  |     | NULL              |       |
+| created_at  | timestamp    | NO   | PRI | CURRENT_TIMESTAMP |       |
++-------------+--------------+------+-----+-------------------+-------+
+7 rows in set (0.00 sec)
+
+mysql> describe text_summary;
++------------+-------------+------+-----+-------------------+-------+
+| Field      | Type        | Null | Key | Default           | Extra |
++------------+-------------+------+-----+-------------------+-------+
+| user       | varchar(20) | NO   | PRI | NULL              |       |
+| hid        | char(32)    | NO   | PRI | NULL              |       |
+| summary    | text        | YES  |     | NULL              |       |
+| created_at | timestamp   | NO   |     | CURRENT_TIMESTAMP |       |
++------------+-------------+------+-----+-------------------+-------+
+4 rows in set (0.00 sec)
+
+mysql> describe def_sources;
++--------+--------------+------+-----+---------+-------+
+| Field  | Type         | Null | Key | Default | Extra |
++--------+--------------+------+-----+---------+-------+
+| user   | varchar(20)  | NO   | PRI | NULL    |       |
+| source | varchar(255) | NO   | PRI | NULL    |       |
++--------+--------------+------+-----+---------+-------+
+2 rows in set (0.00 sec)
+
