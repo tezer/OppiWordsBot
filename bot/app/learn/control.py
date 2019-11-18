@@ -111,13 +111,13 @@ async def learning(query: types.CallbackQuery, callback_data: dict):
                 return
 
         hids = mysql_connect.get_hids_for_list(query.from_user.id, list_name)
-        logger.info("{} has {} words from list {}", query.from_user.id, len(hids), list_name)
+        logger.info("{} has {} tasks from list {}", query.from_user.id, len(hids), list_name)
         hids_all = sr.get_items_to_learn(
             (session.get_user_id(), session.active_lang()),
             upper_recall_limit=upper_recall_limit)
-        logger.info("{} has {} words to learn", query.from_user.id, len(hids_all))
+        logger.info("{} has {} tasks to learn", query.from_user.id, len(hids_all))
         hids = list(set(hids) & set(hids_all))
-        logger.info("{} has {} words from list {} to learn", query.from_user.id, len(hids), list_name)
+        logger.info("{} has {} tasks from list {} to learn", query.from_user.id, len(hids), list_name)
         # hids = list() #FIXME NOW delete after testing!!!
         if len(hids) == 0:
             sentence_hids = mysql_connect.get_sentence_hids(query.from_user.id, list_name)
