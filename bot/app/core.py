@@ -61,7 +61,7 @@ async def create_user_session(user):
                             "FROM users WHERE user_id = %s",
                                 (user, ))
     if user_data is None:
-        logger.info("{} has now session in db", user)
+        logger.info("{} has no session in db", user)
         await bot.send_message(user, "You should /start the bot before learning")
         return
 
