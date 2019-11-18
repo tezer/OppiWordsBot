@@ -49,7 +49,8 @@ async def smart_action(query: types.CallbackQuery, callback_data: dict):
     session.status = 'topn'
     await m.edit_reply_markup()
     await m.edit_text(
-        "The bot will offer you words which are semantically related to the last 3 words you recently learned in {}.".format(
+        "The bot will offer you words which are semantically related to the last 3 words you recently learned in {}."
+        "\nPlease, wait...".format(
             lang))
     words = smart_list.get_list(query.from_user.id, lang)
     if len(words) > 0:
