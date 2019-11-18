@@ -50,6 +50,8 @@ async def authorize(user_id, with_lang=False):
 def user_state(user_id, state):
     if user_id not in sessions.keys():
         return False
+    if sessions[user_id] is None:
+        return None
     return sessions[user_id].status == state
 
 
@@ -59,7 +61,7 @@ async def create_user_session(user):
                             "FROM users WHERE user_id = %s",
                                 (user, ))
     if user_data is None:
-        logger.info("{} has now session in db")
+        logger.info("{} has now session in db", user)
         await bot.send_message(user, "You should /start the bot before learning")
         return
 
