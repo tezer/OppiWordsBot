@@ -71,6 +71,9 @@ class BotText(object):
 
 async def get_words_and_phrases(text, text_language, user_language, user):
     sentences = list()
+    if text_language not in CODES:
+        await bot.send_message(user, "Sorry, {} is not supported yet. Write to https://t.me/OppiWords to request adding the language.")
+        return sentences
     processor = TextPreprocessor(CODES[text_language])
     # TODO save to cache the processors
     t = Text(text)
@@ -129,6 +132,8 @@ async def add_text(message: types.Message):
                                             session.active_lang(),
                                             session.language_code,
                                             user_id)
+    if len(sentences) == 0:
+        return
     text_name = str(message.text).split('\n')[0][:30]
     text = BotText(message.text)
     text.sentences = sentences
