@@ -79,7 +79,7 @@ async def settings_message(message: types.Message):
     await bot.send_message(message.from_user.id, "A few settings to make.")
     await bot.send_message(message.from_user.id, "*If you have questions, you can ask them at https://t.me/OppiWords*")
     m = await bot.send_message(message.from_user.id,
-                               "Please, specify the language in which you want to get definitions (e.g. Russian or German or any other language name) "
+                               "Please, specify *your language*, the language in which you want to get definitions (e.g. Russian or German or any other language name) "
                                "of words and phrases", reply_markup=types.ForceReply())
     session.status = m.message_id + 1
 

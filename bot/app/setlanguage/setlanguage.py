@@ -18,7 +18,7 @@ async def setlanguage_command_message(message: types.Message):
     else:
 
         forced_reply = types.ForceReply()
-        await message.reply("Type the name of the language to learn (e.g. English, Finnish or other.\n"
+        await message.reply("Type the name of the *language to learn* (e.g. English, Finnish or other.\n"
                             "You can always change it with /setlanguage", reply_markup=forced_reply)
 
 
