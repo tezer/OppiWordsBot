@@ -73,6 +73,7 @@ async def get_words_and_phrases(text, text_language, user_language, user):
     sentences = list()
     if text_language not in CODES:
         await bot.send_message(user, "Sorry, {} is not supported yet. Write to https://t.me/OppiWords to request adding the language.")
+        logger.warning("{} requested text parsing for {}", user, text_language)
         return sentences
     processor = TextPreprocessor(CODES[text_language])
     # TODO save to cache the processors
