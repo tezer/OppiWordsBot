@@ -77,8 +77,12 @@ async def deleting_word(message):
     session.hid_cash = list(x[2] for x in data)
     k = to_one_row_keyboard(["Keep", "Delete"], data=[
         0, 1], action=["keep", "delete"])
+    w = data[0][0]
+    d = 'NA'
+    if len(data[0]) > 1:
+        d = data[0][1]
     await bot.send_message(session.get_user_id(), "Do you want to delete word *{}* with definition\n{}"
-                           .format(data[0][0], data[0][1]), reply_markup=k)
+                           .format(w, d), reply_markup=k)
 
 
 async def delete_action(query: types.CallbackQuery, callback_data: dict):
