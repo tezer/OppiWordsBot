@@ -6,9 +6,10 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
 from bot.app.generic import onboarding
+from settings import bot_token, db_conf
+db_conf = db_conf[sys.argv[1:][0]]
 from bot.bot_utils import mysql_connect
 from bot.usersession import UserSession
-from settings import bot_token, db_conf
 from aiogram.contrib.middlewares.i18n import I18nMiddleware
 from pathlib import Path
 
@@ -23,7 +24,7 @@ I18N_DOMAIN = 'oppibot'
 BASE_DIR = Path(__file__).parent
 LOCALES_DIR = BASE_DIR / 'locales'
 
-db_conf = db_conf[sys.argv[1:][0]]
+
 
 mem_storage = MemoryStorage()
 dp = Dispatcher(bot, storage=mem_storage)
@@ -78,7 +79,7 @@ async def create_user_session(user, message):
                                 (user, ))
     if user_data is None:
         logger.info("{} has no session in db", user)
-        onboarding.onboarding_start(message)
+        await onboarding.onboarding_start(message)
         return
 
     if user_data[0] is None:

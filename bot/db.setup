@@ -12,16 +12,20 @@ mysql> describe spaced_repetition;
 
 
 mysql> describe users;
-+---------------+--------------+------+-----+-------------------+-------+
-| Field         | Type         | Null | Key | Default           | Extra |
-+---------------+--------------+------+-----+-------------------+-------+
-| user_id       | varchar(255) | NO   | PRI | NULL              |       |
-| first_name    | varchar(255) | YES  |     | NULL              |       |
-| last_name     | varchar(255) | YES  |     | NULL              |       |
-| language_code | varchar(255) | YES  |     | NULL              |       |
-| created_at    | timestamp    | NO   |     | CURRENT_TIMESTAMP |       |
-+---------------+--------------+------+-----+-------------------+-------+
++-------------------+--------------+------+-----+-------------------+-----------------------------+
+| Field             | Type         | Null | Key | Default           | Extra                       |
++-------------------+--------------+------+-----+-------------------+-----------------------------+
+| user_id           | varchar(255) | NO   | PRI | NULL              |                             |
+| first_name        | varchar(255) | YES  |     | NULL              |                             |
+| last_name         | varchar(255) | YES  |     | NULL              |                             |
+| language_code     | varchar(255) | YES  |     | NULL              |                             |
+| learning_language | varchar(255) | YES  |     | NULL              |                             |
+| created_at        | timestamp    | NO   |     | CURRENT_TIMESTAMP |                             |
+| blocked           | tinyint(1)   | YES  |     | 0                 |                             |
+| lastUpdated       | timestamp    | NO   |     | CURRENT_TIMESTAMP | on update CURRENT_TIMESTAMP |
++-------------------+--------------+------+-----+-------------------+-----------------------------+
 
+ALTER TABLE users ADD COLUMN L2_level tinyint(4) AFTER learning_language;
 
 mysql> describe word_lists;
 +----------+--------------+------+-----+---------+-------+

@@ -334,13 +334,14 @@ def check_exists(user_id):
     return res
 
 
-def update_user(user_id, first_name, last_name, language_code):
+def update_user(user_id, first_name, last_name, language_code, learning_language, level):
     exist = check_exists(user_id)
     if exist:
         return
-    query = "INSERT INTO users(user_id, first_name, last_name, language_code) " \
-            "VALUES(%s,%s,%s,%s)"
-    args = (user_id, first_name, last_name, language_code)
+    query = "INSERT INTO users(user_id, first_name, last_name, language_code, " \
+            "learning_language, L2_level) " \
+            "VALUES(%s,%s,%s,%s,%s,%s)"
+    args = (user_id, first_name, last_name, language_code, learning_language, level)
     insertone(query, args)
 
 

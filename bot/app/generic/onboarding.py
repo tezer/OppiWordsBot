@@ -9,6 +9,8 @@ from loguru import logger
 from bot.app.core import bot, _, LANG_codes
 from bot.bot_utils import mysql_connect, bot_utils
 
+LEVELS = {}
+
 
 class Form(StatesGroup):
     L1 = State()  # Will be represented in storage as 'Form:L1'
@@ -66,16 +68,16 @@ async def process_L2(message: types.Message, state: FSMContext):
     await state.update_data(L2=message.text.lower())
 
     # Configure ReplyKeyboardMarkup
-    # bot_utils.to_vertical_keyboard()
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
-    markup.add(_("Know nothing"), _("Know a bit"))
-    markup.add(_("Intermediate"), _("Advanced"))
-
+    kb_data = [
+        (("Know nothing", 0, '_'), ("Know a bit", 10, '_')),
+        (("Intermediate", 20, '_'), ("Advanced", 30,'_'))
+    ]
+    kb = bot_utils.flexy_keyboard(kb_data)
 
     async with state.proxy() as data:
         lang = data['L2']
     await message.reply(_("OK, you want to learn {}. How do you estimate your language level?")
-                        .format(lang), reply_markup=markup)
+                        .format(lang), reply_markup=kb)
 
 
 async def process_level_invalid(message: types.Message):
@@ -83,34 +85,38 @@ async def process_level_invalid(message: types.Message):
     return await message.reply(_("Please, choose your language level from the keyboard."))
 
 
-async def process_level(message: types.Message, state: FSMContext):
+async def process_level_query(query: types.CallbackQuery, state: FSMContext):
     async with state.proxy() as data:
-        data['level'] = message.text
+        data['level'] = str(query.data).split(':')[1]
 
         # Remove keyboard
-        markup = types.ReplyKeyboardRemove()
+        # markup = types.ReplyKeyboardRemove()
 
         # And send message
-        await bot.send_message(
-            message.chat.id,
-            md.text(
-                md.text(_('Your language is '), md.bold(data['L1'])),
-                md.text(_('You want to learn '), md.code(data['L2'])),
-                md.text(_('Level:'), data['level']),
-                sep='\n',
-            ),
-            reply_markup=markup,
-            parse_mode=ParseMode.MARKDOWN,
-
-        )
-        logger.info('user language is "{}", user learns "{}"',
-                    LANG_codes[data['L1']], LANG_codes[data['L2']])
-        mysql_connect.update_user(message.from_user.id,
-                                  message.from_user.first_name,
-                                  message.from_user.last_name,
+        # await bot.send_message(
+        #     query.from_user.id,
+        #     md.text(
+        #         md.text(_('Your language is '), md.bold(data['L1'])),
+        #         md.text(_('You want to learn '), md.code(data['L2'])),
+        #         md.text(_('Level:'), data['level']),
+        #         sep='\n',
+        #     ),
+        #     reply_markup=markup,
+        #     parse_mode=ParseMode.MARKDOWN,
+        #
+        # )
+        logger.info("adding new user: {} {} {} {} {} {} ", query.from_user.id,
+                                  query.from_user.first_name,
+                                  query.from_user.last_name,
                                   LANG_codes[data['L1']],
-                                  LANG_codes[data['L2'],
-                                  level)
+                                  LANG_codes[data['L2']],
+                                  data['level'])
+        mysql_connect.update_user(query.from_user.id,
+                                  query.from_user.first_name,
+                                  query.from_user.last_name,
+                                  LANG_codes[data['L1']],
+                                  LANG_codes[data['L2']],
+                                  data['level'])
 
     # Finish conversation
     await state.finish()

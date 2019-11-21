@@ -1,21 +1,23 @@
+from aiogram.dispatcher import FSMContext
 from aiogram.utils import executor
 from aiogram import types
 from aiogram.utils.callback_data import CallbackData
 from aiogram.types.message import ContentTypes
-
+from aiogram.dispatcher.filters import Text
+from bot.app.generic.onboarding import Form
 from bot.ilt import tasks
 
 from bot.app.setlanguage import setlanguage
 from bot.app.delete import delete
 from bot.app.subscribe import subscribe
 from bot.app.show import show
-from bot.app.generic import generic
+from bot.app.generic import generic, onboarding
 from bot.app.admin import admin
 from bot.app.addtext import addtext
 from bot.app.wordlist import wordlist
 from bot.app.addwords import addwords
 from bot.app.learn import reading, speaking, writing, control, syntaxis, texts, summary
-from bot.app.core import dp, user_state
+from bot.app.core import dp, user_state, LANG_codes
 from loguru import logger
 #
 # help - get help
@@ -59,6 +61,46 @@ async def help_message(message: types.Message):
 async def stop_message(message: types.Message):
     logger.info("{} ", message.from_user.id)
     await generic.stop_message(message)
+# ONBOARDING =======================================================
+
+# You can use state '*' if you need to handle all states
+@dp.message_handler(state='*', commands='cancel')
+@dp.message_handler(Text(equals='cancel', ignore_case=True), state='*')
+async def cancel_handler(message: types.Message, state: FSMContext):
+    await onboarding.cancel_handler(message, state)
+
+
+# Check language. It should be in the list
+@dp.message_handler(lambda message: message.text.lower() not in LANG_codes.keys(),
+                    state=[Form.L2, Form.L1])
+async def process_language_invalid(message: types.Message):
+    await onboarding.process_language_invalid(message)
+
+
+@dp.message_handler(state=Form.L1)
+async def process_L1(message: types.Message, state: FSMContext):
+    await onboarding.process_L1(message, state)
+
+
+@dp.message_handler(lambda message: message.text in LANG_codes.keys(), state=Form.L2)
+async def process_L2(message: types.Message, state: FSMContext):
+    await onboarding.process_L2(message, state)
+
+
+@dp.message_handler(lambda message:
+                    message.text not in
+                    ["Know nothing","Know a bit",
+                     "Intermediate", "Advanced"],
+    state=Form.level)
+async def process_level_invalid(message: types.Message):
+    await onboarding.process_language_invalid(message)
+
+# @dp.callback_query_handler(state=Form.level)
+@dp.callback_query_handler(state=Form.level)
+async def process_level_query(query: types.CallbackQuery, state: FSMContext):
+    await onboarding.process_level_query(query, state)
+
+
 
 # SETTINGS =========================================================
 @dp.message_handler(commands=['settings'])
