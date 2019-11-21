@@ -5,7 +5,6 @@ from aiogram import types
 from aiogram.utils.callback_data import CallbackData
 from expiringdict import ExpiringDict
 
-from bot.app.core import bot
 from bot.bot_utils import mysql_connect
 from bot.bot_utils.yandex_dictionary import YandexDictionary
 import settings
@@ -121,7 +120,8 @@ async def get_definitions(language, user_lang, word, user):
                 MEM_CACHE['Yandex Dictionary_' + user_lang + language + '_' + word] = result
 
             except Exception as e:
-                logger.warning("Yandex dictionary exception: " + str(e))
+                logger.warning("{} got YandexDictionary with user_lang: {}, L2 {}, error text {}",
+                                   user, user_lang, language, e)
 
     if 'Wiktionary' in sources:
         if 'Wiktionary_' + language + '_' + word in MEM_CACHE.keys():
@@ -130,7 +130,8 @@ async def get_definitions(language, user_lang, word, user):
             try:
                 w = parser.fetch(word.lower(), language=language)
             except Exception as e:
-                logger.warning("Wiktionary exception: " + str(e))
+                logger.warning("{} got Wiktionary with user_lang: {}, L2 {}, error text {}",
+                                   user, user_lang, language, e)
 
             if w is not None and len(w) > 0:
                 res = process_wiktionary(w)
@@ -153,7 +154,8 @@ async def get_definitions(language, user_lang, word, user):
                     result.append(tr['translatedText'])
                     MEM_CACHE['Google Translate_' + user_lang + language + '_' + word] = tr['translatedText']
                 except Exception as e:
-                    logger.error(e)
+                    logger.warning("{} got GoogleTranslate with user_lang: {}, L2 {}, error text {}",
+                                   user, user_lang, language, e)
     return result
 
 
