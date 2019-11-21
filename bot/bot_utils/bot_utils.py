@@ -187,11 +187,40 @@ def to_one_row_keyboard(tokens, data=None, action=None):
 def to_vertical_keyboard(tokens, data=[], action=[]):
     keyboard = types.InlineKeyboardMarkup(action=action)
     for i in range(len(tokens)):
-        t = tokens[i]
-        keyboard.add(types.InlineKeyboardButton(t,
-                                                callback_data=posts_cb.new(data=data[i],
-                                                                           action=action[i])))
+        keyboard.add(types.InlineKeyboardButton(tokens[i],
+                                                callback_data=
+                                                posts_cb.new(data=data[i],
+                                                             action=action[i])))
     return keyboard
+
+def flexy_keyboard(dd):
+    """
+        text_and_data = (
+        (
+            ('Yes!', 1, 'yes'),
+            ('No!', 2, 'no')
+        ),
+        (
+            ('Maybe', 3, 'mb'),
+            ('No way', 4, 'nw'),
+            ("Don't say", 5, 'nw')
+        ),
+        (
+            ("Fuck you", 4 , '_'),
+        )
+    )
+    :param dd: tuple/list of tuples
+    :return: InlineKeyboardMarkup
+    """
+    keyboard_markup = types.InlineKeyboardMarkup()
+    for d in dd:
+        row_btns = (types.InlineKeyboardButton(text, callback_data=
+        posts_cb.new(data=data, action=action))
+                    for text, data, action in d)
+        keyboard_markup.row(*row_btns)
+    return keyboard_markup
+
+
 
 #WORD DIFFERENCE =================================================================
 def get_diff_ranges(blocks, index):
