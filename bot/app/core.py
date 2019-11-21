@@ -4,21 +4,35 @@ from expiringdict import ExpiringDict
 from loguru import logger
 from aiogram import Bot, Dispatcher, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
+
+from bot.app.generic import onboarding
 from bot.bot_utils import mysql_connect
-from bot.bot_utils import user_stat
 from bot.usersession import UserSession
 from settings import bot_token, db_conf
+from aiogram.contrib.middlewares.i18n import I18nMiddleware
+from pathlib import Path
 
 logger.add("oppiwordsbot_{time}.log")
 
 TOKEN = bot_token[sys.argv[1:][0]]
 bot = Bot(token=TOKEN,
           parse_mode=types.ParseMode.MARKDOWN)
+
+I18N_DOMAIN = 'oppibot'
+
+BASE_DIR = Path(__file__).parent
+LOCALES_DIR = BASE_DIR / 'locales'
+
 db_conf = db_conf[sys.argv[1:][0]]
-user_stat.conf = db_conf
 
 mem_storage = MemoryStorage()
 dp = Dispatcher(bot, storage=mem_storage)
+# Setup i18n middleware
+i18n = I18nMiddleware(I18N_DOMAIN, LOCALES_DIR)
+dp.middleware.setup(i18n)
+# Alias for gettext method
+_ = i18n.gettext
+
 RESTART = '"Sorry, something went wrong. Try restarting with /start, your progress is saved"'
 with open('bot/app/lang.list') as f:
     LANGS = f.readlines()
@@ -27,6 +41,8 @@ LANGS = [x.replace('\n', '').lower() for x in LANGS]
 
 sessions = ExpiringDict(max_len=2000, max_age_seconds=60 * 60 * 24)
 
+LANG_codes = {'english': 'english', 'russian': 'russian',
+         'английский': 'english', 'русский': 'russian'}
 
 async def get_session(user_id):
     if user_id in sessions.keys():
@@ -62,18 +78,8 @@ async def create_user_session(user, message):
                                 (user, ))
     if user_data is None:
         logger.info("{} has no session in db", user)
-        if message is not None:
-            user_data = (message.from_user.language_code,
-                         None, message.from_user.first_name,
-                         message.from_user.last_name)
-            mysql_connect.update_user(message.from_user.id,
-                                      message.from_user.first_name,
-                                      message.from_user.last_name,
-                                      message.from_user.language_code)
-        else:
-            logger.info("{} sending back to /start", user)
-            await bot.send_message(user, "You should /start the bot before learning")
-            return
+        onboarding.onboarding_start(message)
+        return
 
     if user_data[0] is None:
         user_data = ('english', user_data[1], user_data[2], user_data[3])
