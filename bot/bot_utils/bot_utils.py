@@ -97,6 +97,10 @@ def get_lang_code(user_lang):
         return CODES[user_lang]
     if user_lang in CODES.values():
         return user_lang
+    if len(user_lang) == 2:
+        return user_lang
+    else:
+        return user_lang[:2]
 
 
 
