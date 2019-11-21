@@ -73,22 +73,22 @@ def user_state(user_id, state):
 
 
 
-async def create_user_session(user, message):
+async def create_user_session(user):
     user_data = mysql_connect.fetchone("SELECT language_code, learning_language, first_name, last_name "
                             "FROM users WHERE user_id = %s",
                                 (user, ))
     if user_data is None:
         logger.info("{} has no session in db", user)
-        await onboarding.onboarding_start(message)
+        await onboarding.onboarding_start(user)
         return
+    else:
+        if user_data[0] is None:
+            user_data = ('english', user_data[1], user_data[2], user_data[3])
+            await bot.send_message(user, 'Please, run /settings to specify your language')
 
-    if user_data[0] is None:
-        user_data = ('english', user_data[1], user_data[2], user_data[3])
-        await bot.send_message(user, 'Please, run /settings to specify your language')
-
-    if user_data[1] is None:
-        await bot.send_message(user, 'Please, run /setlanguage to specify the language you want to learn')
-        user_data = (user_data[0], 'english', user_data[2], user_data[3])
+        elif user_data[1] is None:
+            await bot.send_message(user, 'Please, run /setlanguage to specify the language you want to learn')
+            user_data = (user_data[0], 'english', user_data[2], user_data[3])
     logger.info("{} has data {}", user, user_data)
     s = UserSession(user, user_data[2],
                     user_data[3],
@@ -97,4 +97,11 @@ async def create_user_session(user, message):
     s.set_active_language(user_data[1])
     logger.info("{} session is ready, subscription status is {}", user, s.subscribed)
     sessions[user] = s
+    await bot.send_message(user, "OK, now you can /addwords to get exercises.\n"
+                        "Or you can add many words with /wordlist command.\n"
+                        "Use /addtext to work with texts\n"
+                        "Then type /learn to start training.\n\n"
+                        "/subscribe to activate *premium features* "
+                        "(voice recognition, automatic translations and text-to-speech)\n\n"
+                        "Use /help if you need help")
     return s

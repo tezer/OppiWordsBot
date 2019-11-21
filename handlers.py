@@ -48,7 +48,7 @@ async def send_notifications_to_users(message: types.Message):
 @dp.message_handler(commands=['start'])
 async def start_message(message: types.Message):
     logger.info("{} ", message.from_user.id)
-    await generic.start_message(message)
+    await generic.start_message(message.from_user.id)
 
 
 @dp.message_handler(commands=['help'])

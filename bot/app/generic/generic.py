@@ -30,20 +30,13 @@ help_text = 'Welcome!\n' \
             '- Start typing "/" any time to access the commands from the list'
 
 
-async def start_message(message: types.Message):
+async def start_message(user):
     if sys.argv[1:][0] == 'dev':
-        await bot.send_message(message.from_user.id,
+        await bot.send_message(user,
                                "*A T T E N T I O N !*\nThis is a testing bot. Do not use it for learning words!")
-    logger.info(str(message.from_user.id) + ' /start command')
-    s = await create_user_session(message.from_user.id, message)
-    sessions[message.from_user.id] = s
-    await message.reply("OK, now you can /addwords to get exercises.\n"
-                        "Or you can add many words with /wordlist command.\n"
-                        "Use /addtext to work with texts\n"
-                        "Then type /learn to start training.\n\n"
-                        "/subscribe to activate *premium features* "
-                        "(voice recognition, automatic translations and text-to-speech)\n\n"
-                        "Use /help if you need help")
+    logger.info(str(user) + ' /start command')
+    s = await create_user_session(user)
+    sessions[user] = s
 
 
 

@@ -1,12 +1,13 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
-from aiogram.types import ParseMode
-import aiogram.utils.markdown as md
+# from aiogram.types import ParseMode
+# import aiogram.utils.markdown as md
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
 from loguru import logger
 # States
 from bot.app.core import bot, _, LANG_codes
+from bot.app.generic import generic
 from bot.bot_utils import mysql_connect, bot_utils
 
 LEVELS = {}
@@ -18,15 +19,15 @@ class Form(StatesGroup):
     level = State()  # Will be represented in storage as 'Form:level'
 
 
-async def onboarding_start(message: types.Message):
+async def onboarding_start(user):
     """
     Conversation's entry point
     """
-    logger.info("{} started onboarding", message.from_user.id)
+    logger.info("{} started onboarding", user)
     # Set state
     await Form.L1.set()
 
-    await message.reply(_("Hi there! What is your language?"))
+    await bot.send_message(user, _("Hi there! What is your language?"))
 
 
 async def cancel_handler(message: types.Message, state: FSMContext):
@@ -117,6 +118,8 @@ async def process_level_query(query: types.CallbackQuery, state: FSMContext):
                                   LANG_codes[data['L1']],
                                   LANG_codes[data['L2']],
                                   data['level'])
-
+    await query.message.delete_reply_markup()
     # Finish conversation
     await state.finish()
+    await generic.start_message(query.from_user.id)
+    return
