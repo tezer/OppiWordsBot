@@ -78,7 +78,10 @@ async def get_words_and_phrases(text, text_language, user_language, user):
     processor = TextPreprocessor(CODES[text_language])
     # TODO save to cache the processors
     t = Text(text)
-    subscribed = mysql_connect.check_subscribed(user)
+    session, isValid = await authorize(user)
+    if not isValid:
+        return
+    subscribed = session.subscribed
     if not subscribed:
         await bot.send_message(user, "/subscribe to get translations for your text sentences")
 
