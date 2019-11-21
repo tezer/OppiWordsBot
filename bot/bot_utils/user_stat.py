@@ -1,16 +1,17 @@
-import mysql.connector
-from mysql.connector import Error
+
 from datetime import datetime, timedelta
-from bot.bot_utils import spaced_repetition
+from bot.bot_utils import spaced_repetition, mysql_connect
 
 oneHour = timedelta(hours=1)
 
-dbconf = dict()
-
 messages = {"no_words_added": "Looks like you haven't added words to learn yet? Try /setlanguage and then /addwords to add a few words.",
             "has_words_to_learn": "You have {} words to learn. Use /learn command to start learning them.",
-            "all": "Hi!\nNow <b>SmartList</b> is available in a number fo languages. Try it with /wordlist command."
-                   "\nIf you have ideas to share, questions or suggestions, you can join <b>OppiWordsBotGroup</b> (https://t.me/OppiWords) to discuss . \n"
+            "all": "Hi!\nFor only 24 hours all paid features will be <b>free</b> for you to try! "
+                   "See how <b>speech recognition</b>,<b>speech generation</b> and "
+                   "<b>automatic translation</b> help you memorise words, understand sentence "\
+                   "structures and even retell a text!"
+                   "\nIf you have ideas to share, questions or suggestions, you can join "
+                   "<b>OppiWordsBotGroup</b> (https://t.me/OppiWords) to discuss . \n"
 }
 
 
@@ -20,22 +21,8 @@ def get_user_last_activity(user=None):
         print("ERROR, need user_id")
         return
     else:
-        query = "SELECT last_date FROM spaced_repetition WHERE user='" + user + "'"
-
-    try:
-        conn = mysql.connector.connect(host=dbconf['host'],
-                                       database=dbconf['database'],
-                                       user=dbconf['user'],
-                                       password=dbconf['password'])
-        cursor = conn.cursor(buffered=True)
-        cursor.execute(query)
-        rows = cursor.fetchall()
-    except Error as e:
-        print(e)
-
-    finally:
-        cursor.close()
-        conn.close()
+        query = "SELECT last_date FROM spaced_repetition WHERE user=%s"
+        rows = mysql_connect.fetchall(query, (user, ))
         return rows
 
 
@@ -56,35 +43,21 @@ def number_of_words_to_train(user):
     return len(words)
 
 def get_user_message(period):
-    query = "SELECT user_id from users where blocked = 0"
-
-    try:
-        conn = mysql.connector.connect(host=dbconf['host'],
-                                       database=dbconf['database'],
-                                       user=dbconf['user'],
-                                       password=dbconf['password'])
-        cursor = conn.cursor(buffered=True)
-        cursor.execute(query)
-        rows = cursor.fetchall()
-    except Error as e:
-        print(e)
-
-    finally:
-        cursor.close()
-        conn.close()
-        result = dict()
-        for row in rows:
-            user = row[0]
-            times = get_user_last_activity(user)
-            if is_within_time(period, times):
-                continue
-            n = number_of_words_to_train(user)
-            result[user] = messages['all']
-            if n == 0:
-                result[user] += messages["no_words_added"]
-            else:
-                result[user] += messages["has_words_to_learn"].format(n)
-        return result
+    query = "SELECT user_id from users where blocked = %s"
+    rows = mysql_connect.fetchall(query, (0, ))
+    result = dict()
+    for row in rows:
+        user = row[0]
+        times = get_user_last_activity(user)
+        if is_within_time(period, times):
+            continue
+        n = number_of_words_to_train(user)
+        result[user] = messages['all']
+        if n == 0:
+            result[user] += messages["no_words_added"]
+        else:
+            result[user] += messages["has_words_to_learn"].format(n)
+    return result
 
 #
 #
