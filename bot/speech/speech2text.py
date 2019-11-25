@@ -32,6 +32,7 @@ CODES = {'czech': 'cs-CZ',
          'swedish': 'sv-SE',
          'turkish': 'tr-TR',
          'ukrainian': 'uk-UA',
+         'japanese': 'ja-JP'
          }
 
 # Instantiates a client

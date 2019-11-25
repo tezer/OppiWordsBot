@@ -22,7 +22,35 @@ CODES = {
     'japanese': 'ja',
     'spanish': 'es',
     'french': 'fr'
+}
 
+rake_CODES = {
+'bulgarian': 'bg',
+'czech': 'cs',
+'danish': 'da',
+'german': 'de',
+'greek': 'el',
+'english': 'en',
+'spanish': 'es',
+'finnish': 'fi',
+'french': 'fr',
+'irish': 'ga',
+'croatian': 'hr',
+'hungarian': 'hu',
+'indonesian': 'id',
+'italian': 'it',
+'lithuanian': 'lt',
+'latvian': 'lv',
+'dutch': 'nl',
+'norwegian': 'no',
+'polish': 'pl',
+'portuguese': 'pt',
+'romanian': 'ro',
+'russian': 'ru',
+'slovak': 'sk',
+'swedish': 'sv',
+'turkish': 'tr',
+'ukrainian': 'uk'
 }
 
 
@@ -69,13 +97,21 @@ class BotText(object):
         return str(self.text)[start:end]
 
 
+def get_code(text_language):
+    if text_language in rake_CODES.keys():
+        return rake_CODES[text_language]
+    else:
+        return None
+
+
 async def get_words_and_phrases(text, text_language, user_language, user):
     sentences = list()
     if text_language not in CODES:
         await bot.send_message(user, "Sorry, {} is not supported yet. Write to https://t.me/OppiWords to request adding the language.")
         logger.warning("{} requested text parsing for {}", user, text_language)
         return sentences
-    processor = TextPreprocessor(CODES[text_language])
+    lang_code = get_code(text_language)
+    processor = TextPreprocessor(lang_code)
     # TODO save to cache the processors
     t = Text(text)
     session, isValid = await authorize(user)

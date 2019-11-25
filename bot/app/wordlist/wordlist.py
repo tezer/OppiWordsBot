@@ -143,6 +143,7 @@ async def adding_list_words(message, query, list_name):
                              '<b>' + word + '</b>',
                              translation_context[1],
                              flags=re.I)
+            context = context + '\n' + word
 
     m = await bot.send_message(session.get_user_id(),
                                "{} words to add from list <i>{}</i>{}\n{}".format(

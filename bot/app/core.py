@@ -49,7 +49,7 @@ async def get_session(user_id):
     if user_id in sessions.keys():
         return sessions[user_id]
     else:
-        s = await create_user_session(user_id, None)
+        s = await create_user_session(user_id)
         return s
 
 
