@@ -6,7 +6,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 
 from loguru import logger
 # States
-from bot.app.core import bot, _, LANG_codes
+from bot.app.core import bot, _, LANG_codes, LANGS
 from bot.app.generic import generic
 from bot.bot_utils import mysql_connect, bot_utils
 
@@ -86,6 +86,15 @@ async def process_level_invalid(message: types.Message):
     return await message.reply(_("Please, choose your language level from the keyboard."))
 
 
+def get_lang(lang):
+    if lang in LANG_codes.keys():
+        return LANG_codes[lang]
+    elif lang in LANGS:
+            return lang
+    else:
+        return None
+
+
 async def process_level_query(query: types.CallbackQuery, state: FSMContext):
     async with state.proxy() as data:
         data['level'] = str(query.data).split(':')[1]
@@ -106,17 +115,47 @@ async def process_level_query(query: types.CallbackQuery, state: FSMContext):
         #     parse_mode=ParseMode.MARKDOWN,
         #
         # )
+        l1 = get_lang(data['L1'])
+        if l1 is None:
+            await bot.send_message(query.from_user.id, "Sorry, {} is not supported. Make sure you "
+                                                       "there is no mistake and try again")
+            await query.message.delete_reply_markup()
+            # Finish conversation
+            await state.finish()
+            logger.warning("Language is wrong: {} {} {} {} {} {} ", query.from_user.id,
+                                  query.from_user.first_name,
+                                  query.from_user.last_name,
+                                  l1,
+                                  data['L2'],
+                                  data['level'])
+            return
+
+        l2 = get_lang(data['L2'])
+        if l2 is None:
+            await bot.send_message(query.from_user.id, "Sorry, {} is not supported. Make sure you "
+                                                       "there is no mistake and try again")
+            await query.message.delete_reply_markup()
+            # Finish conversation
+            await state.finish()
+            logger.warning("Language is wrong: {} {} {} {} {} {} ", query.from_user.id,
+                                  query.from_user.first_name,
+                                  query.from_user.last_name,
+                                  l1,
+                                  l2,
+                                  data['level'])
+            return
+
         logger.info("adding new user: {} {} {} {} {} {} ", query.from_user.id,
                                   query.from_user.first_name,
                                   query.from_user.last_name,
-                                  LANG_codes[data['L1']],
-                                  LANG_codes[data['L2']],
+                                  l1,
+                                  l2,
                                   data['level'])
         mysql_connect.update_user(query.from_user.id,
                                   query.from_user.first_name,
                                   query.from_user.last_name,
-                                  LANG_codes[data['L1']],
-                                  LANG_codes[data['L2']],
+                                  l1,
+                                  l2,
                                   data['level'])
     await query.message.delete_reply_markup()
     # Finish conversation
