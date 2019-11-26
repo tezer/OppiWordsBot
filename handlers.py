@@ -19,6 +19,7 @@ from bot.app.addwords import addwords
 from bot.app.learn import reading, speaking, writing, control, syntaxis, texts, summary
 from bot.app.core import dp, user_state, LANG_codes
 from loguru import logger
+
 #
 # help - get help
 # start - start the bot and get help
@@ -61,6 +62,8 @@ async def help_message(message: types.Message):
 async def stop_message(message: types.Message):
     logger.info("{} ", message.from_user.id)
     await generic.stop_message(message)
+
+
 # ONBOARDING =======================================================
 
 # You can use state '*' if you need to handle all states
@@ -89,17 +92,17 @@ async def process_L2(message: types.Message, state: FSMContext):
 
 @dp.message_handler(lambda message:
                     message.text not in
-                    ["Know nothing","Know a bit",
+                    ["Know nothing", "Know a bit",
                      "Intermediate", "Advanced"],
-    state=Form.level)
+                    state=Form.level)
 async def process_level_invalid(message: types.Message):
     await onboarding.process_language_invalid(message)
+
 
 # @dp.callback_query_handler(state=Form.level)
 @dp.callback_query_handler(state=Form.level)
 async def process_level_query(query: types.CallbackQuery, state: FSMContext):
     await onboarding.process_level_query(query, state)
-
 
 
 # SETTINGS =========================================================
@@ -287,10 +290,22 @@ async def start_learning_message(message):
     await control.start_learning_message(message)
 
 
-@dp.callback_query_handler(posts_cb.filter(action=["start_learning"]))
-async def learning(query: types.CallbackQuery, callback_data: dict):
+@dp.callback_query_handler(posts_cb.filter(action=["learn_all_words"]))
+async def learn_all_words(query: types.CallbackQuery, callback_data: dict):
     logger.info("{} ", query.from_user.id)
-    await control.learning(query, callback_data)
+    await control.learn_all_words(query, callback_data)
+
+
+@dp.callback_query_handler(posts_cb.filter(action=["learn_words_from_list"]))
+async def learn_words_from_list(query: types.CallbackQuery, callback_data: dict):
+    logger.info("{} ", query.from_user.id)
+    await control.learn_words_from_list(query, callback_data)
+
+
+# @dp.callback_query_handler(posts_cb.filter(action=["start_learning"]))
+# async def learning(query: types.CallbackQuery, callback_data: dict):
+#     logger.info("{} ", query.from_user.id)
+#     await control.learning(query, callback_data)
 
 
 # Reading errors loop, end of the learning loop if no more words to learn

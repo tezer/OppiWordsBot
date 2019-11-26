@@ -273,9 +273,10 @@ def lists_to_add(user, lang):
     return result
 
 
-def get_list_names(user):
-    query = "select DISTINCT listname FROM words WHERE listname <> '' AND user=%s"
-    args = (user,)
+def get_list_names(user, language):
+    query = "select DISTINCT listname FROM words " \
+            "WHERE listname <> '' AND user=%s AND language=%s"
+    args = (user, language)
     result = list()
     for l in fetchall(query, args):
         result.append(l[0])

@@ -34,7 +34,7 @@ def update_item(hid, result):
     return True
 
 
-def get_items_to_learn(user_language, upper_recall_limit=0.5, n=-1):
+def get_items_to_learn(user_language, upper_recall_limit=0.5, n_words=-1):
     result = list()
     now = datetime.now()
     tmp = dict()
@@ -56,13 +56,13 @@ def get_items_to_learn(user_language, upper_recall_limit=0.5, n=-1):
             tmp[hid] = recall
     recalls = list(tmp.values())
     recalls.sort()
-    if n > 0:
-        n = min(n, len(recalls))
+    if n_words > 0:
+        n_words = min(n_words, len(recalls))
     else:
-        n = len(recalls)
+        n_words = len(recalls)
     for r in recalls:
         for hid, recall in tmp.items():
-            if len(result) >= n:
+            if len(result) >= n_words:
                 break
             if recall == r:
                 result.append(hid)

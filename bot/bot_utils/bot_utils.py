@@ -195,7 +195,8 @@ def to_vertical_keyboard(tokens, data=[], action=[]):
 
 def flexy_keyboard(dd):
     """
-        text_and_data = (
+    :param dd: tuple/list of tuples, e.g.:
+        text_and_data = [
         (
             ('Yes!', 1, 'yes'),
             ('No!', 2, 'no')
@@ -208,8 +209,8 @@ def flexy_keyboard(dd):
         (
             ("Fuck you", 4 , '_'),
         )
-    )
-    :param dd: tuple/list of tuples
+    ]
+
     :return: InlineKeyboardMarkup
     """
     keyboard_markup = types.InlineKeyboardMarkup()

@@ -7,7 +7,7 @@ from bot.bot_utils.bot_utils import to_one_row_keyboard, to_vertical_keyboard
 
 
 async def delete_list(session):
-    keys = mysql_connect.get_list_names(session.get_user_id())
+    keys = mysql_connect.get_list_names(session.get_user_id(), session.active_lang())
     data = list(range(len(keys)))
     actions = ["delete_list"] * len(keys)
     keys.append("CANCEL")
@@ -22,7 +22,7 @@ async def delete_list_action(query, callback_data):
     session, isValid = await authorize(query.from_user.id)
     if not isValid:
         return
-    lists = mysql_connect.get_list_names(session.get_user_id())
+    lists = mysql_connect.get_list_names(session.get_user_id(), session.active_lang())
     list_name = lists[int(callback_data['data'])]
     keys = ['DELETE the list, KEEP the words', 'DELETE the list, DELETE al its words',
                               'CANCEL']
@@ -34,7 +34,10 @@ async def delete_list_action(query, callback_data):
                            reply_markup=k)
 
 async def del_list_keep_words(query, callback_data):
-    lists = mysql_connect.get_list_names(query.from_user.id)
+    session, isValid = await authorize(query.from_user.id)
+    if not isValid:
+        return
+    lists = mysql_connect.get_list_names(query.from_user.id, session.active_lang())
     list_name = lists[int(callback_data['data'])]
     mysql_connect.del_list_keep_words(query.from_user.id, list_name)
     await bot.send_message(query.from_user.id, "{} is deleted. "
@@ -42,7 +45,10 @@ async def del_list_keep_words(query, callback_data):
 
 
 async def del_list_del_words_action(query, callback_data):
-    lists = mysql_connect.get_list_names(query.from_user.id)
+    session, isValid = await authorize(query.from_user.id)
+    if not isValid:
+        return
+    lists = mysql_connect.get_list_names(query.from_user.id, session.active_lang())
     list_name = lists[int(callback_data['data'])]
     mysql_connect.del_list_del_words(query.from_user.id, list_name)
     await bot.send_message(query.from_user.id, "{} is deleted.".format(list_name))
