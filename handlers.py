@@ -17,7 +17,7 @@ from bot.app.addtext import addtext
 from bot.app.wordlist import wordlist
 from bot.app.addwords import addwords
 from bot.app.learn import reading, speaking, writing, control, syntaxis, texts, summary
-from bot.app.core import dp, user_state, LANG_codes
+from bot.app.core import dp, user_state, LANG_codes, LANGS
 from loguru import logger
 
 #
@@ -70,23 +70,27 @@ async def stop_message(message: types.Message):
 @dp.message_handler(state='*', commands='cancel')
 @dp.message_handler(Text(equals='cancel', ignore_case=True), state='*')
 async def cancel_handler(message: types.Message, state: FSMContext):
+    logger.info("{} ", message.from_user.id)
     await onboarding.cancel_handler(message, state)
 
 
 # Check language. It should be in the list
-@dp.message_handler(lambda message: message.text.lower() not in LANG_codes.keys(),
+@dp.message_handler(lambda message: message.text.lower() not in LANGS ,
                     state=[Form.L2, Form.L1])
 async def process_language_invalid(message: types.Message):
+    logger.info("{} ", message.from_user.id)
     await onboarding.process_language_invalid(message)
 
 
 @dp.message_handler(state=Form.L1)
 async def process_L1(message: types.Message, state: FSMContext):
+    logger.info("{} ", message.from_user.id)
     await onboarding.process_L1(message, state)
 
 
-@dp.message_handler(lambda message: message.text in LANG_codes.keys(), state=Form.L2)
+@dp.message_handler(lambda message: message.text.lower() in LANGS, state=Form.L2)
 async def process_L2(message: types.Message, state: FSMContext):
+    logger.info("{} ", message.from_user.id)
     await onboarding.process_L2(message, state)
 
 
@@ -96,12 +100,14 @@ async def process_L2(message: types.Message, state: FSMContext):
                      "Intermediate", "Advanced"],
                     state=Form.level)
 async def process_level_invalid(message: types.Message):
+    logger.info("{} ", message.from_user.id)
     await onboarding.process_language_invalid(message)
 
 
 # @dp.callback_query_handler(state=Form.level)
 @dp.callback_query_handler(state=Form.level)
 async def process_level_query(query: types.CallbackQuery, state: FSMContext):
+    logger.info("{} ", query.from_user.id)
     await onboarding.process_level_query(query, state)
 
 

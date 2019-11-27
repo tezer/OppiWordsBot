@@ -49,6 +49,7 @@ async def process_language_invalid(message: types.Message):
     """
     Language is invalid
     """
+    logger.warning("{} chose unsupported language: {}", message.from_user.id, message.text)
     return await message.reply(_("Sorry, this language is not supported. Make sure you spelled it correctly."
                                "\nTry again"))
 
@@ -56,8 +57,9 @@ async def process_L1(message: types.Message, state: FSMContext):
     """
     Process user language
     """
+
     async with state.proxy() as data:
-        data['L1'] = message.text
+        data['L1'] = message.text.lower()
 
     await Form.next()
     await message.reply(_("What language do you want to study?"))
@@ -122,7 +124,7 @@ async def process_level_query(query: types.CallbackQuery, state: FSMContext):
             await query.message.delete_reply_markup()
             # Finish conversation
             await state.finish()
-            logger.warning("Language is wrong: {} {} {} {} {} {} ", query.from_user.id,
+            logger.warning("L1 is wrong: {} {} {} {} {} {} ", query.from_user.id,
                                   query.from_user.first_name,
                                   query.from_user.last_name,
                                   l1,
@@ -137,7 +139,7 @@ async def process_level_query(query: types.CallbackQuery, state: FSMContext):
             await query.message.delete_reply_markup()
             # Finish conversation
             await state.finish()
-            logger.warning("Language is wrong: {} {} {} {} {} {} ", query.from_user.id,
+            logger.warning("L2 is wrong: {} {} {} {} {} {} ", query.from_user.id,
                                   query.from_user.first_name,
                                   query.from_user.last_name,
                                   l1,
