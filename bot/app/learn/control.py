@@ -60,12 +60,14 @@ async def learn_all_words(query: types.CallbackQuery, callback_data: dict):
     hids = sr.get_items_to_learn(
         (session.get_user_id(), session.active_lang()),
         upper_recall_limit=1.0, n_words=n)
+    logger.debug("{}, found {} tasks to do", session.get_user_id(), len(hids))
     if len(hids) == 0:
         if session.status == '/test':
             await bot.send_message(session.get_user_id(),
                                    'You should add at least one word with /addwords command to start training')
         return True
     words = mysql_connect.fetch_by_hids(session.get_user_id(), hids)
+    logger.debug("{}, fetched {} tasks to do", session.get_user_id(), len(words))
     session.words_to_learn = words
     session.current_word = 0
     if not session.has_more_words_to_learn():

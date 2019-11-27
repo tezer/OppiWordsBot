@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import hashlib
 import json
 from bot.bot_utils import mysql_connect as db
+from loguru import logger
 
 oneHour = timedelta(hours=1)
 defaultModel = (3., 3., 4.)  # alpha, beta, and half-life in hours
@@ -35,6 +36,7 @@ def update_item(hid, result):
 
 
 def get_items_to_learn(user_language, upper_recall_limit=0.5, n_words=-1):
+    logger.debug("{}, {}, {}", user_language, upper_recall_limit, n_words)
     result = list()
     now = datetime.now()
     tmp = dict()
