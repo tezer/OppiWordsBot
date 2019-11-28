@@ -127,6 +127,11 @@ async def learn_words_from_list(query: types.CallbackQuery, callback_data: dict)
         else:
             session.current_level = 20  # Text learning
             await texts.text_summarization(query.from_user.id, list_name, session)
+    else:
+        words = mysql_connect.fetch_by_hids(session.get_user_id(), hids)
+        logger.debug("{}, fetched {} tasks to do", session.get_user_id(), len(words))
+        session.words_to_learn = words
+        session.current_word = 0
 
 
 async def learn_sentences(user, list_name, session, hids):
