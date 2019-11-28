@@ -117,7 +117,8 @@ async def get_definitions(language, user_lang, word, user):
             try:
                 response = ya_dict.lookup(word, CODES[language], get_lang_code(user_lang))
                 result = to_list(json.loads(response))
-                MEM_CACHE['Yandex Dictionary_' + user_lang + language + '_' + word] = result
+                if len(result) > 0:
+                    MEM_CACHE['Yandex Dictionary_' + user_lang + language + '_' + word] = result
 
             except Exception as e:
                 logger.warning("{} got YandexDictionary with user_lang: {}, L2 {}, error text {}",
@@ -137,7 +138,8 @@ async def get_definitions(language, user_lang, word, user):
                 res = process_wiktionary(w)
                 if len(res) > 0:
                     result.extend(res)
-                    MEM_CACHE['Wiktionary_' + language + '_' + word] = res
+                    if len(res) > 0:
+                        MEM_CACHE['Wiktionary_' + language + '_' + word] = res
     if 'Google Translate' in sources or ' ' in word or len(result) == 0:
         if 'Google Translate_' + user_lang + language + '_' + word in MEM_CACHE.keys():
             result.extend(MEM_CACHE['Google Translate_' + user_lang + language + '_' + word])
