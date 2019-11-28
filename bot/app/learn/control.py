@@ -132,6 +132,7 @@ async def learn_words_from_list(query: types.CallbackQuery, callback_data: dict)
         logger.debug("{}, fetched {} tasks to do", session.get_user_id(), len(words))
         session.words_to_learn = words
         session.current_word = 0
+        await start_learning(session)
 
 
 async def learn_sentences(user, list_name, session, hids):
