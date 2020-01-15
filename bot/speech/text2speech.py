@@ -10,10 +10,11 @@ from loguru import logger
 from google.cloud.texttospeech_v1.proto.cloud_tts_pb2 import SynthesizeSpeechResponse
 
 import settings
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"]= settings.google_env
+
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = settings.google_env
 from google.cloud import texttospeech
 
-MEM_CACHE = ExpiringDict(max_len=100, max_age_seconds=1000)
+MEM_CACHE = ExpiringDict(max_len=1000, max_age_seconds=60 * 15)
 
 CODES = {'czech': 'cs-CZ',
          'danish': 'da-DK',
@@ -41,11 +42,11 @@ configs = dict()
 # Select the type of audio file you want returned
 audio_config = texttospeech.types.AudioConfig(
     audio_encoding=texttospeech.enums.AudioEncoding.MP3,
-speaking_rate=0.75)
-
+    speaking_rate=0.75)
 
 # Instantiates a client
 client = texttospeech.TextToSpeechClient()
+
 
 def get_lang_config(lang):
     if lang in configs.keys():
@@ -61,9 +62,15 @@ def get_lang_config(lang):
 
 
 def get_voice(word, lang):
-    if word + '_' + lang in MEM_CACHE.keys():
-        logger.debug("Got cached file for " + word + '_' + lang)
-        return io.BytesIO(MEM_CACHE[word + '_' + lang])
+    key = word + '_' + lang
+    if key in MEM_CACHE.keys():
+        logger.debug("Got cached file for " + key)
+        try:
+            res = io.BytesIO(MEM_CACHE[key])
+        except KeyError as e:
+            logger.error(e)
+        else:
+            return res
     # Set the text input to be synthesized
     synthesis_input = texttospeech.types.SynthesisInput(text=word)
     # Perform the text-to-speech request on the text input with the selected
@@ -71,7 +78,7 @@ def get_voice(word, lang):
     voice = get_lang_config(lang)
     r = client.synthesize_speech(synthesis_input, voice, audio_config)
     result = io.BytesIO(r.audio_content)
-    MEM_CACHE[word + '_' + lang] = r.audio_content
+    MEM_CACHE[key] = r.audio_content
     return result
 #
 # # The response's audio_content is binary.
