@@ -27,7 +27,7 @@ def update_item(hid, result):
     model = tuple(json.loads(word[0]))
     recall = ebisu.predictRecall(model, time_passed, exact=True)
     print(str(hid), str(recall))
-    new_model = ebisu.updateRecall(model, result, time_passed)
+    new_model = ebisu.updateRecall(prior=model, successes=result, total=1, tnow=time_passed)
     print(hid, result)
     print(model)
     print(new_model)
