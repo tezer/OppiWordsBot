@@ -41,7 +41,7 @@ LANGS = [x.replace('\n', '').lower() for x in LANGS]
 sessions = ExpiringDict(max_len=2000, max_age_seconds=60 * 60 * 24)
 
 LANG_codes = {'english': 'english', 'russian': 'russian',
-              'английский': 'english', 'русский': 'russian'}
+              'английский': 'english', 'русский': 'russian', 'dutch': 'dutch', 'голландский': 'dutch'}
 
 
 async def get_session(user_id):

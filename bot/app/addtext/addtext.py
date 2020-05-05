@@ -21,7 +21,8 @@ CODES = {
     'thai': 'th',
     'japanese': 'ja',
     'spanish': 'es',
-    'french': 'fr'
+    'french': 'fr',
+    'dutch': 'nl'
 }
 
 rake_CODES = {
