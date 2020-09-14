@@ -39,7 +39,6 @@ async def start_message(user):
     sessions[user] = s
 
 
-
 async def help_message(message: types.Message):
     logger.info(str(message.from_user.id) + ' /help command')
     await message.reply(help_text)
@@ -61,6 +60,7 @@ async def stop_message(message: types.Message):
     session.definitions = list()
     session.list_hid_word = None  # ""(list_name, hid)
     await message.reply("You session is restarted.")
+
 
 # SETTINGS ==================================================================
 # TODO definition sources: Wiktionary, Yandex Dictionary, Google Translate
@@ -139,6 +139,7 @@ async def def_source_action(query, callback_data):
                                         query.message.message_id,
                                         reply_markup=k)
 
+
 async def def_source_finish_action(query):
     user_id = query.from_user.id
     logger.info(str(user_id) + ' def_source_action_finish received')
@@ -150,16 +151,15 @@ async def def_source_finish_action(query):
             mysql_connect.deleteone('DELETE FROM def_sources WHERE user=%s AND source=%s',
                                     (user_id, s))
     if len(session.def_sources) == 0:
-       await bot.edit_message_text("You didn't select any dictionary.\n"
-                                   "{} is set as default".format(DEFINITION_SOURCES[0]), chat_id=session.get_user_id(),
-                                        message_id=query.message.message_id)
-       session.def_sources.append(DEFINITION_SOURCES[0])
-       mysql_connect.insertone('INSERT INTO def_sources (user, source) '
-                            'VALUES(%s, %s)', (user_id, DEFINITION_SOURCES[0]))
+        await bot.edit_message_text("You didn't select any dictionary.\n"
+                                    "{} is set as default".format(DEFINITION_SOURCES[0]), chat_id=session.get_user_id(),
+                                    message_id=query.message.message_id)
+        session.def_sources.append(DEFINITION_SOURCES[0])
+        mysql_connect.insertone('INSERT INTO def_sources (user, source) '
+                                'VALUES(%s, %s)', (user_id, DEFINITION_SOURCES[0]))
     else:
         await bot.edit_message_text('OK, settings are saved', chat_id=session.get_user_id(),
-                                        message_id=query.message.message_id)
-
+                                    message_id=query.message.message_id)
 
 
 # UNKNOWN ==================================================================

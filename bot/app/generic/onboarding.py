@@ -8,6 +8,7 @@ from loguru import logger
 # States
 from bot.app.core import bot, _, LANG_codes, LANGS
 from bot.app.generic import generic
+from bot.app.generic.generic import stop_message
 from bot.bot_utils import mysql_connect, bot_utils
 
 LEVELS = {}
@@ -49,9 +50,14 @@ async def process_language_invalid(message: types.Message):
     """
     Language is invalid
     """
+    if message.text == '/stop':
+        await cancel_handler()
+        await stop_message(message)
+        return
     logger.warning("{} chose unsupported language: {}", message.from_user.id, message.text)
     return await message.reply(_("Sorry, this language is not supported. Make sure you spelled it correctly."
-                               "\nTry again"))
+                                 "\nTry again"))
+
 
 async def process_L1(message: types.Message, state: FSMContext):
     """
@@ -73,7 +79,7 @@ async def process_L2(message: types.Message, state: FSMContext):
     # Configure ReplyKeyboardMarkup
     kb_data = [
         (("Know nothing", 0, '_'), ("Know a bit", 10, '_')),
-        (("Intermediate", 20, '_'), ("Advanced", 30,'_'))
+        (("Intermediate", 20, '_'), ("Advanced", 30, '_'))
     ]
     kb = bot_utils.flexy_keyboard(kb_data)
 
@@ -84,7 +90,6 @@ async def process_L2(message: types.Message, state: FSMContext):
 
 
 async def process_level_invalid(message: types.Message):
-
     return await message.reply(_("Please, choose your language level from the keyboard."))
 
 
@@ -92,7 +97,7 @@ def get_lang(lang):
     if lang in LANG_codes.keys():
         return LANG_codes[lang]
     elif lang in LANGS:
-            return lang
+        return lang
     else:
         return None
 
@@ -125,11 +130,11 @@ async def process_level_query(query: types.CallbackQuery, state: FSMContext):
             # Finish conversation
             await state.finish()
             logger.warning("L1 is wrong: {} {} {} {} {} {} ", query.from_user.id,
-                                  query.from_user.first_name,
-                                  query.from_user.last_name,
-                                  l1,
-                                  data['L2'],
-                                  data['level'])
+                           query.from_user.first_name,
+                           query.from_user.last_name,
+                           l1,
+                           data['L2'],
+                           data['level'])
             return
 
         l2 = get_lang(data['L2'])
@@ -140,19 +145,19 @@ async def process_level_query(query: types.CallbackQuery, state: FSMContext):
             # Finish conversation
             await state.finish()
             logger.warning("L2 is wrong: {} {} {} {} {} {} ", query.from_user.id,
-                                  query.from_user.first_name,
-                                  query.from_user.last_name,
-                                  l1,
-                                  l2,
-                                  data['level'])
+                           query.from_user.first_name,
+                           query.from_user.last_name,
+                           l1,
+                           l2,
+                           data['level'])
             return
 
         logger.info("adding new user: {} {} {} {} {} {} ", query.from_user.id,
-                                  query.from_user.first_name,
-                                  query.from_user.last_name,
-                                  l1,
-                                  l2,
-                                  data['level'])
+                    query.from_user.first_name,
+                    query.from_user.last_name,
+                    l1,
+                    l2,
+                    data['level'])
         mysql_connect.update_user(query.from_user.id,
                                   query.from_user.first_name,
                                   query.from_user.last_name,
