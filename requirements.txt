@@ -144,7 +144,7 @@ multi_rake == 0.0.1
 mysql_connector_python == 8.0.17
 
 # OppiLearn/text_utils/word_freqs.py: 1
-numpy == 1.18.3
+numpy == 1.22.0
 
 # OppiLearn/bot/app/addtext/addtext.py: 13
 # OppiLearn/bot/bot_utils/smart_list.py: 4
