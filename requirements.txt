@@ -218,7 +218,7 @@ tornado == 6.0.3
 # OppiLearn/venv/lib64/python3.6/site-packages/aiogram/__main__.py: 42
 # OppiLearn/venv/lib64/python3.6/site-packages/telebot/apihelper.py: 4
 # OppiLearn/venv/lib64/python3.6/site-packages/telebot/types.py: 4
-ujson == 1.35
+ujson == 5.4.0
 
 # OppiLearn/text_utils/wiki.py: 1
 # OppiLearn/text_utils/word_freqs.py: 7
