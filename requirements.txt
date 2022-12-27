@@ -203,7 +203,7 @@ rethinkdb == 2.4.6
 # OppiLearn/venv/lib64/python3.6/site-packages/babel/messages/extract.py: 297
 # OppiLearn/venv/lib64/python3.6/site-packages/pip-9.0.1-py3.6.egg/pip/req/req_install.py: 387
 # OppiLearn/venv/lib64/python3.6/site-packages/pytz/__init__.py: 102
-setuptools == 41.2.0
+setuptools == 65.5.1
 
 # OppiLearn/text_utils/text_complexity.py: 1
 # OppiLearn/text_utils/wiki.py: 2
